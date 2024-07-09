@@ -3,7 +3,7 @@ class AccountsController < ApplicationController
 
   # GET /accounts
   def index
-    @accounts = Account.all
+    @accounts = current_user.accounts.order(:name)
   end
 
   # GET /accounts/1
@@ -50,7 +50,11 @@ class AccountsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_account
-      @account = Account.find(params[:id])
+      if current_user && current_user.accounts.exists?(params[:id])
+        @account = current_user.accounts.find(params[:id])
+      else
+        redirect_to accounts_path
+      end
     end
 
     # Only allow a list of trusted parameters through.
