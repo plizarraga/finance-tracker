@@ -21,12 +21,10 @@ class AccountsController < ApplicationController
 
   # POST /accounts
   def create
-    @account = Account.new(account_params)
-
-    @account.user = current_user
+    @account = current_user.accounts.new(account_params)
 
     if @account.save
-      redirect_to @account, notice: "Account was successfully created."
+      redirect_to accounts_path, notice: "Account was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -35,7 +33,7 @@ class AccountsController < ApplicationController
   # PATCH/PUT /accounts/1
   def update
     if @account.update(account_params)
-      redirect_to @account, notice: "Account was successfully updated.", status: :see_other
+      redirect_to accounts_path, notice: "Account was successfully updated.", status: :see_other
     else
       render :edit, status: :unprocessable_entity
     end
@@ -59,6 +57,6 @@ class AccountsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def account_params
-      params.require(:account).permit(:user_id, :name, :balance)
+      params.require(:account).permit(:name, :balance)
     end
 end

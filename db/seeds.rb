@@ -10,6 +10,7 @@
 
 # user = User.find_or_create_by!(first_name: "John", last_name: "Doe", email: "john.doe@example.com", password: "123123", password_confirmation: "123123")
 user = User.create!(first_name: "John", last_name: "Doe", email: "john.doe@example.com", password: "123123", password_confirmation: "123123")
+# john_doe = User.find_by(email: "john.doe@example.com")
 
 # Create 5 categories
 salary = Category.create!(name: "Salary", user: user)
@@ -34,3 +35,14 @@ expense = Transaction.transaction_types[:expense]
 Transaction.create!(title: 'Grocery', notes: 'Grocery shopping', transaction_type: expense, amount: 300, account: checking_account, category: grocery_category, date: Date.today, user: user)
 Transaction.create!(title: 'Fast food', notes: 'Fast food order', transaction_type: expense, amount: 300, account: saving_account, category: fast_food_category, date: Date.today, user: user)
 Transaction.create!(title: 'Gas', notes: 'Gas 5 liters', transaction_type: expense, amount: 300, account: checking_account, category: gas_category, date: Date.today, user: user)
+
+
+# user.transactions.create!(
+#   title: "Sample Transaction",
+#   amount: 100.0,
+#   transaction_type: :income, # o :expense
+#   date: Date.today,
+#   account_id: 5,
+#   category_id: 6,
+#   notes: "This is a sample transaction"
+# )

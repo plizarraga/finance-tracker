@@ -10,4 +10,18 @@ class Transaction < ApplicationRecord
 
   validates :transaction_type, presence: true
   # validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+
+  after_save :update_account_balance
+  after_destroy :revert_account_balance
+
+  private
+
+  def update_account_balance
+    account.update_balance(amount, transaction_type)
+  end
+
+  def revert_account_balance
+    opposite_type = transaction_type == "income" ? "expense" : "income"
+    account.update_balance(amount, opposite_type)
+  end
 end

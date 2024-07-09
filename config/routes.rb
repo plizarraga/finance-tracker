@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  resources :accounts
+  resources :accounts, only: [:index, :new, :create, :edit, :update, :destroy]
+  resources :categories, only: [:index, :new, :create, :edit, :update, :destroy]
+  resources :transactions, only: [:index, :new, :create, :edit, :update, :destroy]
   devise_for :users
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
