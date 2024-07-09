@@ -1,0 +1,45 @@
+<!--<p style="color: green"><%#= notice %></p>-->
+<%# content_for(:page_title, "Accounts") %>
+<!--<div id="accounts">-->
+<%# @accounts.each do |account| %>
+  <%#= render account %>
+  <!--    <p>-->
+  <%#= link_to "Show this account", account %>
+  <!--    </p>-->
+  <%# end %>
+  <!--</div>-->
+  <%#= link_to "New account", new_account_path %>
+  <section class="text-gray-600 body-font">
+    <div class="container px-5 py-24 mx-auto">
+      <div class="flex flex-col text-center w-full mb-20">
+        <h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">Accounts</h1>
+        <!--<p class="lg:w-2/3 mx-auto leading-relaxed text-base">Bank accounts list </p>-->
+      </div>
+      <div class="flex flex-wrap -m-4 text-center">
+        <% @accounts.each do |account| %>
+          <div class="p-4 md:w-1/4 sm:w-1/2 w-full">
+            <%= link_to edit_account_path(account) do %>
+              <div class="border-2 border-gray-200 px-4 py-6 rounded-lg">
+                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="text-indigo-500 w-12 h-12 mb-3 inline-block" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                </svg>
+                <h2 class="title-font font-medium text-3xl text-gray-900"><%= number_to_currency(account.balance) %></h2>
+                <p class="leading-relaxed"><%= account.name %></p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        <div class="p-4 md:w-1/4 sm:w-1/2 w-full">
+          <%= link_to new_account_path do %>
+            <div class="border-dashed border-2 border-gray-200 px-4 py-6 rounded-lg">
+              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="text-indigo-500 w-12 h-12 mb-3 inline-block" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+              </svg>
+              <h2 class="title-font font-medium text-3xl text-gray-900">Add a new</h2>
+              <p class="leading-relaxed">New account</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </section>

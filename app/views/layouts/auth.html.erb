@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html class="h-full bg-gray-50">
+  <head>
+    <title>MyApp</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  </head>
+  <body class="h-full">
+    <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <img class="mx-auto h-12 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company">
+        <%= yield(:auth_header) if content_for?(:auth_header) %>
+      </div>
+      <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <% if flash[:notice].present? %>
+            <p class="bg-green-100 rounded-md p-4 mb-4"><%= notice %></p>
+          <% end %>
+          <% if flash[:alert].present? %>
+            <p class="bg-red-100 rounded-md p-4 mb-4"><%= alert %></p>
+          <% end %>
+          <%= yield %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+<%# if profile.errors.any? %>
+<!--    <div id="error_explanation" class="bg-red-100 rounded-md p-4 mb-4">
+      <h2><%#= pluralize(profile.errors.count, "error") %> prohibited this profile from being saved:</h2>
+
+      <ul>
+        <%# profile.errors.each do |error| %>-->
+<!--          <li><%#= error.full_message %></li>-->
+<%# end %>
+<!--      </ul>
+    </div>
+  <%# end %>-->

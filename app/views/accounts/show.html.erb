@@ -1,0 +1,10 @@
+<% content_for(:page_title, "Account ##{@account.id}") %>
+<% if notice.present? %>
+  <p class="bg-green-100 rounded-md p-4 mb-4"><%= notice %></p>
+<% end %>
+<%= render @account %>
+<div>
+  <%= link_to "Edit this account", edit_account_path(@account) %> |
+  <%= link_to "Back to accounts", accounts_path %>
+  <%= button_to "Destroy this account", @account, method: :delete %>
+</div>
