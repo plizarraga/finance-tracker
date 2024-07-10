@@ -2,6 +2,20 @@
 
 Finance Tracker is a Ruby on Rails application designed for personal finance management.
 
+## Features
+
+### User Management
+
+- **User Registration**: Users can create an account for accessing the application.
+
+### Financial Management
+
+- **Bank/Cash Accounts**: Users can create and edit bank accounts or cash accounts to manage their financial assets.
+
+- **Expense/Income Categories**: Users can create and edit categories for expenses and incomes, helping to organize their financial transactions.
+
+- **Transactions**: Users can create and edit financial transactions, categorizing them as either expenses or incomes.
+
 ## Technologies Used
 
 - Ruby version: 3.1.2
