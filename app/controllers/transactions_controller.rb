@@ -1,13 +1,17 @@
 class TransactionsController < ApplicationController
-    before_action :set_transactions, only: [:index]
+    include ActionView::RecordIdentifier
+    # before_action :set_transactions, only: [:index]
     before_action :set_transaction, only: %i[show edit update destroy]
     before_action :set_accounts_and_categories, only: %i[new create edit update]
 
   # GET /transactions
   def index
     # @transactions = current_user.transactions.order(:date)
-    @total_expenses = @transactions.expense.sum(:amount)
-    @total_incomings = @transactions.income.sum(:amount)
+    # @total_expenses = @transactions.expense.sum(:amount)
+    # @total_incomings = @transactions.income.sum(:amount)
+
+    filtered = current_user.transactions.includes(:account, :category).search(params).order(date: :desc)
+    @pagy, @transactions = pagy(filtered.all, items: 3)
   end
 
   # GET /transactions/1

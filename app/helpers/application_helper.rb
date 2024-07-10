@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include Pagy::Frontend
+  
   def label_class
       "block text-sm font-medium text-gray-700"
     end

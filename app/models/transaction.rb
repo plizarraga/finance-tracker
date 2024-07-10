@@ -9,10 +9,16 @@ class Transaction < ApplicationRecord
   }
 
   validates :transaction_type, presence: true
-  # validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   after_save :update_account_balance
   after_destroy :revert_account_balance
+  
+  def self.search(params)
+    params[:filter].blank? ? all : where(
+      "title LIKE ?", "%#{sanitize_sql_like(params[:filter])}%"
+    )
+  end
 
   private
 

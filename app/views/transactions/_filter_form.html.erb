@@ -1,0 +1,3 @@
+<%= form_with url: transactions_path, method: :get, data: { controller: "form", action: "input->form#submit", turbo_frame: "transactions", turbo_action: "advance" } do %>
+  <%= text_field_tag "filter", nil, placeholder: "Filter", class: "inline-block rounded-md border border-gray-200 outline-none px-3 py-2  w-full" %>
+<% end %>
