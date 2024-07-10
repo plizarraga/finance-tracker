@@ -8,9 +8,7 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
-# user = User.find_or_create_by!(first_name: "John", last_name: "Doe", email: "john.doe@example.com", password: "123123", password_confirmation: "123123")
 user = User.create!(first_name: "John", last_name: "Doe", email: "john.doe@example.com", password: "123123", password_confirmation: "123123")
-# john_doe = User.find_by(email: "john.doe@example.com")
 
 # Create 5 categories
 salary = Category.create!(name: "Salary", user: user)

@@ -1,16 +1,30 @@
-<tr>
-  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= transaction.date.strftime("%Y-%m-%d") %></td>
+<!--<tr>
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%#= transaction.date.strftime("%Y-%m-%d") %></td>
   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-    <%= link_to transaction.title, edit_transaction_path(transaction) %>
-  </td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= number_to_currency(transaction.amount) %></td>
+    <%#= link_to transaction.title, edit_transaction_path(transaction) %>-->
+<!--  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%#= number_to_currency(transaction.amount) %></td>
   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    <%# if transaction.transaction_type == 'income' %>-->
+<!--      <span class="inline-block px-2 py-1 font-semibold leading-tight text-green-800 bg-green-200 rounded-full">Income</span>-->
+<%# else %>
+<!--      <span class="inline-block px-2 py-1 font-semibold leading-tight text-red-800 bg-red-200 rounded-full">Expense</span>-->
+<%# end %>
+<!--  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%#= transaction.account.name %></td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%#= transaction.category.name %></td>
+</tr>-->
+<tr class="border-b dark:border-gray-700">
+  <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"><%= transaction.date.strftime("%Y-%m-%d") %></th>
+  <td class="px-4 py-3"><%= link_to transaction.title, edit_transaction_path(transaction), class: "font-medium text-indigo-600 hover:text-indigo-500" %></td>
+  <td class="px-4 py-3"><%= number_to_currency(transaction.amount) %></td>
+  <td class="px-4 py-3">
     <% if transaction.transaction_type == 'income' %>
       <span class="inline-block px-2 py-1 font-semibold leading-tight text-green-800 bg-green-200 rounded-full">Income</span>
     <% else %>
       <span class="inline-block px-2 py-1 font-semibold leading-tight text-red-800 bg-red-200 rounded-full">Expense</span>
     <% end %>
   </td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= transaction.account.name %></td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= transaction.category.name %></td>
+  <td class="px-4 py-3"><%= transaction.account.name %></td>
+  <td class="px-4 py-3"><%= transaction.category.name %></td>
 </tr>
