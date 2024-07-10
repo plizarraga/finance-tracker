@@ -54,7 +54,7 @@ Make sure you have the following installed:
 Start the Rails server:
 
 ```bash
-rails server
+bin/dev
 ```
 
 The application will be available at `http://localhost:3000`.
