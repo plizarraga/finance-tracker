@@ -46,8 +46,8 @@ gem "bootsnap", require: false
 
 group :development, :test do
   gem 'rspec-rails'
-  gem 'factory_bot_rails'
   gem 'shoulda-matchers'
+  gem 'factory_bot_rails'
   gem 'faker'
   gem 'database_cleaner-active_record'
   gem 'pry-rails'
@@ -66,7 +66,6 @@ group :development do
 
   gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
 end
-
 
 gem "devise", "~> 4.9"
 gem 'pagy', '~> 8.6'
