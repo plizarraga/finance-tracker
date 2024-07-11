@@ -1,27 +1,25 @@
 require 'rails_helper'
 
 RSpec.describe "Signins", type: :system do
+  let(:user) { build(:user) }
+
   before do
     driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
   end
 
   describe "on successful signin" do
     it "I am logged in" do
-      # Arrange: Perform signup and then sign out
-      # sing_up
-      # sign_out
-      visit "/"
+      # Sign up
+      sign_up_with(user.first_name, user.last_name, user.email, user.password, )
+      expect(page).to have_content("Welcome to the members area #{user.email}")
       
-      # Assert: Verify that the Sign in link is present after signing out
+      # Sign out
+      sign_out
       expect(page).to have_content("Sign in")
 
-      # Act: Fill in signin form fields and submit
-      fill_in "Email", with: "john.doe@example.com"
-      fill_in "Password", with: "123123"
-      click_button "Log in"
-
-      # Assert: Verify that the user is logged in and redirected to the members area
-      expect(page).to have_content("Welcome to the members area john.doe@example.com")
+      # Sign in
+      sign_in_with(user.email, user.password)
+      expect(page).to have_content("Welcome to the members area #{user.email}")
     end
   end
 end
