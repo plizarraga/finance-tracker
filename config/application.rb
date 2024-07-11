@@ -37,7 +37,19 @@ module FinanceTracker
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Don't generate system test files.
-    config.generators.system_tests = nil
+    config.generators do |generator|
+      generator.system_tests false
+      generator.helper false
+      generator.fixture_replacement :factory_bot, dir: "spec/factories"
+      generator.test_framework :rspec, 
+                                fixtures: true, 
+                                fixture: true, 
+                                view_specs: false, 
+                                helper_specs: false, 
+                                routing_specs: false, 
+                                controller_specs: false, 
+                                request_specs: true
+    end
 
     config.to_prepare do
       Devise::SessionsController.layout "auth"
