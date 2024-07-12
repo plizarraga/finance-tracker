@@ -46,7 +46,6 @@ gem "bootsnap", require: false
 
 group :development, :test do
   gem 'rspec-rails'
-  gem 'shoulda-matchers'
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'database_cleaner-active_record'
@@ -58,6 +57,7 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
   gem 'webdrivers'
+  gem 'shoulda-matchers'
 end
 
 group :development do
