@@ -33,6 +33,7 @@ end
 RSpec.configure do |config|
   # Factory Bot Helpers for Rspec tests
   config.include FactoryBot::Syntax::Methods
+  config.include Warden::Test::Helpers
   
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
