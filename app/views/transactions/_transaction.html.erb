@@ -15,7 +15,9 @@
   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%#= transaction.category.name %></td>
 </tr>-->
 <tr class="border-b dark:border-gray-700">
-  <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"><%= transaction.date.strftime("%Y-%m-%d") %></th>
+  <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+    <%= transaction.date.present? ? transaction.date.strftime("%Y-%m-%d") : "" %>
+  </th>
   <td class="px-4 py-3"><%= link_to transaction.title, edit_transaction_path(transaction), class: "font-medium text-indigo-600 hover:text-indigo-500" %></td>
   <td class="px-4 py-3"><%= number_to_currency(transaction.amount) %></td>
   <td class="px-4 py-3">

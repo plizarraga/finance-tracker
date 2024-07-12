@@ -8,7 +8,7 @@ class Transaction < ApplicationRecord
     expense: 'expense'
   }
 
-  validates :transaction_type, presence: true
+  validates :transaction_type, :date, presence: true
   validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   after_save :update_account_balance
