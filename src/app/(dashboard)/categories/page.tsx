@@ -43,7 +43,7 @@ export default async function CategoriesPage() {
 
       {categories.length === 0 ? (
         <EmptyState
-          icon={Tag}
+          icon={<Tag className="h-8 w-8" />}
           title="No categories yet"
           description="Create your first category to start organizing your transactions."
           action={
@@ -74,7 +74,7 @@ export default async function CategoriesPage() {
           <TabsContent value="income">
             {incomeCategories.length === 0 ? (
               <EmptyState
-                icon={Tag}
+                icon={<Tag className="h-8 w-8" />}
                 title="No income categories"
                 description="Create an income category to organize your earnings."
                 action={
@@ -94,7 +94,7 @@ export default async function CategoriesPage() {
           <TabsContent value="expense">
             {expenseCategories.length === 0 ? (
               <EmptyState
-                icon={Tag}
+                icon={<Tag className="h-8 w-8" />}
                 title="No expense categories"
                 description="Create an expense category to track your spending."
                 action={

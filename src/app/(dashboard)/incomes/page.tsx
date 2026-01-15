@@ -45,7 +45,7 @@ export default async function IncomesPage() {
 
       {incomes.length === 0 ? (
         <EmptyState
-          icon={DollarSign}
+          icon={<DollarSign className="h-8 w-8" />}
           title="No incomes yet"
           description="Record your first income to start tracking your earnings."
           action={

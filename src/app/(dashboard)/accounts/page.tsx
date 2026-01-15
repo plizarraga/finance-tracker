@@ -44,7 +44,7 @@ export default async function AccountsPage() {
 
       {accounts.length === 0 ? (
         <EmptyState
-          icon={Wallet}
+          icon={<Wallet className="h-8 w-8" />}
           title="No accounts yet"
           description="Create your first account to start tracking your finances."
           action={

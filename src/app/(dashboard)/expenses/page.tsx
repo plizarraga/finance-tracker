@@ -45,7 +45,7 @@ export default async function ExpensesPage() {
 
       {expenses.length === 0 ? (
         <EmptyState
-          icon={Receipt}
+          icon={<Receipt className="h-8 w-8" />}
           title="No expenses yet"
           description="Record your first expense to start tracking your spending."
           action={

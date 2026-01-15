@@ -45,7 +45,7 @@ export default async function TransfersPage() {
 
       {transfers.length === 0 ? (
         <EmptyState
-          icon={ArrowLeftRight}
+          icon={<ArrowLeftRight className="h-8 w-8" />}
           title="No transfers yet"
           description="Create your first transfer to move money between accounts."
           action={
