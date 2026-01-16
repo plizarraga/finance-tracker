@@ -160,9 +160,9 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2 md:space-y-8">
       {/* Welcome Section */}
-      <div>
+      <div className="hidden md:block">
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome back, {userName}!
         </h1>
@@ -172,66 +172,60 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
-          <CardDescription>
-            Create income, expenses, or transfers from your templates in one
-            click.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border bg-card p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                Income
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">
-                Create a new income from templates.
-              </p>
-              <IncomeTemplateButtonGroup
-                templates={incomeTemplates}
-                defaultTemplate={defaultIncomeTemplate}
-                variant="default"
-                fullWidth
-              />
+      <div>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold">Quick Actions</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              Income
             </div>
-
-            <div className="rounded-lg border bg-card p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-                Expense
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">
-                Log an expense using your templates.
-              </p>
-              <ExpenseTemplateButtonGroup
-                templates={expenseTemplates}
-                defaultTemplate={defaultExpenseTemplate}
-                variant="destructive"
-                fullWidth
-              />
-            </div>
-
-            <div className="rounded-lg border bg-card p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <ArrowLeftRight className="h-4 w-4 text-slate-600 dark:text-slate-300" />
-                Transfer
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">
-                Move funds between accounts quickly.
-              </p>
-              <TransferTemplateButtonGroup
-                templates={transferTemplates}
-                defaultTemplate={defaultTransferTemplate}
-                variant="outline"
-                fullWidth
-              />
-            </div>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Create a new income from templates.
+            </p>
+            <IncomeTemplateButtonGroup
+              templates={incomeTemplates}
+              defaultTemplate={defaultIncomeTemplate}
+              variant="default"
+              fullWidth
+            />
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <TrendingDown className="h-4 w-4 text-red-600" />
+              Expense
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Log an expense using your templates.
+            </p>
+            <ExpenseTemplateButtonGroup
+              templates={expenseTemplates}
+              defaultTemplate={defaultExpenseTemplate}
+              variant="destructive"
+              fullWidth
+            />
+          </div>
+
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <ArrowLeftRight className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+              Transfer
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Move funds between accounts quickly.
+            </p>
+            <TransferTemplateButtonGroup
+              templates={transferTemplates}
+              defaultTemplate={defaultTransferTemplate}
+              variant="outline"
+              fullWidth
+            />
+          </div>
+        </div>
+      </div>
       {/* Account Balances Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -296,20 +290,6 @@ export default async function DashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Recent Transactions</h2>
-          <div className="flex gap-2">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/incomes">
-                Incomes
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/expenses">
-                Expenses
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
         </div>
 
         {recentTransactions.length === 0 ? (
@@ -420,72 +400,77 @@ export default async function DashboardPage() {
       <div>
         <h2 className="text-xl font-semibold mb-4">Summary</h2>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl font-semibold">
-              {formatCurrency(totalBalance)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Across {accounts.length} account{accounts.length !== 1 ? 's' : ''}
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="text-sm font-medium">
+                Total Balance
+              </CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xl font-semibold">
+                {formatCurrency(totalBalance)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Across {accounts.length} account
+                {accounts.length !== 1 ? 's' : ''}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-            <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl font-semibold text-green-600">
-              {formatCurrency(totalMonthlyIncome)}
-            </div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-            <CardTitle className="text-sm font-medium">
-              Total Expenses
-            </CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl font-semibold text-red-600">
-              {formatCurrency(totalMonthlyExpenses)}
-            </div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-            <CardTitle className="text-sm font-medium">Net</CardTitle>
-            {netBalance >= 0 ? (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="text-sm font-medium">
+                Total Income
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-green-600" />
-            ) : (
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xl font-semibold text-green-600">
+                {formatCurrency(totalMonthlyIncome)}
+              </div>
+              <p className="text-xs text-muted-foreground">This month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="text-sm font-medium">
+                Total Expenses
+              </CardTitle>
               <TrendingDown className="h-4 w-4 text-red-600" />
-            )}
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div
-              className={`text-xl font-semibold ${
-                netBalance >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {netBalance >= 0 ? '+' : ''}
-              {formatCurrency(netBalance)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Income - Expenses this month
-            </p>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xl font-semibold text-red-600">
+                {formatCurrency(totalMonthlyExpenses)}
+              </div>
+              <p className="text-xs text-muted-foreground">This month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="text-sm font-medium">Net</CardTitle>
+              {netBalance >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-600" />
+              )}
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div
+                className={`text-xl font-semibold ${
+                  netBalance >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {netBalance >= 0 ? '+' : ''}
+                {formatCurrency(netBalance)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Income - Expenses this month
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
