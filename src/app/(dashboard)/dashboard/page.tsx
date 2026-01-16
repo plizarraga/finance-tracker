@@ -181,25 +181,54 @@ export default async function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
-            <IncomeTemplateButtonGroup
-              templates={incomeTemplates}
-              defaultTemplate={defaultIncomeTemplate}
-              variant="default"
-              fullWidth
-            />
-            <ExpenseTemplateButtonGroup
-              templates={expenseTemplates}
-              defaultTemplate={defaultExpenseTemplate}
-              variant="destructive"
-              fullWidth
-            />
-            <TransferTemplateButtonGroup
-              templates={transferTemplates}
-              defaultTemplate={defaultTransferTemplate}
-              variant="outline"
-              fullWidth
-            />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                Income
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                Create a new income from templates.
+              </p>
+              <IncomeTemplateButtonGroup
+                templates={incomeTemplates}
+                defaultTemplate={defaultIncomeTemplate}
+                variant="default"
+                fullWidth
+              />
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <TrendingDown className="h-4 w-4 text-red-600" />
+                Expense
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                Log an expense using your templates.
+              </p>
+              <ExpenseTemplateButtonGroup
+                templates={expenseTemplates}
+                defaultTemplate={defaultExpenseTemplate}
+                variant="destructive"
+                fullWidth
+              />
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <ArrowLeftRight className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                Transfer
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                Move funds between accounts quickly.
+              </p>
+              <TransferTemplateButtonGroup
+                templates={transferTemplates}
+                defaultTemplate={defaultTransferTemplate}
+                variant="outline"
+                fullWidth
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
