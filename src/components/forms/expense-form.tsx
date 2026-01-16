@@ -28,6 +28,36 @@ import {
 import type { Expense, Account, Category } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
 
+function normalizeAmount(value: unknown): number {
+  if (typeof value === "number") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "toNumber" in value &&
+    typeof (value as { toNumber: () => number }).toNumber === "function"
+  ) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  return 0;
+}
+
+function normalizeDate(value: unknown): Date {
+  if (value instanceof Date) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
+  return new Date();
+}
+
 interface ExpenseFormProps {
   expense?: Expense;
   accounts: Account[];
@@ -48,8 +78,8 @@ export function ExpenseForm({
     defaultValues: {
       accountId: expense?.accountId ?? "",
       categoryId: expense?.categoryId ?? "",
-      amount: expense?.amount?.toNumber() ?? 0,
-      date: expense?.date ?? new Date(),
+      amount: normalizeAmount(expense?.amount),
+      date: normalizeDate(expense?.date),
       description: expense?.description ?? "",
     },
   });

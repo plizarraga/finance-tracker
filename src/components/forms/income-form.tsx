@@ -25,6 +25,36 @@ import { incomeSchema, type IncomeInput } from "@/features/incomes/schemas";
 import { formatDateInput } from "@/lib/format";
 import type { Income, Account, Category } from "@prisma/client";
 
+function normalizeAmount(value: unknown): number {
+  if (typeof value === "number") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "toNumber" in value &&
+    typeof (value as { toNumber: () => number }).toNumber === "function"
+  ) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  return 0;
+}
+
+function normalizeDate(value: unknown): Date {
+  if (value instanceof Date) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
+  return new Date();
+}
+
 interface IncomeFormProps {
   income?: Income;
   accounts: Account[];
@@ -45,8 +75,8 @@ export function IncomeForm({
     defaultValues: {
       accountId: income?.accountId ?? "",
       categoryId: income?.categoryId ?? "",
-      amount: income?.amount?.toNumber() ?? 0,
-      date: income?.date ?? new Date(),
+      amount: normalizeAmount(income?.amount),
+      date: normalizeDate(income?.date),
       description: income?.description ?? "",
     },
   });

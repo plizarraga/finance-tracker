@@ -3,13 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import type { Transfer } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { transferServerSchema } from "./schemas";
 
 export async function createTransfer(
   formData: FormData
-): Promise<ActionResult<Transfer>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -45,7 +44,7 @@ export async function createTransfer(
       return { success: false, error: "Invalid account selection" };
     }
 
-    const transfer = await prisma.transfer.create({
+    await prisma.transfer.create({
       data: {
         userId,
         fromAccountId,
@@ -59,7 +58,7 @@ export async function createTransfer(
     revalidatePath("/transfers");
     revalidatePath("/accounts");
 
-    return { success: true, data: transfer };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
@@ -72,7 +71,7 @@ export async function createTransfer(
 export async function updateTransfer(
   id: string,
   formData: FormData
-): Promise<ActionResult<Transfer>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -117,7 +116,7 @@ export async function updateTransfer(
       return { success: false, error: "Invalid account selection" };
     }
 
-    const transfer = await prisma.transfer.update({
+    await prisma.transfer.update({
       where: { id },
       data: {
         fromAccountId,
@@ -132,7 +131,7 @@ export async function updateTransfer(
     revalidatePath("/accounts");
     revalidatePath(`/transfers/${id}`);
 
-    return { success: true, data: transfer };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };

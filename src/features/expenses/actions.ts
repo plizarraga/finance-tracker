@@ -3,13 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import type { Expense } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { expenseServerSchema } from "./schemas";
 
 export async function createExpense(
   formData: FormData
-): Promise<ActionResult<Expense>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -58,7 +57,7 @@ export async function createExpense(
       };
     }
 
-    const expense = await prisma.expense.create({
+    await prisma.expense.create({
       data: {
         userId,
         accountId,
@@ -72,7 +71,7 @@ export async function createExpense(
     revalidatePath("/expenses");
     revalidatePath("/accounts");
 
-    return { success: true, data: expense };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
@@ -85,7 +84,7 @@ export async function createExpense(
 export async function updateExpense(
   id: string,
   formData: FormData
-): Promise<ActionResult<Expense>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -143,7 +142,7 @@ export async function updateExpense(
       };
     }
 
-    const expense = await prisma.expense.update({
+    await prisma.expense.update({
       where: { id },
       data: {
         accountId,
@@ -158,7 +157,7 @@ export async function updateExpense(
     revalidatePath(`/expenses/${id}`);
     revalidatePath("/accounts");
 
-    return { success: true, data: expense };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };

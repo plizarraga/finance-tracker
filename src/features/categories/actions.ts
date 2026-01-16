@@ -4,12 +4,11 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { ActionResult } from "@/types";
-import type { Category } from "@prisma/client";
 import { categorySchema } from "./schemas";
 
 export async function createCategory(
   formData: FormData
-): Promise<ActionResult<Category>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -29,7 +28,7 @@ export async function createCategory(
 
     const { name, type } = validationResult.data;
 
-    const category = await prisma.category.create({
+    await prisma.category.create({
       data: {
         userId,
         name,
@@ -39,7 +38,7 @@ export async function createCategory(
 
     revalidatePath("/categories");
 
-    return { success: true, data: category };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
@@ -52,7 +51,7 @@ export async function createCategory(
 export async function updateCategory(
   id: string,
   formData: FormData
-): Promise<ActionResult<Category>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -81,7 +80,7 @@ export async function updateCategory(
       return { success: false, error: "Category not found" };
     }
 
-    const category = await prisma.category.update({
+    await prisma.category.update({
       where: { id },
       data: {
         name,
@@ -92,7 +91,7 @@ export async function updateCategory(
     revalidatePath("/categories");
     revalidatePath(`/categories/${id}/edit`);
 
-    return { success: true, data: category };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };

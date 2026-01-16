@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import type { Account, ActionResult } from "@/types";
+import type { ActionResult } from "@/types";
 import { accountSchema } from "./schemas";
 
 export async function createAccount(
   formData: FormData
-): Promise<ActionResult<Account>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -28,7 +28,7 @@ export async function createAccount(
 
     const { name, description } = validationResult.data;
 
-    const account = await prisma.account.create({
+    await prisma.account.create({
       data: {
         userId,
         name,
@@ -38,7 +38,7 @@ export async function createAccount(
 
     revalidatePath("/accounts");
 
-    return { success: true, data: account };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
@@ -51,7 +51,7 @@ export async function createAccount(
 export async function updateAccount(
   id: string,
   formData: FormData
-): Promise<ActionResult<Account>> {
+): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
 
@@ -80,7 +80,7 @@ export async function updateAccount(
       return { success: false, error: "Account not found" };
     }
 
-    const account = await prisma.account.update({
+    await prisma.account.update({
       where: { id },
       data: {
         name,
@@ -91,7 +91,7 @@ export async function updateAccount(
     revalidatePath("/accounts");
     revalidatePath(`/accounts/${id}`);
 
-    return { success: true, data: account };
+    return { success: true };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
