@@ -11,7 +11,8 @@ import { updateExpense, deleteExpense } from "@/features/expenses/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import type { ExpenseWithRelations, Account, Category } from "@/types";
+import type { ExpenseWithRelations } from "@/features/expenses/queries";
+import type { Account, Category } from "@prisma/client";
 
 export default function EditExpensePage() {
   const params = useParams();

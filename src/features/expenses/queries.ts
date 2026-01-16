@@ -1,12 +1,11 @@
-import { createServerClient } from "@/lib/db";
-import type {
-  ExpenseWithRelations,
-  ExpenseRow,
-  AccountRow,
-  CategoryRow,
-  DateRange,
-} from "@/types";
-import { toExpense, toAccount, toCategory } from "@/types";
+import { prisma } from "@/lib/auth";
+import type { Prisma } from "@prisma/client";
+import type { DateRange } from "@/types";
+
+// Type for Expense with relations loaded
+export type ExpenseWithRelations = Prisma.ExpenseGetPayload<{
+  include: { account: true; category: true };
+}>;
 
 interface ExpenseFilters {
   dateRange?: DateRange;
@@ -14,86 +13,52 @@ interface ExpenseFilters {
   categoryId?: string;
 }
 
-interface ExpenseRowWithRelations extends ExpenseRow {
-  accounts: AccountRow;
-  categories: CategoryRow;
-}
-
 export async function getExpenses(
   userId: string,
   filters?: ExpenseFilters
 ): Promise<ExpenseWithRelations[]> {
-  const supabase = createServerClient();
-
-  let query = supabase
-    .from("expenses")
-    .select(
-      `
-      *,
-      accounts!inner(*),
-      categories!inner(*)
-    `
-    )
-    .eq("user_id", userId)
-    .order("date", { ascending: false });
-
-  if (filters?.dateRange) {
-    query = query
-      .gte("date", filters.dateRange.from.toISOString())
-      .lte("date", filters.dateRange.to.toISOString());
-  }
-
-  if (filters?.accountId) {
-    query = query.eq("account_id", filters.accountId);
-  }
-
-  if (filters?.categoryId) {
-    query = query.eq("category_id", filters.categoryId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
+  try {
+    return await prisma.expense.findMany({
+      where: {
+        userId,
+        ...(filters?.accountId && { accountId: filters.accountId }),
+        ...(filters?.categoryId && { categoryId: filters.categoryId }),
+        ...(filters?.dateRange && {
+          date: {
+            gte: filters.dateRange.from,
+            lte: filters.dateRange.to,
+          },
+        }),
+      },
+      include: {
+        account: true,
+        category: true,
+      },
+      orderBy: { date: "desc" },
+    });
+  } catch (error) {
     console.error("Error fetching expenses:", error);
     return [];
   }
-
-  return (data as ExpenseRowWithRelations[]).map((row) => ({
-    ...toExpense(row),
-    account: toAccount(row.accounts),
-    category: toCategory(row.categories),
-  }));
 }
 
 export async function getExpenseById(
   id: string,
   userId: string
 ): Promise<ExpenseWithRelations | null> {
-  const supabase = createServerClient();
-
-  const { data, error } = await supabase
-    .from("expenses")
-    .select(
-      `
-      *,
-      accounts!inner(*),
-      categories!inner(*)
-    `
-    )
-    .eq("id", id)
-    .eq("user_id", userId)
-    .single();
-
-  if (error) {
+  try {
+    return await prisma.expense.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        account: true,
+        category: true,
+      },
+    });
+  } catch (error) {
     console.error("Error fetching expense:", error);
     return null;
   }
-
-  const row = data as ExpenseRowWithRelations;
-
-  return {
-    ...toExpense(row),
-    account: toAccount(row.accounts),
-    category: toCategory(row.categories),
-  };
 }

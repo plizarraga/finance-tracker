@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { incomeSchema, type IncomeInput } from "@/features/incomes/schemas";
 import { formatDateInput } from "@/lib/format";
-import type { Income, Account, Category } from "@/types";
+import type { Income, Account, Category } from "@prisma/client";
 
 interface IncomeFormProps {
   income?: Income;
@@ -45,7 +45,7 @@ export function IncomeForm({
     defaultValues: {
       accountId: income?.accountId ?? "",
       categoryId: income?.categoryId ?? "",
-      amount: income?.amount ?? 0,
+      amount: income?.amount?.toNumber() ?? 0,
       date: income?.date ?? new Date(),
       description: income?.description ?? "",
     },

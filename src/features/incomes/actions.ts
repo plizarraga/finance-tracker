@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { createServerClient } from "@/lib/db";
-import type { Income, ActionResult, IncomeRow } from "@/types";
-import { toIncome } from "@/types";
+import { auth, prisma } from "@/lib/auth";
+import type { Income } from "@prisma/client";
+import type { ActionResult } from "@/types";
 import { incomeServerSchema } from "./schemas";
 
 export async function createIncome(
@@ -40,58 +39,46 @@ export async function createIncome(
     const { accountId, categoryId, amount, date, description } =
       validationResult.data;
 
-    const supabase = createServerClient();
-
     // Verify account belongs to user
-    const { data: account, error: accountError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", accountId)
-      .eq("user_id", session.user.id)
-      .single();
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, userId: session.user.id },
+    });
 
-    if (accountError || !account) {
+    if (!account) {
       return { success: false, error: "Invalid account" };
     }
 
     // Verify category belongs to user and is income type
-    const { data: category, error: categoryError } = await supabase
-      .from("categories")
-      .select("id, type")
-      .eq("id", categoryId)
-      .eq("user_id", session.user.id)
-      .single();
+    const category = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+        userId: session.user.id,
+        type: "income",
+      },
+    });
 
-    if (categoryError || !category) {
-      return { success: false, error: "Invalid category" };
+    if (!category) {
+      return {
+        success: false,
+        error: "Invalid category or category is not income type",
+      };
     }
 
-    if (category.type !== "income") {
-      return { success: false, error: "Category must be an income type" };
-    }
-
-    const { data, error } = await supabase
-      .from("incomes")
-      .insert({
-        user_id: session.user.id,
-        account_id: accountId,
-        category_id: categoryId,
+    const income = await prisma.income.create({
+      data: {
+        userId: session.user.id,
+        accountId,
+        categoryId,
         amount,
-        date: date.toISOString(),
+        date,
         description,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating income:", error);
-      return { success: false, error: "Failed to create income" };
-    }
+      },
+    });
 
     revalidatePath("/incomes");
     revalidatePath("/accounts");
 
-    return { success: true, data: toIncome(data as IncomeRow) };
+    return { success: true, data: income };
   } catch (error) {
     console.error("Error in createIncome:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -131,73 +118,56 @@ export async function updateIncome(
     const { accountId, categoryId, amount, date, description } =
       validationResult.data;
 
-    const supabase = createServerClient();
+    // Verify the income belongs to the user
+    const existingIncome = await prisma.income.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the income belongs to the user
-    const { data: existingIncome, error: fetchError } = await supabase
-      .from("incomes")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingIncome) {
+    if (!existingIncome) {
       return { success: false, error: "Income not found" };
     }
 
     // Verify account belongs to user
-    const { data: account, error: accountError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", accountId)
-      .eq("user_id", session.user.id)
-      .single();
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, userId: session.user.id },
+    });
 
-    if (accountError || !account) {
+    if (!account) {
       return { success: false, error: "Invalid account" };
     }
 
     // Verify category belongs to user and is income type
-    const { data: category, error: categoryError } = await supabase
-      .from("categories")
-      .select("id, type")
-      .eq("id", categoryId)
-      .eq("user_id", session.user.id)
-      .single();
+    const category = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+        userId: session.user.id,
+        type: "income",
+      },
+    });
 
-    if (categoryError || !category) {
-      return { success: false, error: "Invalid category" };
+    if (!category) {
+      return {
+        success: false,
+        error: "Invalid category or category is not income type",
+      };
     }
 
-    if (category.type !== "income") {
-      return { success: false, error: "Category must be an income type" };
-    }
-
-    const { data, error } = await supabase
-      .from("incomes")
-      .update({
-        account_id: accountId,
-        category_id: categoryId,
+    const income = await prisma.income.update({
+      where: { id },
+      data: {
+        accountId,
+        categoryId,
         amount,
-        date: date.toISOString(),
+        date,
         description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating income:", error);
-      return { success: false, error: "Failed to update income" };
-    }
+      },
+    });
 
     revalidatePath("/incomes");
     revalidatePath(`/incomes/${id}`);
     revalidatePath("/accounts");
 
-    return { success: true, data: toIncome(data as IncomeRow) };
+    return { success: true, data: income };
   } catch (error) {
     console.error("Error in updateIncome:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -214,30 +184,18 @@ export async function deleteIncome(id: string): Promise<ActionResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = createServerClient();
+    // Verify the income belongs to the user
+    const existingIncome = await prisma.income.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the income belongs to the user
-    const { data: existingIncome, error: fetchError } = await supabase
-      .from("incomes")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingIncome) {
+    if (!existingIncome) {
       return { success: false, error: "Income not found" };
     }
 
-    const { error } = await supabase
-      .from("incomes")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      console.error("Error deleting income:", error);
-      return { success: false, error: "Failed to delete income" };
-    }
+    await prisma.income.delete({
+      where: { id },
+    });
 
     revalidatePath("/incomes");
     revalidatePath("/accounts");

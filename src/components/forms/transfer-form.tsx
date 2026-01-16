@@ -26,7 +26,7 @@ import {
   transferSchema,
   type TransferInput,
 } from "@/features/transfers/schemas";
-import type { Transfer, Account } from "@/types";
+import type { Transfer, Account } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
 
 interface TransferFormProps {
@@ -47,7 +47,7 @@ export function TransferForm({
     defaultValues: {
       fromAccountId: transfer?.fromAccountId ?? "",
       toAccountId: transfer?.toAccountId ?? "",
-      amount: transfer?.amount ?? 0,
+      amount: transfer?.amount?.toNumber() ?? 0,
       date: transfer?.date ?? new Date(),
       description: transfer?.description ?? "",
     },

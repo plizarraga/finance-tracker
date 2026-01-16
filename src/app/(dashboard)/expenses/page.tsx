@@ -86,7 +86,7 @@ export default async function ExpensesPage() {
                   <TableCell>{expense.category.name}</TableCell>
                   <TableCell>{expense.account.name}</TableCell>
                   <TableCell className="text-right text-red-600 dark:text-red-400">
-                    -{formatCurrency(expense.amount)}
+                    -{formatCurrency(expense.amount.toNumber())}
                   </TableCell>
                 </TableRow>
               ))}

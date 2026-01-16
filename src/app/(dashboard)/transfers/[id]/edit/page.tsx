@@ -11,7 +11,8 @@ import { updateTransfer, deleteTransfer } from "@/features/transfers/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import type { TransferWithRelations, Account } from "@/types";
+import type { TransferWithRelations } from "@/features/transfers/queries";
+import type { Account } from "@prisma/client";
 
 export default function EditTransferPage() {
   const params = useParams();

@@ -13,8 +13,14 @@ import {
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
-import { getIncomes } from "@/features/incomes/queries";
-import { getExpenses } from "@/features/expenses/queries";
+import {
+  getIncomes,
+  type IncomeWithRelations,
+} from "@/features/incomes/queries";
+import {
+  getExpenses,
+  type ExpenseWithRelations,
+} from "@/features/expenses/queries";
 import { formatCurrency, formatDate, getCurrentMonthRange } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +31,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { IncomeWithRelations, ExpenseWithRelations } from "@/types";
 
 type Transaction = {
   id: string;
@@ -65,11 +70,11 @@ export default async function DashboardPage() {
   // Calculate totals
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
   const totalMonthlyIncome = monthlyIncomes.reduce(
-    (sum, inc) => sum + inc.amount,
+    (sum, inc) => sum + inc.amount.toNumber(),
     0
   );
   const totalMonthlyExpenses = monthlyExpenses.reduce(
-    (sum, exp) => sum + exp.amount,
+    (sum, exp) => sum + exp.amount.toNumber(),
     0
   );
   const netBalance = totalMonthlyIncome - totalMonthlyExpenses;
@@ -82,7 +87,7 @@ export default async function DashboardPage() {
         type: "income",
         date: inc.date,
         description: inc.description,
-        amount: inc.amount,
+        amount: inc.amount.toNumber(),
         categoryName: inc.category.name,
       })
     ),
@@ -92,7 +97,7 @@ export default async function DashboardPage() {
         type: "expense",
         date: exp.date,
         description: exp.description,
-        amount: exp.amount,
+        amount: exp.amount.toNumber(),
         categoryName: exp.category.name,
       })
     ),

@@ -85,7 +85,7 @@ export default async function TransfersPage() {
                   </TableCell>
                   <TableCell>{transfer.toAccount.name}</TableCell>
                   <TableCell className="text-right font-medium">
-                    {formatCurrency(transfer.amount)}
+                    {formatCurrency(transfer.amount.toNumber())}
                   </TableCell>
                   <TableCell className="hidden max-w-[200px] truncate md:table-cell">
                     {transfer.description || "-"}

@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { createServerClient } from "@/lib/db";
-import type { Expense, ActionResult, ExpenseRow } from "@/types";
-import { toExpense } from "@/types";
+import { auth, prisma } from "@/lib/auth";
+import type { Expense } from "@prisma/client";
+import type { ActionResult } from "@/types";
 import { expenseServerSchema } from "./schemas";
 
 export async function createExpense(
@@ -40,58 +39,46 @@ export async function createExpense(
     const { accountId, categoryId, amount, date, description } =
       validationResult.data;
 
-    const supabase = createServerClient();
+    // Verify account belongs to user
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, userId: session.user.id },
+    });
 
-    // Verify the account belongs to the user
-    const { data: existingAccount, error: accountError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", accountId)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (accountError || !existingAccount) {
+    if (!account) {
       return { success: false, error: "Invalid account" };
     }
 
-    // Verify the category belongs to the user and is of type expense
-    const { data: existingCategory, error: categoryError } = await supabase
-      .from("categories")
-      .select("id, type")
-      .eq("id", categoryId)
-      .eq("user_id", session.user.id)
-      .single();
+    // Verify category belongs to user and is expense type
+    const category = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+        userId: session.user.id,
+        type: "expense",
+      },
+    });
 
-    if (categoryError || !existingCategory) {
-      return { success: false, error: "Invalid category" };
+    if (!category) {
+      return {
+        success: false,
+        error: "Invalid category or category is not expense type",
+      };
     }
 
-    if (existingCategory.type !== "expense") {
-      return { success: false, error: "Category must be of type expense" };
-    }
-
-    const { data, error } = await supabase
-      .from("expenses")
-      .insert({
-        user_id: session.user.id,
-        account_id: accountId,
-        category_id: categoryId,
+    const expense = await prisma.expense.create({
+      data: {
+        userId: session.user.id,
+        accountId,
+        categoryId,
         amount,
-        date: date.toISOString().split("T")[0],
+        date,
         description,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating expense:", error);
-      return { success: false, error: "Failed to create expense" };
-    }
+      },
+    });
 
     revalidatePath("/expenses");
     revalidatePath("/accounts");
 
-    return { success: true, data: toExpense(data as ExpenseRow) };
+    return { success: true, data: expense };
   } catch (error) {
     console.error("Error in createExpense:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -131,73 +118,56 @@ export async function updateExpense(
     const { accountId, categoryId, amount, date, description } =
       validationResult.data;
 
-    const supabase = createServerClient();
+    // Verify the expense belongs to the user
+    const existingExpense = await prisma.expense.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the expense belongs to the user
-    const { data: existingExpense, error: fetchError } = await supabase
-      .from("expenses")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingExpense) {
+    if (!existingExpense) {
       return { success: false, error: "Expense not found" };
     }
 
-    // Verify the account belongs to the user
-    const { data: existingAccount, error: accountError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", accountId)
-      .eq("user_id", session.user.id)
-      .single();
+    // Verify account belongs to user
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, userId: session.user.id },
+    });
 
-    if (accountError || !existingAccount) {
+    if (!account) {
       return { success: false, error: "Invalid account" };
     }
 
-    // Verify the category belongs to the user and is of type expense
-    const { data: existingCategory, error: categoryError } = await supabase
-      .from("categories")
-      .select("id, type")
-      .eq("id", categoryId)
-      .eq("user_id", session.user.id)
-      .single();
+    // Verify category belongs to user and is expense type
+    const category = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+        userId: session.user.id,
+        type: "expense",
+      },
+    });
 
-    if (categoryError || !existingCategory) {
-      return { success: false, error: "Invalid category" };
+    if (!category) {
+      return {
+        success: false,
+        error: "Invalid category or category is not expense type",
+      };
     }
 
-    if (existingCategory.type !== "expense") {
-      return { success: false, error: "Category must be of type expense" };
-    }
-
-    const { data, error } = await supabase
-      .from("expenses")
-      .update({
-        account_id: accountId,
-        category_id: categoryId,
+    const expense = await prisma.expense.update({
+      where: { id },
+      data: {
+        accountId,
+        categoryId,
         amount,
-        date: date.toISOString().split("T")[0],
+        date,
         description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating expense:", error);
-      return { success: false, error: "Failed to update expense" };
-    }
+      },
+    });
 
     revalidatePath("/expenses");
     revalidatePath(`/expenses/${id}`);
     revalidatePath("/accounts");
 
-    return { success: true, data: toExpense(data as ExpenseRow) };
+    return { success: true, data: expense };
   } catch (error) {
     console.error("Error in updateExpense:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -214,30 +184,18 @@ export async function deleteExpense(id: string): Promise<ActionResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = createServerClient();
+    // Verify the expense belongs to the user
+    const existingExpense = await prisma.expense.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the expense belongs to the user
-    const { data: existingExpense, error: fetchError } = await supabase
-      .from("expenses")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingExpense) {
+    if (!existingExpense) {
       return { success: false, error: "Expense not found" };
     }
 
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      console.error("Error deleting expense:", error);
-      return { success: false, error: "Failed to delete expense" };
-    }
+    await prisma.expense.delete({
+      where: { id },
+    });
 
     revalidatePath("/expenses");
     revalidatePath("/accounts");

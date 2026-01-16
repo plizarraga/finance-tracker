@@ -25,7 +25,7 @@ import {
   expenseSchema,
   type ExpenseInput,
 } from "@/features/expenses/schemas";
-import type { Expense, Account, Category } from "@/types";
+import type { Expense, Account, Category } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
 
 interface ExpenseFormProps {
@@ -48,7 +48,7 @@ export function ExpenseForm({
     defaultValues: {
       accountId: expense?.accountId ?? "",
       categoryId: expense?.categoryId ?? "",
-      amount: expense?.amount ?? 0,
+      amount: expense?.amount?.toNumber() ?? 0,
       date: expense?.date ?? new Date(),
       description: expense?.description ?? "",
     },

@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { createServerClient } from "@/lib/db";
-import { ActionResult, Category, CategoryRow, toCategory } from "@/types";
+import { auth, prisma } from "@/lib/auth";
+import { ActionResult } from "@/types";
+import type { Category } from "@prisma/client";
 import { categorySchema } from "./schemas";
 
 export async function createCategory(
@@ -35,26 +35,17 @@ export async function createCategory(
 
     const { name, type } = validationResult.data;
 
-    const supabase = createServerClient();
-
-    const { data, error } = await supabase
-      .from("categories")
-      .insert({
-        user_id: session.user.id,
+    const category = await prisma.category.create({
+      data: {
+        userId: session.user.id,
         name,
         type,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating category:", error);
-      return { success: false, error: "Failed to create category" };
-    }
+      },
+    });
 
     revalidatePath("/categories");
 
-    return { success: true, data: toCategory(data as CategoryRow) };
+    return { success: true, data: category };
   } catch (error) {
     console.error("Error in createCategory:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -90,29 +81,27 @@ export async function updateCategory(
 
     const { name, type } = validationResult.data;
 
-    const supabase = createServerClient();
+    // Verificar que la categoría pertenece al usuario
+    const existingCategory = await prisma.category.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    const { data, error } = await supabase
-      .from("categories")
-      .update({
+    if (!existingCategory) {
+      return { success: false, error: "Category not found" };
+    }
+
+    const category = await prisma.category.update({
+      where: { id },
+      data: {
         name,
         type,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating category:", error);
-      return { success: false, error: "Failed to update category" };
-    }
+      },
+    });
 
     revalidatePath("/categories");
     revalidatePath(`/categories/${id}/edit`);
 
-    return { success: true, data: toCategory(data as CategoryRow) };
+    return { success: true, data: category };
   } catch (error) {
     console.error("Error in updateCategory:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -129,18 +118,18 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = createServerClient();
+    // Verificar que la categoría pertenece al usuario
+    const existingCategory = await prisma.category.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    const { error } = await supabase
-      .from("categories")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      console.error("Error deleting category:", error);
-      return { success: false, error: "Failed to delete category" };
+    if (!existingCategory) {
+      return { success: false, error: "Category not found" };
     }
+
+    await prisma.category.delete({
+      where: { id },
+    });
 
     revalidatePath("/categories");
 

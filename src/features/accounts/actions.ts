@@ -2,10 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { createServerClient } from "@/lib/db";
-import type { Account, ActionResult, AccountRow } from "@/types";
-import { toAccount } from "@/types";
+import { auth, prisma } from "@/lib/auth";
+import type { Account, ActionResult } from "@/types";
 import { accountSchema } from "./schemas";
 
 export async function createAccount(
@@ -36,26 +34,17 @@ export async function createAccount(
 
     const { name, description } = validationResult.data;
 
-    const supabase = createServerClient();
-
-    const { data, error } = await supabase
-      .from("accounts")
-      .insert({
-        user_id: session.user.id,
+    const account = await prisma.account.create({
+      data: {
+        userId: session.user.id,
         name,
         description,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating account:", error);
-      return { success: false, error: "Failed to create account" };
-    }
+      },
+    });
 
     revalidatePath("/accounts");
 
-    return { success: true, data: toAccount(data as AccountRow) };
+    return { success: true, data: account };
   } catch (error) {
     console.error("Error in createAccount:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -91,41 +80,27 @@ export async function updateAccount(
 
     const { name, description } = validationResult.data;
 
-    const supabase = createServerClient();
+    // Verify the account belongs to the user
+    const existingAccount = await prisma.account.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the account belongs to the user
-    const { data: existingAccount, error: fetchError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingAccount) {
+    if (!existingAccount) {
       return { success: false, error: "Account not found" };
     }
 
-    const { data, error } = await supabase
-      .from("accounts")
-      .update({
+    const account = await prisma.account.update({
+      where: { id },
+      data: {
         name,
         description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating account:", error);
-      return { success: false, error: "Failed to update account" };
-    }
+      },
+    });
 
     revalidatePath("/accounts");
     revalidatePath(`/accounts/${id}`);
 
-    return { success: true, data: toAccount(data as AccountRow) };
+    return { success: true, data: account };
   } catch (error) {
     console.error("Error in updateAccount:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -142,50 +117,29 @@ export async function deleteAccount(id: string): Promise<ActionResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = createServerClient();
+    // Verify the account belongs to the user
+    const existingAccount = await prisma.account.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the account belongs to the user
-    const { data: existingAccount, error: fetchError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingAccount) {
+    if (!existingAccount) {
       return { success: false, error: "Account not found" };
     }
 
-    // Check if account has any transactions
-    const { data: incomes } = await supabase
-      .from("incomes")
-      .select("id")
-      .eq("account_id", id)
-      .limit(1);
-
-    const { data: expenses } = await supabase
-      .from("expenses")
-      .select("id")
-      .eq("account_id", id)
-      .limit(1);
-
-    const { data: transfersFrom } = await supabase
-      .from("transfers")
-      .select("id")
-      .eq("from_account_id", id)
-      .limit(1);
-
-    const { data: transfersTo } = await supabase
-      .from("transfers")
-      .select("id")
-      .eq("to_account_id", id)
-      .limit(1);
+    // OPTIMIZED: Check if account has any transactions using count (more efficient)
+    const [incomesCount, expensesCount, transfersFromCount, transfersToCount] =
+      await Promise.all([
+        prisma.income.count({ where: { accountId: id } }),
+        prisma.expense.count({ where: { accountId: id } }),
+        prisma.transfer.count({ where: { fromAccountId: id } }),
+        prisma.transfer.count({ where: { toAccountId: id } }),
+      ]);
 
     if (
-      (incomes && incomes.length > 0) ||
-      (expenses && expenses.length > 0) ||
-      (transfersFrom && transfersFrom.length > 0) ||
-      (transfersTo && transfersTo.length > 0)
+      incomesCount > 0 ||
+      expensesCount > 0 ||
+      transfersFromCount > 0 ||
+      transfersToCount > 0
     ) {
       return {
         success: false,
@@ -194,16 +148,9 @@ export async function deleteAccount(id: string): Promise<ActionResult> {
       };
     }
 
-    const { error } = await supabase
-      .from("accounts")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      console.error("Error deleting account:", error);
-      return { success: false, error: "Failed to delete account" };
-    }
+    await prisma.account.delete({
+      where: { id },
+    });
 
     revalidatePath("/accounts");
 

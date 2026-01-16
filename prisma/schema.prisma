@@ -47,14 +47,20 @@ model Account {
   @@map("accounts")
 }
 
+// Enum for category types
+enum CategoryType {
+  income
+  expense
+}
+
 // Categories for classifying incomes and expenses
 model Category {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @map("user_id")
-  name      String   @db.VarChar(100)
-  type      String   @db.VarChar(10) // "income" or "expense"
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String       @map("user_id")
+  name      String       @db.VarChar(100)
+  type      CategoryType
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user     User      @relation(fields: [userId], references: [id])
   incomes  Income[]

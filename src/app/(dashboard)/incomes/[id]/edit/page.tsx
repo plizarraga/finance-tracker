@@ -11,7 +11,8 @@ import { updateIncome, deleteIncome } from "@/features/incomes/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import type { IncomeWithRelations, Account, Category } from "@/types";
+import type { IncomeWithRelations } from "@/features/incomes/queries";
+import type { Account, Category } from "@prisma/client";
 
 export default function EditIncomePage() {
   const params = useParams();

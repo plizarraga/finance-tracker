@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { createServerClient } from "@/lib/db";
-import type { Transfer, ActionResult, TransferRow } from "@/types";
-import { toTransfer } from "@/types";
+import { auth, prisma } from "@/lib/auth";
+import type { Transfer } from "@prisma/client";
+import type { ActionResult } from "@/types";
 import { transferServerSchema } from "./schemas";
 
 export async function createTransfer(
@@ -40,41 +39,33 @@ export async function createTransfer(
     const { fromAccountId, toAccountId, amount, date, description } =
       validationResult.data;
 
-    const supabase = createServerClient();
-
     // Verify both accounts belong to the user
-    const { data: accounts, error: accountsError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("user_id", session.user.id)
-      .in("id", [fromAccountId, toAccountId]);
+    const accounts = await prisma.account.findMany({
+      where: {
+        userId: session.user.id,
+        id: { in: [fromAccountId, toAccountId] },
+      },
+    });
 
-    if (accountsError || !accounts || accounts.length !== 2) {
+    if (accounts.length !== 2) {
       return { success: false, error: "Invalid account selection" };
     }
 
-    const { data, error } = await supabase
-      .from("transfers")
-      .insert({
-        user_id: session.user.id,
-        from_account_id: fromAccountId,
-        to_account_id: toAccountId,
+    const transfer = await prisma.transfer.create({
+      data: {
+        userId: session.user.id,
+        fromAccountId,
+        toAccountId,
         amount,
-        date: date.toISOString(),
+        date,
         description,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating transfer:", error);
-      return { success: false, error: "Failed to create transfer" };
-    }
+      },
+    });
 
     revalidatePath("/transfers");
     revalidatePath("/accounts");
 
-    return { success: true, data: toTransfer(data as TransferRow) };
+    return { success: true, data: transfer };
   } catch (error) {
     console.error("Error in createTransfer:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -114,56 +105,43 @@ export async function updateTransfer(
     const { fromAccountId, toAccountId, amount, date, description } =
       validationResult.data;
 
-    const supabase = createServerClient();
+    // Verify the transfer belongs to the user
+    const existingTransfer = await prisma.transfer.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the transfer belongs to the user
-    const { data: existingTransfer, error: fetchError } = await supabase
-      .from("transfers")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingTransfer) {
+    if (!existingTransfer) {
       return { success: false, error: "Transfer not found" };
     }
 
     // Verify both accounts belong to the user
-    const { data: accounts, error: accountsError } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("user_id", session.user.id)
-      .in("id", [fromAccountId, toAccountId]);
+    const accounts = await prisma.account.findMany({
+      where: {
+        userId: session.user.id,
+        id: { in: [fromAccountId, toAccountId] },
+      },
+    });
 
-    if (accountsError || !accounts || accounts.length !== 2) {
+    if (accounts.length !== 2) {
       return { success: false, error: "Invalid account selection" };
     }
 
-    const { data, error } = await supabase
-      .from("transfers")
-      .update({
-        from_account_id: fromAccountId,
-        to_account_id: toAccountId,
+    const transfer = await prisma.transfer.update({
+      where: { id },
+      data: {
+        fromAccountId,
+        toAccountId,
         amount,
-        date: date.toISOString(),
+        date,
         description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating transfer:", error);
-      return { success: false, error: "Failed to update transfer" };
-    }
+      },
+    });
 
     revalidatePath("/transfers");
     revalidatePath("/accounts");
     revalidatePath(`/transfers/${id}`);
 
-    return { success: true, data: toTransfer(data as TransferRow) };
+    return { success: true, data: transfer };
   } catch (error) {
     console.error("Error in updateTransfer:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -180,30 +158,18 @@ export async function deleteTransfer(id: string): Promise<ActionResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = createServerClient();
+    // Verify the transfer belongs to the user
+    const existingTransfer = await prisma.transfer.findFirst({
+      where: { id, userId: session.user.id },
+    });
 
-    // First verify the transfer belongs to the user
-    const { data: existingTransfer, error: fetchError } = await supabase
-      .from("transfers")
-      .select("id")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (fetchError || !existingTransfer) {
+    if (!existingTransfer) {
       return { success: false, error: "Transfer not found" };
     }
 
-    const { error } = await supabase
-      .from("transfers")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      console.error("Error deleting transfer:", error);
-      return { success: false, error: "Failed to delete transfer" };
-    }
+    await prisma.transfer.delete({
+      where: { id },
+    });
 
     revalidatePath("/transfers");
     revalidatePath("/accounts");
