@@ -175,7 +175,7 @@ These features are intentionally excluded to preserve SLC:
 
 ### Backend
 
-- Next.js server actions / route handlers
+- Next.js route handlers (App Router API routes)
 - No separate backend service
 - **pnpm** as JavaScript package manager
 
@@ -204,7 +204,7 @@ These features are intentionally excluded to preserve SLC:
 **Monolithic Next.js architecture:**
 
 - UI (App Router pages)
-- Server Actions / API Routes
+- Route Handlers (API Routes)
 - Database (PostgreSQL via Prisma)
 
 Key characteristics:
@@ -283,15 +283,18 @@ Benefits:
 ## 13. API & Server Design
 
 - No public API initially
-- Internal data access via:
-
-  - Server Actions
-  - Route handlers
+- Internal data access via route handlers
 
 Design principles:
 
 - Explicit, predictable functions
 - No hidden side effects
+
+### Client ↔ Route Handler Boundary
+
+- `features/*/api.ts` is the client wrapper for route handlers.
+- `app/api/**/route.ts` owns validation, auth, and data mutations.
+- This split keeps UI code stable and enables future backend migration by swapping the client layer.
 
 ---
 
@@ -317,7 +320,7 @@ Design principles:
 **Feature-based structure:**
 
 - `app/` — routes and screens
-- `features/` — domain logic per feature
+- `features/` — domain logic per feature (schemas, queries, client helpers)
 
   - accounts
   - categories

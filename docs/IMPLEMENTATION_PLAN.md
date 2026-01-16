@@ -366,8 +366,8 @@ pnpm dev # Inicia el servidor de desarrollo
 - ✅ 5+ formularios
 - ✅ 15+ páginas
 - ✅ 5+ features completas (CRUD)
-- ✅ 10+ API routes
-- ✅ 15+ server actions
+- ✅ 24+ API route handlers
+- ✅ 24+ route handlers (API)
 - ✅ 50+ queries a BD
 - ✅ Middleware de autenticación
 
@@ -393,9 +393,9 @@ pnpm dev # Inicia el servidor de desarrollo
 | Líneas de código | 5,000+ |
 | Componentes | 30+ |
 | Páginas | 15+ |
-| Server Actions | 15+ |
+| Route Handlers (API) | 24+ |
 | Queries | 50+ |
-| API Routes | 10+ |
+| API Routes | 24+ |
 | Tablas BD | 5 |
 | Features CRUD | 5 |
 | Tests pendientes | 0 |
@@ -408,7 +408,7 @@ pnpm dev # Inicia el servidor de desarrollo
 |------|------------|
 | Framework | Next.js 16 (App Router) |
 | UI | shadcn/ui + Tailwind CSS |
-| Estado | React hooks + Server Actions |
+| Estado | React hooks + Route Handlers |
 | Autenticación | Better Auth |
 | BD | PostgreSQL (Supabase) + Prisma |
 | Gráficos | Recharts |

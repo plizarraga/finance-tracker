@@ -453,7 +453,7 @@ export function AccountCombobox({
 1. ✅ **`src/components/shared/account-quick-create-dialog.tsx`**
    - Inline account creation dialog
    - Uses react-hook-form + Zod validation
-   - Calls createAccount server action
+   - Calls createAccount route handler via API client
    - Returns account ID and name via callback
 
 2. ✅ **`src/components/shared/account-combobox.tsx`**
@@ -465,10 +465,8 @@ export function AccountCombobox({
 
 ### Files Modified ✅
 
-1. ✅ **`src/features/accounts/actions.ts`**
-   - Changed createAccount return type to include `{ id, name }`
-   - Line 11: Updated type signature
-   - Line 41: Returns account data
+1. ✅ **`src/features/accounts/api.ts`**
+   - createAccount returns `{ id, name }` from the route handler
 
 2. ✅ **`src/components/forms/expense-form.tsx`**
    - Replaced Select with AccountCombobox (lines 107-134)
@@ -628,9 +626,9 @@ Ensures type safety across the entire chain.
 
 ## Security Considerations ✅
 
-- ✅ All server actions verify `userId` via `requireAuth()`
+- ✅ All route handlers verify `userId` via `requireAuth()`
 - ✅ Client-side validation via Zod schemas
-- ✅ Server-side validation in createAccount action
+- ✅ Server-side validation in createAccount route handler
 - ✅ No SQL injection risk (Prisma parameterized queries)
 - ✅ XSS protection via React's built-in escaping
 
@@ -651,7 +649,7 @@ All success criteria met ✅
 
 1. [x] AccountCombobox component created with search and inline creation
 2. [x] AccountQuickCreateDialog component created
-3. [x] createAccount action returns account ID and name
+3. [x] createAccount route handler returns account ID and name
 4. [x] ExpenseForm uses AccountCombobox instead of Select
 5. [x] IncomeForm uses AccountCombobox instead of Select
 6. [x] TransferForm uses AccountCombobox for both account fields

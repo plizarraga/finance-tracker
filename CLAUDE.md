@@ -46,13 +46,14 @@ lib/           → Shared utilities
 prisma/        → Prisma schema and client
 ```
 
-Each feature owns its server actions, queries, and validation.
+Each feature owns its schemas, queries, and client helpers; route handlers live in `app/api`.
+Client calls go through `features/*/api.ts`, which wraps `app/api/**/route.ts` handlers.
 
 ## Key Design Decisions
 
 - **Balances are calculated, not stored** - Account balance = sum of incomes - expenses ± transfers
 - **Separate domain models** for incomes, expenses, and transfers (no generic "transaction" abstraction)
-- **Server Actions / Route Handlers** for backend logic (no separate API service)
+- **Route Handlers** for backend logic (no separate API service)
 - **Reports via direct database queries** - no pre-aggregated tables
 - **Mobile-first responsive design** with dedicated screens (no inline editing)
 - **Templates are first-class models** for expenses, incomes, and transfers with CRUD + quick actions

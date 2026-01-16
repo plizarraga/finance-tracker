@@ -19,10 +19,10 @@ Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   Next.js App Router                        │
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐   │
-│  │   UI Pages    │  │Server Actions │  │Route Handlers │   │
-│  │  (React/SSR)  │  │  (Mutations)  │  │  (API Routes) │   │
-│  └───────────────┘  └───────────────┘  └───────────────┘   │
+│  ┌───────────────┐  ┌───────────────┐                       │
+│  │   UI Pages    │  │Route Handlers │                       │
+│  │  (React/SSR)  │  │  (API Routes) │                       │
+│  └───────────────┘  └───────────────┘                       │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ▼
@@ -49,7 +49,7 @@ Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único
 | Capa | Tecnología |
 |------|------------|
 | Frontend | Next.js (React), shadcn/ui |
-| Backend | Next.js Server Actions / Route Handlers |
+| Backend | Next.js Route Handlers (App Router API routes) |
 | Base de Datos | PostgreSQL (Supabase) + Prisma |
 | Autenticación | Better Auth (JS) |
 | Hosting | Railway |
@@ -73,9 +73,14 @@ prisma/           → Schema y cliente Prisma
 ```
 
 Cada feature es dueño de:
-- Server actions (mutaciones)
+- Schemas/validación
 - Queries (lecturas)
-- Validación
+- Helpers cliente para APIs
+
+Relación entre capas:
+- `features/*/api.ts` actúa como cliente de `app/api/**/route.ts`
+- `app/api` contiene validación, auth y mutaciones
+- La UI consume solo el cliente, facilitando una migración futura de backend
 
 ### Modelos de Dominio
 
@@ -210,7 +215,7 @@ Beneficios:
 
 ### Principios de Diseño del Flujo de Datos
 
-1. **Sin API pública** - Acceso interno vía Server Actions y Route Handlers
+1. **Sin API pública** - Acceso interno vía Route Handlers
 2. **Queries directas** - Reportes generados desde queries SQL, sin tablas pre-agregadas
 3. **Funciones explícitas** - Sin efectos secundarios ocultos
 4. **Compute on read** - Balances calculados al momento de lectura
