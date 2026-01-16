@@ -96,6 +96,7 @@ The product is considered _complete_ when it can fully replace Notion for person
 - Incomes
 - Expenses
 - Transfers between accounts
+- Templates (income, expense, transfer)
 - Reports
 
   - Totals (income, expenses)
@@ -119,12 +120,13 @@ The product is considered _complete_ when it can fully replace Notion for person
 - Performance optimizations
 - Better reporting views
 - Improved filtering and grouping
+- Inline account creation and selection in transaction forms
 
 ---
 
 ### V2 (Efficiency & Reuse)
 
-- Templates for incomes and expenses
+- Templates for incomes, expenses, and transfers (CRUD + quick actions)
 - Ability to duplicate templates
 - Recurring expenses
 - Ability to duplicate recurring expenses
@@ -224,6 +226,9 @@ Key characteristics:
 - Income
 - Expense
 - Transfer
+- ExpenseTemplate
+- IncomeTemplate
+- TransferTemplate
 
 **Design choice:**
 
@@ -261,16 +266,17 @@ Benefits:
 ## 12. Data Flow (MVP)
 
 1. User authenticates via Better Auth
-2. User creates accounts and categories
-3. User registers:
+2. User creates accounts and categories (inline creation supported in forms)
+3. User optionally creates templates (expense/income/transfer)
+4. User registers:
 
    - Income
    - Expense
    - Transfer
 
-4. Data is persisted in PostgreSQL via Prisma
-5. Balances and reports are computed on read
-6. UI renders summaries and charts
+5. Data is persisted in PostgreSQL via Prisma
+6. Balances and reports are computed on read
+7. UI renders summaries, charts, and template quick actions
 
 ---
 
@@ -319,6 +325,9 @@ Design principles:
   - expenses
   - transfers
   - reports
+  - expense-templates
+  - income-templates
+  - transfer-templates
 
 - `lib/` — shared utilities
 - `prisma/` — Prisma schema and client
@@ -366,4 +375,4 @@ Each feature owns:
 
 ---
 
-**Status:** Phase 2 (Setup) — Ready to initialize repository
+**Status:** Active development — Prisma migration complete, templates and inline creation shipped

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Finance Tracker SLC - A mobile-first personal finance web app following Simple · Lovable · Complete philosophy. Replaces Notion-based finance tracking with fast, privacy-first expense management.
+Finance Tracker SLC - A mobile-first personal finance web app following Simple · Lovable · Complete philosophy. Replaces Notion-based finance tracking with fast, privacy-first expense management, template-driven quick entry, and inline creation in forms.
 
 ## Tech Stack
 
@@ -55,10 +55,12 @@ Each feature owns its server actions, queries, and validation.
 - **Server Actions / Route Handlers** for backend logic (no separate API service)
 - **Reports via direct database queries** - no pre-aggregated tables
 - **Mobile-first responsive design** with dedicated screens (no inline editing)
+- **Templates are first-class models** for expenses, incomes, and transfers with CRUD + quick actions
+- **Inline account creation** in income/expense/transfer forms via combobox + dialog
 
 ## Domain Models
 
-User, Account, Category, Income, Expense, Transfer - multi-user capable architecture.
+User, Account, Category, Income, Expense, Transfer, ExpenseTemplate, IncomeTemplate, TransferTemplate - multi-user capable architecture.
 
 ## Out of Scope
 
