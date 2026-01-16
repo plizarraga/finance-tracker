@@ -28,12 +28,14 @@ interface IncomeTemplateButtonGroupProps {
   templates: IncomeTemplateWithRelations[];
   defaultTemplate: IncomeTemplateWithRelations | null;
   variant?: "default" | "destructive" | "outline";
+  fullWidth?: boolean;
 }
 
 export function IncomeTemplateButtonGroup({
   templates,
   defaultTemplate,
   variant = "default",
+  fullWidth = false,
 }: IncomeTemplateButtonGroupProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -142,16 +144,23 @@ export function IncomeTemplateButtonGroup({
     });
   };
 
+  const containerClassName = fullWidth ? "flex w-full gap-0.5" : "flex gap-0.5";
+  const mainButtonClassName = `rounded-r-none${
+    fullWidth ? " flex-1 min-w-0 justify-center" : ""
+  }`;
+
   return (
     <>
-      <div className="flex gap-0.5">
+      <div className={containerClassName}>
         <Button
           variant={variant}
           onClick={() => handleCreateFromTemplate(defaultTemplate)}
-          className="rounded-r-none"
+          className={mainButtonClassName}
         >
-          <Plus className="mr-2 h-4 w-4" />
-          {defaultTemplate ? defaultTemplate.name : "New Income"}
+          <Plus className="mr-2 h-4 w-4 shrink-0" />
+          <span className={fullWidth ? "truncate" : undefined}>
+            {defaultTemplate ? defaultTemplate.name : "New Income"}
+          </span>
         </Button>
 
         <DropdownMenu>
@@ -159,7 +168,7 @@ export function IncomeTemplateButtonGroup({
             <Button
               variant={variant}
               size="icon"
-              className="rounded-l-none px-2"
+              className="rounded-l-none px-2 shrink-0"
             >
               <ChevronDown className="h-4 w-4" />
               <span className="sr-only">Template options</span>

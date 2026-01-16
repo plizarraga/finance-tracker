@@ -181,21 +181,24 @@ export default async function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
             <IncomeTemplateButtonGroup
               templates={incomeTemplates}
               defaultTemplate={defaultIncomeTemplate}
               variant="default"
+              fullWidth
             />
             <ExpenseTemplateButtonGroup
               templates={expenseTemplates}
               defaultTemplate={defaultExpenseTemplate}
               variant="destructive"
+              fullWidth
             />
             <TransferTemplateButtonGroup
               templates={transferTemplates}
               defaultTemplate={defaultTransferTemplate}
               variant="outline"
+              fullWidth
             />
           </div>
         </CardContent>
