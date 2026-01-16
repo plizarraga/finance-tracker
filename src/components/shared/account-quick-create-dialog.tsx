@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { createAccount } from "@/features/accounts/actions";
+import { createAccount } from "@/features/accounts/api";
 import { accountSchema, type AccountInput } from "@/features/accounts/schemas";
 
 interface AccountQuickCreateDialogProps {

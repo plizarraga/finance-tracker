@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { createCategory } from "@/features/categories/actions";
+import { createCategory } from "@/features/categories/api";
 
 const quickCategorySchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),

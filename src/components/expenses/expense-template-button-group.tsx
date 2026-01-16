@@ -22,7 +22,7 @@ import {
   setDefaultExpenseTemplate,
   deleteExpenseTemplate,
   duplicateExpenseTemplate,
-} from "@/features/expense-templates/actions";
+} from "@/features/expense-templates/api";
 
 interface ExpenseTemplateButtonGroupProps {
   templates: ExpenseTemplateWithRelations[];

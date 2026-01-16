@@ -22,7 +22,7 @@ import {
   setDefaultIncomeTemplate,
   deleteIncomeTemplate,
   duplicateIncomeTemplate,
-} from "@/features/income-templates/actions";
+} from "@/features/income-templates/api";
 
 interface IncomeTemplateButtonGroupProps {
   templates: IncomeTemplateWithRelations[];

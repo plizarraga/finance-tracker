@@ -7,7 +7,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { IncomeForm } from "@/components/forms/income-form";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { updateIncome, deleteIncome } from "@/features/incomes/actions";
+import { updateIncome, deleteIncome } from "@/features/incomes/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";

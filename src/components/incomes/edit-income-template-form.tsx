@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IncomeTemplateForm } from "@/components/forms/income-template-form";
-import { updateIncomeTemplate } from "@/features/income-templates/actions";
+import { updateIncomeTemplate } from "@/features/income-templates/api";
 import { useToast } from "@/hooks/use-toast";
 import type { IncomeTemplateWithRelations } from "@/features/income-templates/queries";
 import type { Account, Category } from "@/types";

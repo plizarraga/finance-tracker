@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { createCategory } from "@/features/categories/actions";
+import { createCategory } from "@/features/categories/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { CategoryForm } from "@/components/forms/category-form";
 import { Card, CardContent } from "@/components/ui/card";

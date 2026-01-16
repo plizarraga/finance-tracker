@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ExpenseTemplateForm } from "@/components/forms/expense-template-form";
-import { updateExpenseTemplate } from "@/features/expense-templates/actions";
+import { updateExpenseTemplate } from "@/features/expense-templates/api";
 import { useToast } from "@/hooks/use-toast";
 import type { ExpenseTemplateWithRelations } from "@/features/expense-templates/queries";
 import type { Account, Category } from "@/types";

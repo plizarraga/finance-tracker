@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { ExpenseForm } from "@/components/forms/expense-form";
-import { createExpense } from "@/features/expenses/actions";
+import { createExpense } from "@/features/expenses/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";

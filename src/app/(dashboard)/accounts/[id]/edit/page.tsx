@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { AccountForm } from "@/components/forms/account-form";
-import { updateAccount } from "@/features/accounts/actions";
+import { updateAccount } from "@/features/accounts/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";

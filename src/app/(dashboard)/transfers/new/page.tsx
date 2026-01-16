@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { TransferForm } from "@/components/forms/transfer-form";
-import { createTransfer } from "@/features/transfers/actions";
+import { createTransfer } from "@/features/transfers/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";

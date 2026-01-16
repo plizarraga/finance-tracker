@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   updateCategory,
   deleteCategory,
-} from "@/features/categories/actions";
+} from "@/features/categories/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { CategoryForm } from "@/components/forms/category-form";

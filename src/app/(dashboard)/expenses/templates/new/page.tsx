@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { ExpenseTemplateForm } from "@/components/forms/expense-template-form";
-import { createExpenseTemplate } from "@/features/expense-templates/actions";
+import { createExpenseTemplate } from "@/features/expense-templates/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";

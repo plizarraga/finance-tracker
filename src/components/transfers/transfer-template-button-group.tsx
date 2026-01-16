@@ -22,7 +22,7 @@ import {
   setDefaultTransferTemplate,
   deleteTransferTemplate,
   duplicateTransferTemplate,
-} from "@/features/transfer-templates/actions";
+} from "@/features/transfer-templates/api";
 
 interface TransferTemplateButtonGroupProps {
   templates: TransferTemplateWithRelations[];

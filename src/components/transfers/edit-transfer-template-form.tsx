@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TransferTemplateForm } from "@/components/forms/transfer-template-form";
-import { updateTransferTemplate } from "@/features/transfer-templates/actions";
+import { updateTransferTemplate } from "@/features/transfer-templates/api";
 import { useToast } from "@/hooks/use-toast";
 import type { TransferTemplateWithRelations } from "@/features/transfer-templates/queries";
 import type { Account } from "@/types";
