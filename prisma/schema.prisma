@@ -1,0 +1,135 @@
+// Finance Tracker - Prisma Schema
+// Migration from Kysely + Supabase SDK to Prisma ORM
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Better Auth User Model
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Application relations
+  accounts   Account[]
+  categories Category[]
+  incomes    Income[]
+  expenses   Expense[]
+  transfers  Transfer[]
+
+  @@map("user")
+}
+
+// Financial Accounts (bank accounts, cash, credit cards)
+model Account {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id")
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user          User       @relation(fields: [userId], references: [id])
+  incomes       Income[]   @relation("AccountIncomes")
+  expenses      Expense[]  @relation("AccountExpenses")
+  transfersFrom Transfer[] @relation("TransfersFrom")
+  transfersTo   Transfer[] @relation("TransfersTo")
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+// Categories for classifying incomes and expenses
+model Category {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id")
+  name      String   @db.VarChar(100)
+  type      String   @db.VarChar(10) // "income" or "expense"
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User      @relation(fields: [userId], references: [id])
+  incomes  Income[]
+  expenses Expense[]
+
+  @@index([userId])
+  @@index([type])
+  @@map("categories")
+}
+
+// Income transactions
+model Income {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id")
+  accountId   String   @map("account_id") @db.Uuid
+  categoryId  String   @map("category_id") @db.Uuid
+  amount      Decimal  @db.Decimal(12, 2)
+  date        DateTime @db.Date
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User     @relation(fields: [userId], references: [id])
+  account  Account  @relation("AccountIncomes", fields: [accountId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([date])
+  @@map("incomes")
+}
+
+// Expense transactions
+model Expense {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id")
+  accountId   String   @map("account_id") @db.Uuid
+  categoryId  String   @map("category_id") @db.Uuid
+  amount      Decimal  @db.Decimal(12, 2)
+  date        DateTime @db.Date
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User     @relation(fields: [userId], references: [id])
+  account  Account  @relation("AccountExpenses", fields: [accountId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([date])
+  @@map("expenses")
+}
+
+// Transfers between accounts
+model Transfer {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id")
+  fromAccountId String   @map("from_account_id") @db.Uuid
+  toAccountId   String   @map("to_account_id") @db.Uuid
+  amount        Decimal  @db.Decimal(12, 2)
+  date          DateTime @db.Date
+  description   String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user        User    @relation(fields: [userId], references: [id])
+  fromAccount Account @relation("TransfersFrom", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  toAccount   Account @relation("TransfersTo", fields: [toAccountId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@index([date])
+  @@map("transfers")
+}

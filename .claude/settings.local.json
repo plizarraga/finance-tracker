@@ -28,7 +28,10 @@
       "Bash(pnpm dev)",
       "Bash(supabase projects api-keys:*)",
       "WebSearch",
-      "WebFetch(domain:www.better-auth.com)"
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(npx prisma:*)",
+      "Bash(node --version)",
+      "Bash(npx @better-auth/cli@latest generate)"
     ]
   }
 }

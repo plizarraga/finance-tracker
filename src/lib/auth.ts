@@ -1,36 +1,41 @@
 import { betterAuth } from "better-auth";
-import { Kysely, PostgresDialect } from "kysely";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const globalForDb = globalThis as typeof globalThis & {
-  pgPool?: Pool;
-  kyselyDb?: Kysely<unknown>;
+const globalForPrisma = globalThis as typeof globalThis & {
+  prisma?: PrismaClient;
+  pool?: Pool;
 };
 
+// Create connection pool
 const pool =
-  globalForDb.pgPool ??
+  globalForPrisma.pool ??
   new Pool({
     connectionString: process.env.DATABASE_URL,
   });
 
-const db =
-  globalForDb.kyselyDb ??
-  new Kysely({
-    dialect: new PostgresDialect({
-      pool,
-    }),
+// Create Prisma adapter
+const adapter = new PrismaPg(pool);
+
+// Create Prisma Client with adapter
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForDb.pgPool = pool;
-  globalForDb.kyselyDb = db;
+  globalForPrisma.prisma = prisma;
+  globalForPrisma.pool = pool;
 }
 
 export const auth = betterAuth({
-  database: {
-    db,
-    type: "postgres",
-  },
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
