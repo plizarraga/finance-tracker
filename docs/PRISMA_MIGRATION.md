@@ -28,12 +28,12 @@ Migrar Finance Tracker de su implementación actual (Kysely para Better Auth + S
   - [x] 2.5 Transfers ✅
   - [x] 2.6 Reports ✅
 - [x] **Fase 3: Estrategia RLS** ✅
+- [x] **Fase 4: Sistema de Tipos** ✅
 
 ### 🔄 En Progreso
 - [ ] Ninguno actualmente
 
 ### ⏳ Pendiente
-- [ ] Fase 4: Sistema de Tipos
 - [ ] Fase 5: Limpieza y Optimización
 
 ---
@@ -754,7 +754,7 @@ export async function requireAuth() {
 
 ### Fase 4: Sistema de Tipos
 
-**Estado**: ⏳ Pendiente
+**Estado**: ✅ **COMPLETADA**
 
 **Después - Usar tipos generados**:
 ```typescript
@@ -774,13 +774,13 @@ export type AccountWithBalance = Account & {
 ```
 
 **Checklist**:
-- [ ] Actualizar imports en todos los archivos
-- [ ] Eliminar interfaces manuales de `src/types/index.ts`
-- [ ] Eliminar `*Row` types
-- [ ] Eliminar funciones `to*()` (toAccount, toIncome, etc.)
-- [ ] Actualizar `src/types/index.ts` solo tipos extendidos
-- [ ] Fix errores de TypeScript
-- [ ] Verificar no hay tipos rotos
+- [x] Actualizar imports en todos los archivos
+- [x] Eliminar interfaces manuales de `src/types/index.ts`
+- [x] Eliminar `*Row` types
+- [x] Eliminar funciones `to*()` (toAccount, toIncome, etc.)
+- [x] Actualizar `src/types/index.ts` solo tipos extendidos
+- [x] Fix errores de TypeScript
+- [x] Verificar no hay tipos rotos
 
 ---
 

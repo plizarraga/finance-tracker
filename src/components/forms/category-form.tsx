@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { categorySchema, type CategoryInput } from "@/features/categories/schemas";
-import { Category } from "@/types";
+import type { Category } from "@/types";
 
 interface CategoryFormProps {
   category?: Category;

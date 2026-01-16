@@ -9,12 +9,7 @@ import { CategoryChart } from "@/components/reports/category-chart";
 import { TrendChart } from "@/components/reports/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentMonthRange, formatCurrency } from "@/lib/format";
-import type {
-  DateRange,
-  ReportSummary,
-  AccountWithBalance,
-  CategoryBreakdown,
-} from "@/types";
+import type { DateRange, ReportSummary, AccountWithBalance } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface MonthlyTrend {

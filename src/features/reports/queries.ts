@@ -1,11 +1,6 @@
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import type {
-  DateRange,
-  ReportSummary,
-  CategoryBreakdown,
-  AccountWithBalance,
-} from "@/types";
+import type { DateRange, ReportSummary, CategoryBreakdown } from "@/types";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
 
 interface MonthlyTrend {

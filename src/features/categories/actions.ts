@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import { ActionResult } from "@/types";
+import type { ActionResult } from "@/types";
 import type { Category } from "@prisma/client";
 import { categorySchema } from "./schemas";
 

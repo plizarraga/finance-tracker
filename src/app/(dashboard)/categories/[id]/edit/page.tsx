@@ -8,13 +8,12 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/features/categories/actions";
-import { getCategoryById } from "@/features/categories/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { CategoryForm } from "@/components/forms/category-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Category } from "@/types";
+import type { Category } from "@/types";
 
 interface EditCategoryPageProps {
   params: Promise<{ id: string }>;

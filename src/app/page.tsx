@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Wallet, TrendingUp, Shield, Zap } from "lucide-react";
+import { Wallet, TrendingUp, Shield } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function Home() {
   // Check if user is already authenticated
