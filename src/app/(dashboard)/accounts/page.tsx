@@ -1,7 +1,6 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { Wallet, Plus } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
 import { formatCurrency } from "@/lib/format";
 import { PageHeader } from "@/components/shared/page-header";
@@ -17,15 +16,16 @@ import {
 import { redirect } from "next/navigation";
 
 export default async function AccountsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
-    redirect("/login");
+  try {
+    await requireAuth();
+  } catch (error) {
+    if (isUnauthorizedError(error)) {
+      redirect("/login");
+    }
+    throw error;
   }
 
-  const accounts = await getAccountsWithBalances(session.user.id);
+  const accounts = await getAccountsWithBalances();
 
   return (
     <div className="space-y-6">

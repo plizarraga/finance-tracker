@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getExpenseById } from "@/features/expenses/queries";
 
 export async function GET(
@@ -8,17 +7,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAuth();
 
     const { id } = await params;
 
-    const expense = await getExpenseById(id, session.user.id);
+    const expense = await getExpenseById(id);
 
     if (!expense) {
       return NextResponse.json({ error: "Expense not found" }, { status: 404 });
@@ -26,6 +19,9 @@ export async function GET(
 
     return NextResponse.json(expense);
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Error fetching expense:", error);
     return NextResponse.json(
       { error: "Internal server error" },

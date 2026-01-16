@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type {
   DateRange,
   ReportSummary,
@@ -17,14 +18,14 @@ interface MonthlyTrend {
  * Get a comprehensive report summary for a date range
  */
 export async function getReportSummary(
-  userId: string,
   dateRange: DateRange
 ): Promise<ReportSummary> {
+  await requireAuth();
   const [accountBalances, incomeByCategory, expenseByCategory] =
     await Promise.all([
-      getAccountsWithBalances(userId),
-      getIncomeByCategory(userId, dateRange),
-      getExpenseByCategory(userId, dateRange),
+      getAccountsWithBalances(),
+      getIncomeByCategory(dateRange),
+      getExpenseByCategory(dateRange),
     ]);
 
   const totalIncome = incomeByCategory.reduce((sum, cat) => sum + cat.total, 0);
@@ -48,10 +49,10 @@ export async function getReportSummary(
  * Get income breakdown by category for a date range
  */
 export async function getIncomeByCategory(
-  userId: string,
   dateRange: DateRange
 ): Promise<CategoryBreakdown[]> {
   try {
+    const { userId } = await requireAuth();
     // Fetch all incomes with their categories in the date range
     const incomes = await prisma.income.findMany({
       where: {
@@ -103,6 +104,9 @@ export async function getIncomeByCategory(
     // Sort by total descending
     return breakdown.sort((a, b) => b.total - a.total);
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching income by category:", error);
     return [];
   }
@@ -112,10 +116,10 @@ export async function getIncomeByCategory(
  * Get expense breakdown by category for a date range
  */
 export async function getExpenseByCategory(
-  userId: string,
   dateRange: DateRange
 ): Promise<CategoryBreakdown[]> {
   try {
+    const { userId } = await requireAuth();
     // Fetch all expenses with their categories in the date range
     const expenses = await prisma.expense.findMany({
       where: {
@@ -167,6 +171,9 @@ export async function getExpenseByCategory(
     // Sort by total descending
     return breakdown.sort((a, b) => b.total - a.total);
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching expense by category:", error);
     return [];
   }
@@ -176,10 +183,10 @@ export async function getExpenseByCategory(
  * Get monthly trends for income and expenses
  */
 export async function getMonthlyTrends(
-  userId: string,
   months: number = 12
 ): Promise<MonthlyTrend[]> {
   try {
+    const { userId } = await requireAuth();
     // Calculate start date (beginning of month, X months ago)
     const endDate = new Date();
     const startDate = new Date();
@@ -265,6 +272,9 @@ export async function getMonthlyTrends(
       return aYear * 12 + aMonth - (bYear * 12 + bMonth);
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching monthly trends:", error);
     return [];
   }

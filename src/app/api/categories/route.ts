@@ -1,30 +1,26 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getCategories, getCategoriesByType } from "@/features/categories/queries";
 
 export async function GET(request: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") as "income" | "expense" | null;
 
     let categories;
     if (type === "income" || type === "expense") {
-      categories = await getCategoriesByType(session.user.id, type);
+      categories = await getCategoriesByType(type);
     } else {
-      categories = await getCategories(session.user.id);
+      categories = await getCategories();
     }
 
     return NextResponse.json(categories);
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Error fetching categories:", error);
     return NextResponse.json(
       { error: "Internal server error" },

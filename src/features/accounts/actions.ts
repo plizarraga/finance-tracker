@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth, prisma } from "@/lib/auth";
+import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Account, ActionResult } from "@/types";
 import { accountSchema } from "./schemas";
 
@@ -10,13 +10,7 @@ export async function createAccount(
   formData: FormData
 ): Promise<ActionResult<Account>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       name: formData.get("name"),
@@ -36,7 +30,7 @@ export async function createAccount(
 
     const account = await prisma.account.create({
       data: {
-        userId: session.user.id,
+        userId,
         name,
         description,
       },
@@ -46,6 +40,9 @@ export async function createAccount(
 
     return { success: true, data: account };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in createAccount:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -56,13 +53,7 @@ export async function updateAccount(
   formData: FormData
 ): Promise<ActionResult<Account>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       name: formData.get("name"),
@@ -82,7 +73,7 @@ export async function updateAccount(
 
     // Verify the account belongs to the user
     const existingAccount = await prisma.account.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingAccount) {
@@ -102,6 +93,9 @@ export async function updateAccount(
 
     return { success: true, data: account };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in updateAccount:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -109,17 +103,11 @@ export async function updateAccount(
 
 export async function deleteAccount(id: string): Promise<ActionResult> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     // Verify the account belongs to the user
     const existingAccount = await prisma.account.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingAccount) {
@@ -156,6 +144,9 @@ export async function deleteAccount(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in deleteAccount:", error);
     return { success: false, error: "An unexpected error occurred" };
   }

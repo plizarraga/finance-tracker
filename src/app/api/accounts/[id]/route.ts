@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
 
 export async function GET(
@@ -8,18 +7,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAuth();
 
     const { id } = await params;
 
     // Get all accounts with balances and find the specific one
-    const accounts = await getAccountsWithBalances(session.user.id);
+    const accounts = await getAccountsWithBalances();
     const account = accounts.find((acc) => acc.id === id);
 
     if (!account) {
@@ -28,6 +21,9 @@ export async function GET(
 
     return NextResponse.json(account);
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Error fetching account:", error);
     return NextResponse.json(
       { error: "Internal server error" },

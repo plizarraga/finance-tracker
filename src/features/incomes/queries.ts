@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Prisma } from "@prisma/client";
 import type { DateRange } from "@/types";
 
@@ -14,10 +15,10 @@ interface IncomeFilters {
 }
 
 export async function getIncomes(
-  userId: string,
   filters?: IncomeFilters
 ): Promise<IncomeWithRelations[]> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.income.findMany({
       where: {
         userId,
@@ -37,16 +38,19 @@ export async function getIncomes(
       orderBy: { date: "desc" },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching incomes:", error);
     return [];
   }
 }
 
 export async function getIncomeById(
-  id: string,
-  userId: string
+  id: string
 ): Promise<IncomeWithRelations | null> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.income.findFirst({
       where: {
         id,
@@ -58,6 +62,9 @@ export async function getIncomeById(
       },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching income:", error);
     return null;
   }

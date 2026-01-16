@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import {
   getReportSummary,
   getMonthlyTrends,
@@ -8,13 +7,7 @@ import {
 
 export async function GET(request: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const from = searchParams.get("from");
@@ -23,10 +16,7 @@ export async function GET(request: Request) {
 
     // If months is provided, return monthly trends
     if (months) {
-      const trends = await getMonthlyTrends(
-        session.user.id,
-        parseInt(months, 10)
-      );
+      const trends = await getMonthlyTrends(parseInt(months, 10));
       return NextResponse.json({ trends });
     }
 
@@ -43,10 +33,13 @@ export async function GET(request: Request) {
       to: new Date(to),
     };
 
-    const summary = await getReportSummary(session.user.id, dateRange);
+    const summary = await getReportSummary(dateRange);
 
     return NextResponse.json(summary);
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Error fetching report:", error);
     return NextResponse.json(
       { error: "Internal server error" },

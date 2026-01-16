@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth, prisma } from "@/lib/auth";
+import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { ActionResult } from "@/types";
 import type { Category } from "@prisma/client";
 import { categorySchema } from "./schemas";
@@ -11,13 +11,7 @@ export async function createCategory(
   formData: FormData
 ): Promise<ActionResult<Category>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       name: formData.get("name"),
@@ -37,7 +31,7 @@ export async function createCategory(
 
     const category = await prisma.category.create({
       data: {
-        userId: session.user.id,
+        userId,
         name,
         type,
       },
@@ -47,6 +41,9 @@ export async function createCategory(
 
     return { success: true, data: category };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in createCategory:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -57,13 +54,7 @@ export async function updateCategory(
   formData: FormData
 ): Promise<ActionResult<Category>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       name: formData.get("name"),
@@ -83,7 +74,7 @@ export async function updateCategory(
 
     // Verificar que la categoría pertenece al usuario
     const existingCategory = await prisma.category.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingCategory) {
@@ -103,6 +94,9 @@ export async function updateCategory(
 
     return { success: true, data: category };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in updateCategory:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -110,17 +104,11 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     // Verificar que la categoría pertenece al usuario
     const existingCategory = await prisma.category.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingCategory) {
@@ -135,6 +123,9 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in deleteCategory:", error);
     return { success: false, error: "An unexpected error occurred" };
   }

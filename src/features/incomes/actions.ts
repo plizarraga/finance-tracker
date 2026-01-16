@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth, prisma } from "@/lib/auth";
+import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Income } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { incomeServerSchema } from "./schemas";
@@ -11,13 +11,7 @@ export async function createIncome(
   formData: FormData
 ): Promise<ActionResult<Income>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       accountId: formData.get("accountId"),
@@ -41,7 +35,7 @@ export async function createIncome(
 
     // Verify account belongs to user
     const account = await prisma.account.findFirst({
-      where: { id: accountId, userId: session.user.id },
+      where: { id: accountId, userId },
     });
 
     if (!account) {
@@ -52,7 +46,7 @@ export async function createIncome(
     const category = await prisma.category.findFirst({
       where: {
         id: categoryId,
-        userId: session.user.id,
+        userId,
         type: "income",
       },
     });
@@ -66,7 +60,7 @@ export async function createIncome(
 
     const income = await prisma.income.create({
       data: {
-        userId: session.user.id,
+        userId,
         accountId,
         categoryId,
         amount,
@@ -80,6 +74,9 @@ export async function createIncome(
 
     return { success: true, data: income };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in createIncome:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -90,13 +87,7 @@ export async function updateIncome(
   formData: FormData
 ): Promise<ActionResult<Income>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       accountId: formData.get("accountId"),
@@ -120,7 +111,7 @@ export async function updateIncome(
 
     // Verify the income belongs to the user
     const existingIncome = await prisma.income.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingIncome) {
@@ -129,7 +120,7 @@ export async function updateIncome(
 
     // Verify account belongs to user
     const account = await prisma.account.findFirst({
-      where: { id: accountId, userId: session.user.id },
+      where: { id: accountId, userId },
     });
 
     if (!account) {
@@ -140,7 +131,7 @@ export async function updateIncome(
     const category = await prisma.category.findFirst({
       where: {
         id: categoryId,
-        userId: session.user.id,
+        userId,
         type: "income",
       },
     });
@@ -169,6 +160,9 @@ export async function updateIncome(
 
     return { success: true, data: income };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in updateIncome:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -176,17 +170,11 @@ export async function updateIncome(
 
 export async function deleteIncome(id: string): Promise<ActionResult> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     // Verify the income belongs to the user
     const existingIncome = await prisma.income.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingIncome) {
@@ -202,6 +190,9 @@ export async function deleteIncome(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in deleteIncome:", error);
     return { success: false, error: "An unexpected error occurred" };
   }

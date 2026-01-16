@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -11,7 +10,7 @@ import {
   CreditCard,
   ArrowRight,
 } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
 import {
   getIncomes,
@@ -42,15 +41,16 @@ type Transaction = {
 };
 
 export default async function DashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
-    redirect("/login");
+  let session;
+  try {
+    ({ session } = await requireAuth());
+  } catch (error) {
+    if (isUnauthorizedError(error)) {
+      redirect("/login");
+    }
+    throw error;
   }
 
-  const userId = session.user.id;
   const userName = session.user.name || session.user.email.split("@")[0];
 
   // Get current month range for filtering
@@ -60,11 +60,11 @@ export default async function DashboardPage() {
   // Fetch all data in parallel
   const [accounts, allIncomes, allExpenses, monthlyIncomes, monthlyExpenses] =
     await Promise.all([
-      getAccountsWithBalances(userId),
-      getIncomes(userId),
-      getExpenses(userId),
-      getIncomes(userId, { dateRange }),
-      getExpenses(userId, { dateRange }),
+      getAccountsWithBalances(),
+      getIncomes(),
+      getExpenses(),
+      getIncomes({ dateRange }),
+      getExpenses({ dateRange }),
     ]);
 
   // Calculate totals

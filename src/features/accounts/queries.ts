@@ -1,28 +1,36 @@
 import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Account } from "@prisma/client";
 import type { AccountWithBalance } from "@/types";
 
-export async function getAccounts(userId: string): Promise<Account[]> {
+export async function getAccounts(): Promise<Account[]> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.account.findMany({
       where: { userId },
       orderBy: { name: "asc" },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching accounts:", error);
     return [];
   }
 }
 
 export async function getAccountById(
-  id: string,
-  userId: string
+  id: string
 ): Promise<Account | null> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.account.findFirst({
       where: { id, userId },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching account:", error);
     return null;
   }
@@ -71,9 +79,9 @@ async function calculateAccountBalance(accountId: string): Promise<number> {
  * OPTIMIZED: Uses parallel aggregations for each account
  */
 export async function getAccountsWithBalances(
-  userId: string
 ): Promise<AccountWithBalance[]> {
   try {
+    const { userId } = await requireAuth();
     const accounts = await prisma.account.findMany({
       where: { userId },
       orderBy: { name: "asc" },
@@ -88,6 +96,9 @@ export async function getAccountsWithBalances(
 
     return accountsWithBalances;
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching accounts with balances:", error);
     return [];
   }

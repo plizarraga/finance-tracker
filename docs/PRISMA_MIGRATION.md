@@ -27,12 +27,12 @@ Migrar Finance Tracker de su implementación actual (Kysely para Better Auth + S
   - [x] 2.4 Expenses ✅
   - [x] 2.5 Transfers ✅
   - [x] 2.6 Reports ✅
+- [x] **Fase 3: Estrategia RLS** ✅
 
 ### 🔄 En Progreso
 - [ ] Ninguno actualmente
 
 ### ⏳ Pendiente
-- [ ] Fase 3: Estrategia RLS
 - [ ] Fase 4: Sistema de Tipos
 - [ ] Fase 5: Limpieza y Optimización
 
@@ -721,7 +721,7 @@ export async function getIncomeByCategory(userId: string, dateRange: DateRange) 
 
 ### Fase 3: Estrategia de Row-Level Security (RLS)
 
-**Estado**: ⏳ Pendiente
+**Estado**: ✅ **COMPLETADA**
 
 **Decisión**: Usar filtrado a nivel de aplicación.
 
@@ -744,10 +744,10 @@ export async function requireAuth() {
 ```
 
 **Checklist**:
-- [ ] Crear `src/lib/prisma-helpers.ts`
-- [ ] Implementar `requireAuth()`
-- [ ] Actualizar todas las queries para usar `requireAuth()`
-- [ ] Verificar filtrado por `userId` en todas las queries
+- [x] Crear `src/lib/prisma-helpers.ts`
+- [x] Implementar `requireAuth()`
+- [x] Actualizar todas las queries para usar `requireAuth()`
+- [x] Verificar filtrado por `userId` en todas las queries
 - [ ] Testing: Intentar acceder a datos de otro usuario (debe fallar)
 
 ---

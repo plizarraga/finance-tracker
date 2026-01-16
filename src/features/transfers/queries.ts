@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Prisma } from "@prisma/client";
 import type { DateRange } from "@/types";
 
@@ -13,10 +14,10 @@ interface TransferFilters {
 }
 
 export async function getTransfers(
-  userId: string,
   filters?: TransferFilters
 ): Promise<TransferWithRelations[]> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.transfer.findMany({
       where: {
         userId,
@@ -40,16 +41,19 @@ export async function getTransfers(
       orderBy: { date: "desc" },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching transfers:", error);
     return [];
   }
 }
 
 export async function getTransferById(
-  id: string,
-  userId: string
+  id: string
 ): Promise<TransferWithRelations | null> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.transfer.findFirst({
       where: {
         id,
@@ -61,6 +65,9 @@ export async function getTransferById(
       },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching transfer:", error);
     return null;
   }

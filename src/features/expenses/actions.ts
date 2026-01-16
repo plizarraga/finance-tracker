@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth, prisma } from "@/lib/auth";
+import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Expense } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { expenseServerSchema } from "./schemas";
@@ -11,13 +11,7 @@ export async function createExpense(
   formData: FormData
 ): Promise<ActionResult<Expense>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       accountId: formData.get("accountId"),
@@ -41,7 +35,7 @@ export async function createExpense(
 
     // Verify account belongs to user
     const account = await prisma.account.findFirst({
-      where: { id: accountId, userId: session.user.id },
+      where: { id: accountId, userId },
     });
 
     if (!account) {
@@ -52,7 +46,7 @@ export async function createExpense(
     const category = await prisma.category.findFirst({
       where: {
         id: categoryId,
-        userId: session.user.id,
+        userId,
         type: "expense",
       },
     });
@@ -66,7 +60,7 @@ export async function createExpense(
 
     const expense = await prisma.expense.create({
       data: {
-        userId: session.user.id,
+        userId,
         accountId,
         categoryId,
         amount,
@@ -80,6 +74,9 @@ export async function createExpense(
 
     return { success: true, data: expense };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in createExpense:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -90,13 +87,7 @@ export async function updateExpense(
   formData: FormData
 ): Promise<ActionResult<Expense>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       accountId: formData.get("accountId"),
@@ -120,7 +111,7 @@ export async function updateExpense(
 
     // Verify the expense belongs to the user
     const existingExpense = await prisma.expense.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingExpense) {
@@ -129,7 +120,7 @@ export async function updateExpense(
 
     // Verify account belongs to user
     const account = await prisma.account.findFirst({
-      where: { id: accountId, userId: session.user.id },
+      where: { id: accountId, userId },
     });
 
     if (!account) {
@@ -140,7 +131,7 @@ export async function updateExpense(
     const category = await prisma.category.findFirst({
       where: {
         id: categoryId,
-        userId: session.user.id,
+        userId,
         type: "expense",
       },
     });
@@ -169,6 +160,9 @@ export async function updateExpense(
 
     return { success: true, data: expense };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in updateExpense:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -176,17 +170,11 @@ export async function updateExpense(
 
 export async function deleteExpense(id: string): Promise<ActionResult> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     // Verify the expense belongs to the user
     const existingExpense = await prisma.expense.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingExpense) {
@@ -202,6 +190,9 @@ export async function deleteExpense(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in deleteExpense:", error);
     return { success: false, error: "An unexpected error occurred" };
   }

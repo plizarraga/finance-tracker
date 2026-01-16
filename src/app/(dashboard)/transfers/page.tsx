@@ -1,8 +1,7 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowLeftRight, Plus, ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getTransfers } from "@/features/transfers/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/shared/page-header";
@@ -18,15 +17,16 @@ import {
 } from "@/components/ui/table";
 
 export default async function TransfersPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
-    redirect("/login");
+  try {
+    await requireAuth();
+  } catch (error) {
+    if (isUnauthorizedError(error)) {
+      redirect("/login");
+    }
+    throw error;
   }
 
-  const transfers = await getTransfers(session.user.id);
+  const transfers = await getTransfers();
 
   return (
     <div className="space-y-6">

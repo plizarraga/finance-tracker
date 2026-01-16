@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth, prisma } from "@/lib/auth";
+import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Transfer } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { transferServerSchema } from "./schemas";
@@ -11,13 +11,7 @@ export async function createTransfer(
   formData: FormData
 ): Promise<ActionResult<Transfer>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       fromAccountId: formData.get("fromAccountId"),
@@ -42,7 +36,7 @@ export async function createTransfer(
     // Verify both accounts belong to the user
     const accounts = await prisma.account.findMany({
       where: {
-        userId: session.user.id,
+        userId,
         id: { in: [fromAccountId, toAccountId] },
       },
     });
@@ -53,7 +47,7 @@ export async function createTransfer(
 
     const transfer = await prisma.transfer.create({
       data: {
-        userId: session.user.id,
+        userId,
         fromAccountId,
         toAccountId,
         amount,
@@ -67,6 +61,9 @@ export async function createTransfer(
 
     return { success: true, data: transfer };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in createTransfer:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -77,13 +74,7 @@ export async function updateTransfer(
   formData: FormData
 ): Promise<ActionResult<Transfer>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     const rawData = {
       fromAccountId: formData.get("fromAccountId"),
@@ -107,7 +98,7 @@ export async function updateTransfer(
 
     // Verify the transfer belongs to the user
     const existingTransfer = await prisma.transfer.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingTransfer) {
@@ -117,7 +108,7 @@ export async function updateTransfer(
     // Verify both accounts belong to the user
     const accounts = await prisma.account.findMany({
       where: {
-        userId: session.user.id,
+        userId,
         id: { in: [fromAccountId, toAccountId] },
       },
     });
@@ -143,6 +134,9 @@ export async function updateTransfer(
 
     return { success: true, data: transfer };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in updateTransfer:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
@@ -150,17 +144,11 @@ export async function updateTransfer(
 
 export async function deleteTransfer(id: string): Promise<ActionResult> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" };
-    }
+    const { userId } = await requireAuth();
 
     // Verify the transfer belongs to the user
     const existingTransfer = await prisma.transfer.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
     });
 
     if (!existingTransfer) {
@@ -176,6 +164,9 @@ export async function deleteTransfer(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return { success: false, error: "Unauthorized" };
+    }
     console.error("Error in deleteTransfer:", error);
     return { success: false, error: "An unexpected error occurred" };
   }

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Prisma } from "@prisma/client";
 import type { DateRange } from "@/types";
 
@@ -14,10 +15,10 @@ interface ExpenseFilters {
 }
 
 export async function getExpenses(
-  userId: string,
   filters?: ExpenseFilters
 ): Promise<ExpenseWithRelations[]> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.expense.findMany({
       where: {
         userId,
@@ -37,16 +38,19 @@ export async function getExpenses(
       orderBy: { date: "desc" },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching expenses:", error);
     return [];
   }
 }
 
 export async function getExpenseById(
-  id: string,
-  userId: string
+  id: string
 ): Promise<ExpenseWithRelations | null> {
   try {
+    const { userId } = await requireAuth();
     return await prisma.expense.findFirst({
       where: {
         id,
@@ -58,6 +62,9 @@ export async function getExpenseById(
       },
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
     console.error("Error fetching expense:", error);
     return null;
   }
