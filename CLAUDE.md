@@ -11,7 +11,7 @@ Finance Tracker SLC - A mobile-first personal finance web app following Simple Â
 - **Framework:** Next.js (App Router) monolith
 - **Package Manager:** pnpm
 - **UI:** shadcn/ui components, dark mode default
-- **Database:** Supabase (PostgreSQL)
+- **Database:** PostgreSQL + Prisma ORM
 - **Auth:** Better Auth (JS)
 - **Hosting:** Railway
 
@@ -23,7 +23,14 @@ pnpm dev         # Development server
 pnpm build       # Production build
 pnpm start       # Start production server
 pnpm lint        # Run linting
+pnpm prisma:generate # Generate Prisma client
+pnpm prisma:studio   # Prisma Studio
+pnpm prisma:push     # Push schema to database
 ```
+
+## Database
+
+Prisma is the source of truth for schema and queries. The Prisma client is generated on build and can be refreshed locally with `pnpm prisma:generate`.
 
 ## Architecture
 
