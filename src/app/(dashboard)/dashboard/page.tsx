@@ -20,8 +20,12 @@ import {
   getExpenses,
   type ExpenseWithRelations,
 } from "@/features/expenses/queries";
+import { getExpenseTemplates, getDefaultExpenseTemplate } from "@/features/expense-templates/queries";
+import { getIncomeTemplates, getDefaultIncomeTemplate } from "@/features/income-templates/queries";
+import { getTransferTemplates, getDefaultTransferTemplate } from "@/features/transfer-templates/queries";
 import { formatCurrency, formatDate, getCurrentMonthRange } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { QuickActionButton } from "@/components/dashboard/quick-action-button";
 import {
   Card,
   CardContent,
@@ -58,14 +62,31 @@ export default async function DashboardPage() {
   const dateRange = { from: start, to: end };
 
   // Fetch all data in parallel
-  const [accounts, allIncomes, allExpenses, monthlyIncomes, monthlyExpenses] =
-    await Promise.all([
-      getAccountsWithBalances(),
-      getIncomes(),
-      getExpenses(),
-      getIncomes({ dateRange }),
-      getExpenses({ dateRange }),
-    ]);
+  const [
+    accounts,
+    allIncomes,
+    allExpenses,
+    monthlyIncomes,
+    monthlyExpenses,
+    expenseTemplates,
+    defaultExpenseTemplate,
+    incomeTemplates,
+    defaultIncomeTemplate,
+    transferTemplates,
+    defaultTransferTemplate,
+  ] = await Promise.all([
+    getAccountsWithBalances(),
+    getIncomes(),
+    getExpenses(),
+    getIncomes({ dateRange }),
+    getExpenses({ dateRange }),
+    getExpenseTemplates(),
+    getDefaultExpenseTemplate(),
+    getIncomeTemplates(),
+    getDefaultIncomeTemplate(),
+    getTransferTemplates(),
+    getDefaultTransferTemplate(),
+  ]);
 
   // Calculate totals
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
@@ -198,29 +219,28 @@ export default async function DashboardPage() {
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
           <CardDescription>
-            Quickly add new transactions or transfers
+            Quickly add new transactions or transfers from your templates
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Button asChild>
-              <Link href="/incomes/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Income
-              </Link>
-            </Button>
-            <Button asChild variant="destructive">
-              <Link href="/expenses/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Expense
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/transfers/new">
-                <ArrowLeftRight className="mr-2 h-4 w-4" />
-                Transfer
-              </Link>
-            </Button>
+            <QuickActionButton
+              type="income"
+              templates={incomeTemplates}
+              defaultTemplate={defaultIncomeTemplate}
+            />
+            <QuickActionButton
+              type="expense"
+              templates={expenseTemplates}
+              defaultTemplate={defaultExpenseTemplate}
+              variant="destructive"
+            />
+            <QuickActionButton
+              type="transfer"
+              templates={transferTemplates}
+              defaultTemplate={defaultTransferTemplate}
+              variant="outline"
+            />
           </div>
         </CardContent>
       </Card>
