@@ -46,6 +46,7 @@ export default async function TransfersPage() {
           <TransferTemplateButtonGroup
             templates={templates}
             defaultTemplate={defaultTemplate}
+            variant="outline"
           />
         }
       />
@@ -59,6 +60,7 @@ export default async function TransfersPage() {
             <TransferTemplateButtonGroup
               templates={templates}
               defaultTemplate={defaultTemplate}
+              variant="outline"
             />
           }
         />

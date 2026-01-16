@@ -45,6 +45,7 @@ export default async function ExpensesPage() {
           <ExpenseTemplateButtonGroup
             templates={templates}
             defaultTemplate={defaultTemplate}
+            variant="destructive"
           />
         }
       />
@@ -58,6 +59,7 @@ export default async function ExpensesPage() {
             <ExpenseTemplateButtonGroup
               templates={templates}
               defaultTemplate={defaultTemplate}
+              variant="destructive"
             />
           }
         />

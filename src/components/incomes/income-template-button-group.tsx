@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Plus, MoreVertical, Star, Edit, Copy, Trash2 } from "lucide-react";
+import { Plus, ChevronDown, Star, Edit, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useTransition } from "react";
@@ -26,11 +27,13 @@ import {
 interface IncomeTemplateButtonGroupProps {
   templates: IncomeTemplateWithRelations[];
   defaultTemplate: IncomeTemplateWithRelations | null;
+  variant?: "default" | "destructive" | "outline";
 }
 
 export function IncomeTemplateButtonGroup({
   templates,
   defaultTemplate,
+  variant = "default",
 }: IncomeTemplateButtonGroupProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -141,20 +144,30 @@ export function IncomeTemplateButtonGroup({
 
   return (
     <>
-      <div className="flex gap-2">
-        <Button onClick={() => handleCreateFromTemplate(defaultTemplate)}>
+      <div className="flex gap-0.5">
+        <Button
+          variant={variant}
+          onClick={() => handleCreateFromTemplate(defaultTemplate)}
+          className="rounded-r-none"
+        >
           <Plus className="mr-2 h-4 w-4" />
           {defaultTemplate ? defaultTemplate.name : "New Income"}
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <MoreVertical className="h-4 w-4" />
+            <Button
+              variant={variant}
+              size="icon"
+              className="rounded-l-none px-2"
+            >
+              <ChevronDown className="h-4 w-4" />
               <span className="sr-only">Template options</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Templates</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             {templates.map((template) => (
               <DropdownMenuSub key={template.id}>
                 <DropdownMenuSubTrigger>

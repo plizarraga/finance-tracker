@@ -5,7 +5,6 @@ import {
   TrendingDown,
   Wallet,
   Plus,
-  ArrowLeftRight,
   DollarSign,
   CreditCard,
   ArrowRight,
@@ -25,7 +24,9 @@ import { getIncomeTemplates, getDefaultIncomeTemplate } from "@/features/income-
 import { getTransferTemplates, getDefaultTransferTemplate } from "@/features/transfer-templates/queries";
 import { formatCurrency, formatDate, getCurrentMonthRange } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { QuickActionButton } from "@/components/dashboard/quick-action-button";
+import { IncomeTemplateButtonGroup } from "@/components/incomes/income-template-button-group";
+import { ExpenseTemplateButtonGroup } from "@/components/expenses/expense-template-button-group";
+import { TransferTemplateButtonGroup } from "@/components/transfers/transfer-template-button-group";
 import {
   Card,
   CardContent,
@@ -219,24 +220,22 @@ export default async function DashboardPage() {
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
           <CardDescription>
-            Quickly add new transactions or transfers from your templates
+            Create income, expenses, or transfers from your templates in one click.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <QuickActionButton
-              type="income"
+            <IncomeTemplateButtonGroup
               templates={incomeTemplates}
               defaultTemplate={defaultIncomeTemplate}
+              variant="default"
             />
-            <QuickActionButton
-              type="expense"
+            <ExpenseTemplateButtonGroup
               templates={expenseTemplates}
               defaultTemplate={defaultExpenseTemplate}
               variant="destructive"
             />
-            <QuickActionButton
-              type="transfer"
+            <TransferTemplateButtonGroup
               templates={transferTemplates}
               defaultTemplate={defaultTransferTemplate}
               variant="outline"

@@ -45,6 +45,7 @@ export default async function IncomesPage() {
           <IncomeTemplateButtonGroup
             templates={templates}
             defaultTemplate={defaultTemplate}
+            variant="default"
           />
         }
       />
@@ -58,6 +59,7 @@ export default async function IncomesPage() {
             <IncomeTemplateButtonGroup
               templates={templates}
               defaultTemplate={defaultTemplate}
+              variant="default"
             />
           }
         />
