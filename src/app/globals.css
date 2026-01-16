@@ -65,5 +65,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 }
