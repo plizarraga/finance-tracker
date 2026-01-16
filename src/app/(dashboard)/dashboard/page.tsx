@@ -8,6 +8,7 @@ import {
   DollarSign,
   CreditCard,
   ArrowRight,
+  ArrowLeftRight,
 } from "lucide-react";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
@@ -22,6 +23,10 @@ import {
 import { getExpenseTemplates, getDefaultExpenseTemplate } from "@/features/expense-templates/queries";
 import { getIncomeTemplates, getDefaultIncomeTemplate } from "@/features/income-templates/queries";
 import { getTransferTemplates, getDefaultTransferTemplate } from "@/features/transfer-templates/queries";
+import {
+  getTransfers,
+  type TransferWithRelations,
+} from "@/features/transfers/queries";
 import { formatCurrency, formatDate, getCurrentMonthRange } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { IncomeTemplateButtonGroup } from "@/components/incomes/income-template-button-group";
@@ -38,7 +43,7 @@ import { Badge } from "@/components/ui/badge";
 
 type Transaction = {
   id: string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "transfer";
   date: Date;
   description: string | null;
   amount: number;
@@ -67,6 +72,7 @@ export default async function DashboardPage() {
     accounts,
     allIncomes,
     allExpenses,
+    allTransfers,
     monthlyIncomes,
     monthlyExpenses,
     expenseTemplates,
@@ -79,6 +85,7 @@ export default async function DashboardPage() {
     getAccountsWithBalances(),
     getIncomes(),
     getExpenses(),
+    getTransfers(),
     getIncomes({ dateRange }),
     getExpenses({ dateRange }),
     getExpenseTemplates(),
@@ -121,6 +128,16 @@ export default async function DashboardPage() {
         description: exp.description,
         amount: exp.amount.toNumber(),
         categoryName: exp.category.name,
+      })
+    ),
+    ...allTransfers.slice(0, 5).map(
+      (transfer: TransferWithRelations): Transaction => ({
+        id: transfer.id,
+        type: "transfer",
+        date: transfer.date,
+        description: transfer.description,
+        amount: transfer.amount.toNumber(),
+        categoryName: `${transfer.fromAccount.name} -> ${transfer.toAccount.name}`,
       })
     ),
   ]
@@ -353,7 +370,13 @@ export default async function DashboardPage() {
                 {recentTransactions.map((transaction) => (
                   <Link
                     key={`${transaction.type}-${transaction.id}`}
-                    href={`/${transaction.type === "income" ? "incomes" : "expenses"}/${transaction.id}/edit`}
+                    href={`/${
+                      transaction.type === "income"
+                        ? "incomes"
+                        : transaction.type === "expense"
+                          ? "expenses"
+                          : "transfers"
+                    }/${transaction.id}/edit`}
                     className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
@@ -361,13 +384,17 @@ export default async function DashboardPage() {
                         className={`p-2 rounded-full ${
                           transaction.type === "income"
                             ? "bg-green-100 dark:bg-green-900"
-                            : "bg-red-100 dark:bg-red-900"
+                            : transaction.type === "expense"
+                              ? "bg-red-100 dark:bg-red-900"
+                              : "bg-slate-100 dark:bg-slate-800"
                         }`}
                       >
                         {transaction.type === "income" ? (
                           <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        ) : (
+                        ) : transaction.type === "expense" ? (
                           <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        ) : (
+                          <ArrowLeftRight className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                         )}
                       </div>
                       <div>
@@ -377,16 +404,20 @@ export default async function DashboardPage() {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span>{formatDate(transaction.date)}</span>
                           <Badge
-                            variant={
+                            variant="secondary"
+                            className={`text-xs ${
                               transaction.type === "income"
-                                ? "default"
-                                : "destructive"
-                            }
-                            className="text-xs"
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-200"
+                                : transaction.type === "expense"
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                            }`}
                           >
                             {transaction.type === "income"
                               ? "Income"
-                              : "Expense"}
+                              : transaction.type === "expense"
+                                ? "Expense"
+                                : "Transfer"}
                           </Badge>
                         </div>
                       </div>
@@ -395,10 +426,16 @@ export default async function DashboardPage() {
                       className={`text-lg font-semibold ${
                         transaction.type === "income"
                           ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
+                          : transaction.type === "expense"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-slate-600 dark:text-slate-300"
                       }`}
                     >
-                      {transaction.type === "income" ? "+" : "-"}
+                      {transaction.type === "income"
+                        ? "+"
+                        : transaction.type === "expense"
+                          ? "-"
+                          : ""}
                       {formatCurrency(transaction.amount)}
                     </div>
                   </Link>
