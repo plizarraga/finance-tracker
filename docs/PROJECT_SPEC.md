@@ -179,9 +179,9 @@ These features are intentionally excluded to preserve SLC:
 
 ### Database
 
-- **Supabase (PostgreSQL)**
+- **PostgreSQL (Supabase) + Prisma ORM**
 - Relational schema
-- SQL-first mindset with lightweight abstractions
+- Prisma as source of truth for schema and queries
 
 ### Authentication
 
@@ -203,7 +203,7 @@ These features are intentionally excluded to preserve SLC:
 
 - UI (App Router pages)
 - Server Actions / API Routes
-- Database (Supabase Postgres)
+- Database (PostgreSQL via Prisma)
 
 Key characteristics:
 
@@ -268,7 +268,7 @@ Benefits:
    - Expense
    - Transfer
 
-4. Data is persisted in Supabase
+4. Data is persisted in PostgreSQL via Prisma
 5. Balances and reports are computed on read
 6. UI renders summaries and charts
 
@@ -321,7 +321,7 @@ Design principles:
   - reports
 
 - `lib/` — shared utilities
-- `db/` — database access and queries
+- `prisma/` — Prisma schema and client
 
 Each feature owns:
 
@@ -352,7 +352,7 @@ Each feature owns:
 ## 18. Deployment Strategy
 
 - Railway for all environments
-- Supabase managed database
+- Supabase-managed Postgres database (Prisma-managed schema)
 - Environment-based configs
 
 ---

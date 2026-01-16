@@ -26,6 +26,8 @@ pnpm lint        # Run linting
 pnpm prisma:generate # Generate Prisma client
 pnpm prisma:studio   # Prisma Studio
 pnpm prisma:push     # Push schema to database
+pnpm db:sync         # Generate client + push schema
+pnpm db:reset        # Reset database and apply schema (destructive)
 ```
 
 ## Database
@@ -40,7 +42,7 @@ Monolithic Next.js with feature-based organization:
 app/           → Routes and screens
 features/      → Domain logic per feature (accounts, categories, incomes, expenses, transfers, reports)
 lib/           → Shared utilities
-db/            → Database access and queries
+prisma/        → Prisma schema and client
 ```
 
 Each feature owns its server actions, queries, and validation.

@@ -33,7 +33,13 @@ Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                 Supabase (PostgreSQL)                       │
+│                     Prisma ORM                              │
+│              (Acceso a base de datos)                        │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│             PostgreSQL (Supabase)                            │
 │                  (Base de datos)                            │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -44,7 +50,7 @@ Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único
 |------|------------|
 | Frontend | Next.js (React), shadcn/ui |
 | Backend | Next.js Server Actions / Route Handlers |
-| Base de Datos | Supabase (PostgreSQL) |
+| Base de Datos | PostgreSQL (Supabase) + Prisma |
 | Autenticación | Better Auth (JS) |
 | Hosting | Railway |
 
@@ -60,7 +66,7 @@ features/         → Lógica de dominio por feature
   ├── transfers/  → Transferencias entre cuentas
   └── reports/    → Reportes y gráficos
 lib/              → Utilidades compartidas
-db/               → Acceso a base de datos y queries
+prisma/           → Schema y cliente Prisma
 ```
 
 Cada feature es dueño de:
@@ -120,14 +126,14 @@ Beneficios:
 
 2. CONFIGURACIÓN INICIAL
    ┌────────┐      ┌─────────────┐      ┌──────────┐
-   │ Usuario│─────►│  Crear      │─────►│ Supabase │
+   │ Usuario│─────►│  Crear      │─────►│ PostgreSQL│
    └────────┘      │  Cuentas &  │      │   (DB)   │
                    │  Categorías │      └──────────┘
                    └─────────────┘
 
 3. REGISTRO DE MOVIMIENTOS
    ┌────────┐      ┌─────────────┐      ┌──────────┐
-   │ Usuario│─────►│ Server      │─────►│ Supabase │
+   │ Usuario│─────►│ Server      │─────►│ PostgreSQL│
    └────────┘      │ Action      │      │   (DB)   │
                    │ (Income/    │      └──────────┘
                    │  Expense/   │
@@ -136,7 +142,7 @@ Beneficios:
 
 4. CONSULTA DE REPORTES
    ┌────────┐      ┌─────────────┐      ┌──────────┐      ┌──────────┐
-   │ Usuario│─────►│ Query DB    │─────►│ Cálculo  │─────►│ Render   │
+   │ Usuario│─────►│ Query Prisma│─────►│ Cálculo  │─────►│ Render   │
    └────────┘      │ (filtros)   │      │ Balances │      │ Charts   │
                    └─────────────┘      └──────────┘      └──────────┘
 ```
@@ -147,7 +153,7 @@ Beneficios:
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│   Form   │────►│ Validate │────►│  Server  │────►│ Supabase │
+│   Form   │────►│ Validate │────►│  Server  │────►│ PostgreSQL│
 │   (UI)   │     │  (Zod?)  │     │  Action  │     │  INSERT  │
 └──────────┘     └──────────┘     └──────────┘     └──────────┘
                                         │

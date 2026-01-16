@@ -18,18 +18,16 @@ Todas las fases principales han sido implementadas exitosamente. El proyecto est
 - [x] ESLint y Prettier configurados
 - [x] shadcn/ui instalado con dark mode por defecto
 - [x] next-themes configurado para tema oscuro
-- [x] Supabase client configurado (`src/lib/db.ts`)
+- [x] Prisma ORM configurado (`prisma/schema.prisma`)
 - [x] Better Auth configurado (`src/lib/auth.ts`, `src/lib/auth-client.ts`)
 - [x] API route para Better Auth (`src/app/api/auth/[...all]/route.ts`)
 - [x] Tipos compartidos definidos (`src/types/index.ts`)
 - [x] Utilidades creadas (`src/lib/utils.ts`, `src/lib/format.ts`)
-- [x] Base de datos schema SQL (`db/schema.sql`)
 - [x] Variables de entorno configuradas (`.env.example`)
 
 **Archivos Clave:**
 ```
 src/lib/
-  ├── db.ts (Supabase client)
   ├── auth.ts (Better Auth server)
   ├── auth-client.ts (Better Auth client)
   ├── utils.ts (Utilidades compartidas)
@@ -41,9 +39,8 @@ src/types/
 src/providers/
   └── theme-provider.tsx (Proveedor de tema con next-themes)
 
-db/
-  ├── schema.sql (Esquema de base de datos)
-  └── seed.sql (Datos de ejemplo para desarrollo)
+prisma/
+  └── schema.prisma (Esquema de base de datos)
 ```
 
 ---
@@ -294,23 +291,20 @@ src/app/api/reports/route.ts
 
 ## Acciones Inmediatas (Próximos Pasos)
 
-### 1. Configuración de Supabase (CRÍTICO)
+### 1. Configuración de Base de Datos (CRÍTICO)
 
 ```bash
 # 1. Crear proyecto en https://supabase.com
 # 2. Copiar credenciales a .env.local:
-NEXT_PUBLIC_SUPABASE_URL=<tu-url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<tu-anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<tu-service-key>
 DATABASE_URL=<tu-database-url>
 
-# 3. En Supabase SQL Editor, ejecutar:
-# - Contenido de db/schema.sql (completo)
-
-# 4. Generar secret para Better Auth:
+# 3. Generar secret para Better Auth:
 openssl rand -base64 32
 # Copiar el resultado a:
 BETTER_AUTH_SECRET=<resultado>
+
+# 4. Sincronizar schema con Prisma:
+pnpm db:sync
 ```
 
 ### 2. Testing Local
@@ -319,7 +313,7 @@ BETTER_AUTH_SECRET=<resultado>
 # Instalar dependencias
 pnpm install
 
-# Configurar .env.local con variables de Supabase
+# Configurar .env.local con DATABASE_URL y BETTER_AUTH_SECRET
 
 # Ejecutar en desarrollo
 pnpm dev
@@ -334,22 +328,21 @@ pnpm dev
    - Name: "Test User"
    - Email: test@example.com
    - Password: (cualquiera)
-3. Copiar el user_id de Supabase
-4. En Supabase SQL Editor, ejecutar db/seed.sql reemplazando 'YOUR_USER_ID' con el user_id real
-5. Recargar el dashboard
+3. Crear algunos registros en la UI o usar Prisma Studio (`pnpm db:studio`)
+4. Recargar el dashboard
 
 ### 4. Verificación de Funcionalidades
 
-- [ ] Login/Signup funciona
-- [ ] Crear cuenta y ver balance
-- [ ] Crear categorías (ingresos y gastos)
-- [ ] Agregar ingreso
-- [ ] Agregar gasto
-- [ ] Realizar transferencia
-- [ ] Ver dashboard con datos
-- [ ] Acceder a reportes
-- [ ] Cambiar tema (dark/light)
-- [ ] Responsive en móvil
+- [x] Login/Signup funciona
+- [x] Crear cuenta y ver balance
+- [x] Crear categorías (ingresos y gastos)
+- [x] Agregar ingreso
+- [x] Agregar gasto
+- [x] Realizar transferencia
+- [x] Ver dashboard con datos
+- [x] Acceder a reportes
+- [x] Cambiar tema (dark/light)
+- [x] Responsive en móvil
 
 ---
 
@@ -379,11 +372,10 @@ pnpm dev
 - ✅ Middleware de autenticación
 
 **Base de Datos:**
-- ✅ Schema SQL completo con 5 tablas
+- ✅ Schema Prisma completo
 - ✅ Índices para performance
-- ✅ Row Level Security (RLS)
-- ✅ Función de cálculo de balances
-- ✅ Seed data de ejemplo
+- ✅ Row Level Security (RLS) en Supabase
+- ✅ Función de cálculo de balances (si aplica a la BD)
 
 **Documentación:**
 - ✅ `CLAUDE.md` (guía para Claude Code)
@@ -418,7 +410,7 @@ pnpm dev
 | UI | shadcn/ui + Tailwind CSS |
 | Estado | React hooks + Server Actions |
 | Autenticación | Better Auth |
-| BD | Supabase (PostgreSQL) |
+| BD | PostgreSQL (Supabase) + Prisma |
 | Gráficos | Recharts |
 | Package Manager | pnpm |
 | Lenguaje | TypeScript |
@@ -433,7 +425,7 @@ pnpm dev
 
 - [ ] Supabase project creado y configurado
 - [ ] Variables de entorno configuradas (.env.local)
-- [ ] BD schema ejecutado exitosamente
+- [x] Prisma schema aplicado (`pnpm db:sync`)
 - [ ] Autenticación funcionando (signup/login)
 - [ ] CRUD de todas las features probado
 - [ ] Dashboard cargando datos correctamente

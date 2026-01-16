@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "db:reset": "prisma db push --force-reset",
+    "db:sync": "prisma generate && prisma db push",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -51,14 +51,14 @@ Migrar Finance Tracker de su implementación actual (Kysely para Better Auth + S
 - **PostgreSQL**: Hospedado en Supabase, conexión via `DATABASE_URL`
 - **RLS**: Activo en todas las tablas con políticas basadas en `user_id`
 
-### Esquema de Base de Datos (db/schema.sql)
+### Esquema de Base de Datos (prisma/schema.prisma)
 
-- **Tablas**: accounts, categories, incomes, expenses, transfers
+- **Tablas**: accounts, categories, incomes, expenses, transfers + tablas de auth
 - **IDs**: UUIDs para primary keys
 - **user_id**: TEXT (no foreign key, manejado por Better Auth)
 - **Timestamps**: created_at, updated_at (TIMESTAMPTZ)
 - **Índices**: user_id, account_id, category_id, date
-- **Función SQL**: `get_account_balance()` - calcula balance desde transacciones
+- **Función SQL**: `get_account_balance()` - calcula balance desde transacciones (si aplica)
 - **RLS**: Todas las tablas con políticas SELECT/INSERT/UPDATE/DELETE
 
 ### Features que Usan la Base de Datos (src/features/)
@@ -301,11 +301,10 @@ export const auth = betterAuth({
 });
 ```
 
-Generar tablas de Better Auth:
+Sincronizar tablas de Better Auth:
 
 ```bash
-npx @better-auth/cli@latest generate
-npx prisma db push  # Sincronizar cambios
+pnpm db:sync
 ```
 
 **Checklist**:
@@ -908,6 +907,8 @@ pnpm remove @supabase/supabase-js kysely
 
 - [x] Eliminar o refactorizar `src/lib/db.ts`
 - [x] Verificar no hay imports a archivos eliminados
+- [x] Eliminar SQL legacy (`db/schema.sql`, `db/seed.sql`)
+- [x] Eliminar scripts temporales de auth SQL
 
 #### 5.4 Actualizar package.json scripts
 
@@ -920,7 +921,10 @@ pnpm remove @supabase/supabase-js kysely
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "db:sync": "prisma generate && prisma db push",
+    "db:reset": "prisma db push --force-reset",
+    "db:studio": "prisma studio"
   }
 }
 ```
