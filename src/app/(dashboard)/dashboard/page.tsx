@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import {
   TrendingUp,
   TrendingDown,
@@ -9,41 +9,50 @@ import {
   CreditCard,
   ArrowRight,
   ArrowLeftRight,
-} from "lucide-react";
-import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import { getAccountsWithBalances } from "@/features/accounts/queries";
+} from 'lucide-react';
+import { requireAuth, isUnauthorizedError } from '@/lib/prisma-helpers';
+import { getAccountsWithBalances } from '@/features/accounts/queries';
 import {
   getIncomes,
   type IncomeWithRelations,
-} from "@/features/incomes/queries";
+} from '@/features/incomes/queries';
 import {
   getExpenses,
   type ExpenseWithRelations,
-} from "@/features/expenses/queries";
-import { getExpenseTemplates, getDefaultExpenseTemplate } from "@/features/expense-templates/queries";
-import { getIncomeTemplates, getDefaultIncomeTemplate } from "@/features/income-templates/queries";
-import { getTransferTemplates, getDefaultTransferTemplate } from "@/features/transfer-templates/queries";
+} from '@/features/expenses/queries';
+import {
+  getExpenseTemplates,
+  getDefaultExpenseTemplate,
+} from '@/features/expense-templates/queries';
+import {
+  getIncomeTemplates,
+  getDefaultIncomeTemplate,
+} from '@/features/income-templates/queries';
+import {
+  getTransferTemplates,
+  getDefaultTransferTemplate,
+} from '@/features/transfer-templates/queries';
 import {
   getTransfers,
   type TransferWithRelations,
-} from "@/features/transfers/queries";
-import { formatCurrency, formatDate, getCurrentMonthRange } from "@/lib/format";
-import { Button } from "@/components/ui/button";
-import { IncomeTemplateButtonGroup } from "@/components/incomes/income-template-button-group";
-import { ExpenseTemplateButtonGroup } from "@/components/expenses/expense-template-button-group";
-import { TransferTemplateButtonGroup } from "@/components/transfers/transfer-template-button-group";
+} from '@/features/transfers/queries';
+import { formatCurrency, formatDate, getCurrentMonthRange } from '@/lib/format';
+import { Button } from '@/components/ui/button';
+import { IncomeTemplateButtonGroup } from '@/components/incomes/income-template-button-group';
+import { ExpenseTemplateButtonGroup } from '@/components/expenses/expense-template-button-group';
+import { TransferTemplateButtonGroup } from '@/components/transfers/transfer-template-button-group';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 type Transaction = {
   id: string;
-  type: "income" | "expense" | "transfer";
+  type: 'income' | 'expense' | 'transfer';
   date: Date;
   description: string | null;
   amount: number;
@@ -56,12 +65,12 @@ export default async function DashboardPage() {
     ({ session } = await requireAuth());
   } catch (error) {
     if (isUnauthorizedError(error)) {
-      redirect("/login");
+      redirect('/login');
     }
     throw error;
   }
 
-  const userName = session.user.name || session.user.email.split("@")[0];
+  const userName = session.user.name || session.user.email.split('@')[0];
 
   // Get current month range for filtering
   const { start, end } = getCurrentMonthRange();
@@ -113,7 +122,7 @@ export default async function DashboardPage() {
     ...allIncomes.slice(0, 5).map(
       (inc: IncomeWithRelations): Transaction => ({
         id: inc.id,
-        type: "income",
+        type: 'income',
         date: inc.date,
         description: inc.description,
         amount: inc.amount.toNumber(),
@@ -123,7 +132,7 @@ export default async function DashboardPage() {
     ...allExpenses.slice(0, 5).map(
       (exp: ExpenseWithRelations): Transaction => ({
         id: exp.id,
-        type: "expense",
+        type: 'expense',
         date: exp.date,
         description: exp.description,
         amount: exp.amount.toNumber(),
@@ -133,7 +142,7 @@ export default async function DashboardPage() {
     ...allTransfers.slice(0, 5).map(
       (transfer: TransferWithRelations): Transaction => ({
         id: transfer.id,
-        type: "transfer",
+        type: 'transfer',
         date: transfer.date,
         description: transfer.description,
         amount: transfer.amount.toNumber(),
@@ -145,9 +154,9 @@ export default async function DashboardPage() {
     .slice(0, 5);
 
   // Get current month name for display
-  const currentMonthName = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
+  const currentMonthName = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
   });
 
   return (
@@ -167,7 +176,8 @@ export default async function DashboardPage() {
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
           <CardDescription>
-            Create income, expenses, or transfers from your templates in one click.
+            Create income, expenses, or transfers from your templates in one
+            click.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -190,9 +200,194 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      {/* Account Balances Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Account Balances</h2>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/accounts">
+              View all
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        {accounts.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <CreditCard className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">No accounts yet</p>
+              <Button asChild>
+                <Link href="/accounts/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Account
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {accounts.map((account) => (
+              <Card
+                key={account.id}
+                className="hover:shadow-md transition-shadow"
+              >
+                <Link href={`/accounts/${account.id}`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                      {account.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className={`text-xl font-bold ${
+                        account.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {formatCurrency(account.balance)}
+                    </div>
+                    {account.description && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {account.description}
+                      </p>
+                    )}
+                  </CardContent>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Recent Transactions Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Recent Transactions</h2>
+          <div className="flex gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/incomes">
+                Incomes
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/expenses">
+                Expenses
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {recentTransactions.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <DollarSign className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">No transactions yet</p>
+              <div className="flex justify-center gap-3">
+                <Button asChild>
+                  <Link href="/incomes/new">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Income
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/expenses/new">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Expense
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {recentTransactions.map((transaction) => (
+                  <Link
+                    key={`${transaction.type}-${transaction.id}`}
+                    href={`/${
+                      transaction.type === 'income'
+                        ? 'incomes'
+                        : transaction.type === 'expense'
+                        ? 'expenses'
+                        : 'transfers'
+                    }/${transaction.id}/edit`}
+                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`p-2 rounded-full ${
+                          transaction.type === 'income'
+                            ? 'bg-green-100 dark:bg-green-900'
+                            : transaction.type === 'expense'
+                            ? 'bg-red-100 dark:bg-red-900'
+                            : 'bg-slate-100 dark:bg-slate-800'
+                        }`}
+                      >
+                        {transaction.type === 'income' ? (
+                          <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        ) : transaction.type === 'expense' ? (
+                          <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        ) : (
+                          <ArrowLeftRight className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          {transaction.description || transaction.categoryName}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{formatDate(transaction.date)}</span>
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs ${
+                              transaction.type === 'income'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-200'
+                                : transaction.type === 'expense'
+                                ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                            }`}
+                          >
+                            {transaction.type === 'income'
+                              ? 'Income'
+                              : transaction.type === 'expense'
+                              ? 'Expense'
+                              : 'Transfer'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className={`text-lg font-semibold ${
+                        transaction.type === 'income'
+                          ? 'text-green-600 dark:text-green-400'
+                          : transaction.type === 'expense'
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {transaction.type === 'income'
+                        ? '+'
+                        : transaction.type === 'expense'
+                        ? '-'
+                        : ''}
+                      {formatCurrency(transaction.amount)}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Summary</h2>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
@@ -203,7 +398,7 @@ export default async function DashboardPage() {
               {formatCurrency(totalBalance)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Across {accounts.length} account{accounts.length !== 1 ? "s" : ""}
+              Across {accounts.length} account{accounts.length !== 1 ? 's' : ''}
             </p>
           </CardContent>
         </Card>
@@ -248,10 +443,10 @@ export default async function DashboardPage() {
           <CardContent className="pt-0">
             <div
               className={`text-xl font-semibold ${
-                netBalance >= 0 ? "text-green-600" : "text-red-600"
+                netBalance >= 0 ? 'text-green-600' : 'text-red-600'
               }`}
             >
-              {netBalance >= 0 ? "+" : ""}
+              {netBalance >= 0 ? '+' : ''}
               {formatCurrency(netBalance)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -259,191 +454,7 @@ export default async function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Account Balances Section */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Account Balances</h2>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/accounts">
-              View all
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
         </div>
-
-        {accounts.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <CreditCard className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">No accounts yet</p>
-              <Button asChild>
-                <Link href="/accounts/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Account
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {accounts.map((account) => (
-              <Card key={account.id} className="hover:shadow-md transition-shadow">
-                <Link href={`/accounts/${account.id}`}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-muted-foreground" />
-                      {account.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div
-                      className={`text-xl font-bold ${
-                        account.balance >= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {formatCurrency(account.balance)}
-                    </div>
-                    {account.description && (
-                      <p className="text-xs text-muted-foreground mt-1 truncate">
-                        {account.description}
-                      </p>
-                    )}
-                  </CardContent>
-                </Link>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Recent Transactions Section */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Transactions</h2>
-          <div className="flex gap-2">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/incomes">
-                Incomes
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/expenses">
-                Expenses
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {recentTransactions.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <DollarSign className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">
-                No transactions yet
-              </p>
-              <div className="flex justify-center gap-3">
-                <Button asChild>
-                  <Link href="/incomes/new">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Income
-                  </Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/expenses/new">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Expense
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {recentTransactions.map((transaction) => (
-                  <Link
-                    key={`${transaction.type}-${transaction.id}`}
-                    href={`/${
-                      transaction.type === "income"
-                        ? "incomes"
-                        : transaction.type === "expense"
-                          ? "expenses"
-                          : "transfers"
-                    }/${transaction.id}/edit`}
-                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-2 rounded-full ${
-                          transaction.type === "income"
-                            ? "bg-green-100 dark:bg-green-900"
-                            : transaction.type === "expense"
-                              ? "bg-red-100 dark:bg-red-900"
-                              : "bg-slate-100 dark:bg-slate-800"
-                        }`}
-                      >
-                        {transaction.type === "income" ? (
-                          <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        ) : transaction.type === "expense" ? (
-                          <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-                        ) : (
-                          <ArrowLeftRight className="h-4 w-4 text-slate-600 dark:text-slate-300" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {transaction.description || transaction.categoryName}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>{formatDate(transaction.date)}</span>
-                          <Badge
-                            variant="secondary"
-                            className={`text-xs ${
-                              transaction.type === "income"
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-200"
-                                : transaction.type === "expense"
-                                  ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                            }`}
-                          >
-                            {transaction.type === "income"
-                              ? "Income"
-                              : transaction.type === "expense"
-                                ? "Expense"
-                                : "Transfer"}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className={`text-lg font-semibold ${
-                        transaction.type === "income"
-                          ? "text-green-600 dark:text-green-400"
-                          : transaction.type === "expense"
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-slate-600 dark:text-slate-300"
-                      }`}
-                    >
-                      {transaction.type === "income"
-                        ? "+"
-                        : transaction.type === "expense"
-                          ? "-"
-                          : ""}
-                      {formatCurrency(transaction.amount)}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
