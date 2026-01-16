@@ -304,7 +304,7 @@ export const auth = betterAuth({
 Sincronizar tablas de Better Auth:
 
 ```bash
-pnpm db:sync
+pnpm db:sync # Genera el cliente Prisma y aplica el schema
 ```
 
 **Checklist**:
@@ -929,6 +929,18 @@ pnpm remove @supabase/supabase-js kysely
 }
 ```
 
+**Descripcion de scripts**:
+- `dev`: inicia el servidor de desarrollo
+- `build`: genera el cliente Prisma y compila Next.js
+- `start`: inicia el servidor de produccion
+- `lint`: ejecuta ESLint
+- `prisma:generate`: genera el cliente Prisma
+- `prisma:studio`: abre Prisma Studio
+- `prisma:push`: aplica el schema a la base de datos
+- `db:sync`: genera el cliente Prisma y aplica el schema
+- `db:reset`: reinicia la base de datos y aplica el schema (destructivo)
+- `db:studio`: alias de Prisma Studio
+
 **Checklist**:
 
 - [x] Actualizar script `build`
@@ -1068,7 +1080,7 @@ console.timeEnd('getAccountsWithBalances');
 **Verificar en Prisma Studio**:
 
 ```bash
-pnpm prisma studio
+pnpm prisma:studio # Abre Prisma Studio
 # Abrir http://localhost:5555
 # Verificar datos manualmente
 ```

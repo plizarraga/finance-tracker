@@ -334,8 +334,17 @@ Each feature owns:
 ## 17. Tooling & Runtime
 
 - **pnpm** as package manager
-- `pnpm install` for dependency management
-- `pnpm dev` / `pnpm run` for scripts
+- `pnpm install` installs dependencies
+- `pnpm dev` starts the development server
+- `pnpm build` generates the Prisma client and builds Next.js
+- `pnpm start` starts the production server
+- `pnpm lint` runs ESLint
+- `pnpm prisma:generate` generates the Prisma client
+- `pnpm prisma:studio` opens Prisma Studio
+- `pnpm prisma:push` applies the schema to the database
+- `pnpm db:sync` generates the Prisma client and applies the schema
+- `pnpm db:reset` resets the database and applies the schema (destructive)
+- `pnpm db:studio` alias for Prisma Studio
 - Deterministic installs via lockfile
 
 ---

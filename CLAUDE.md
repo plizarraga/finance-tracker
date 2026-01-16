@@ -18,16 +18,17 @@ Finance Tracker SLC - A mobile-first personal finance web app following Simple Â
 ## Build Commands
 
 ```bash
-pnpm install     # Install dependencies
-pnpm dev         # Development server
-pnpm build       # Production build
-pnpm start       # Start production server
-pnpm lint        # Run linting
+pnpm install         # Install dependencies
+pnpm dev             # Start dev server
+pnpm build           # Generate Prisma client and build Next.js
+pnpm start           # Start production server
+pnpm lint            # Run ESLint
 pnpm prisma:generate # Generate Prisma client
-pnpm prisma:studio   # Prisma Studio
-pnpm prisma:push     # Push schema to database
-pnpm db:sync         # Generate client + push schema
+pnpm prisma:studio   # Open Prisma Studio
+pnpm prisma:push     # Apply schema to the database
+pnpm db:sync         # Generate Prisma client and apply schema
 pnpm db:reset        # Reset database and apply schema (destructive)
+pnpm db:studio       # Open Prisma Studio (alias)
 ```
 
 ## Database

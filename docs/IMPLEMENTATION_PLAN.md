@@ -281,7 +281,7 @@ src/app/api/reports/route.ts
 - [ ] Testing exhaustivo
 
 **Acciones Inmediatas:**
-1. Ejecutar `pnpm dev` para testing local
+1. Ejecutar `pnpm dev` (servidor de desarrollo) para testing local
 2. Verificar responsive en móvil
 3. Revisar dark mode en todos los componentes
 4. Agregar loading states donde sea necesario
@@ -304,19 +304,19 @@ openssl rand -base64 32
 BETTER_AUTH_SECRET=<resultado>
 
 # 4. Sincronizar schema con Prisma:
-pnpm db:sync
+pnpm db:sync # Genera el cliente Prisma y aplica el schema
 ```
 
 ### 2. Testing Local
 
 ```bash
 # Instalar dependencias
-pnpm install
+pnpm install # Instala dependencias
 
 # Configurar .env.local con DATABASE_URL y BETTER_AUTH_SECRET
 
 # Ejecutar en desarrollo
-pnpm dev
+pnpm dev # Inicia el servidor de desarrollo
 
 # Acceder a http://localhost:3000
 ```
@@ -328,7 +328,7 @@ pnpm dev
    - Name: "Test User"
    - Email: test@example.com
    - Password: (cualquiera)
-3. Crear algunos registros en la UI o usar Prisma Studio (`pnpm db:studio`)
+3. Crear algunos registros en la UI o usar Prisma Studio (`pnpm db:studio`, abre Prisma Studio)
 4. Recargar el dashboard
 
 ### 4. Verificación de Funcionalidades
@@ -425,14 +425,14 @@ pnpm dev
 
 - [ ] Supabase project creado y configurado
 - [ ] Variables de entorno configuradas (.env.local)
-- [x] Prisma schema aplicado (`pnpm db:sync`)
+- [x] Prisma schema aplicado (`pnpm db:sync`, genera el cliente Prisma y aplica el schema)
 - [ ] Autenticación funcionando (signup/login)
 - [ ] CRUD de todas las features probado
 - [ ] Dashboard cargando datos correctamente
 - [ ] Reportes generando gráficos
 - [ ] Responsive funcionando en móvil
 - [ ] Dark mode activo por defecto
-- [ ] Build sin errores: `pnpm build`
+- [ ] Build sin errores: `pnpm build` (genera el cliente Prisma y compila Next.js)
 - [ ] No hay console errors en dev tools
 - [ ] Todas las rutas protegidas
 
@@ -478,10 +478,10 @@ pnpm dev
 **Ejecutar Proyecto:**
 ```bash
 pnpm install     # Instalar dependencias
-pnpm dev         # Servidor de desarrollo
-pnpm build       # Build de producción
-pnpm start       # Ejecutar producción
-pnpm lint        # Ejecutar linter
+pnpm dev         # Inicia el servidor de desarrollo
+pnpm build       # Genera el cliente Prisma y compila Next.js
+pnpm start       # Inicia el servidor de produccion
+pnpm lint        # Ejecuta ESLint
 ```
 
 ---
