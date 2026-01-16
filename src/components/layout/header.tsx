@@ -15,6 +15,8 @@ import {
   TrendingDown,
   ArrowLeftRight,
   BarChart3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,7 +48,12 @@ const navItems = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ];
 
-export function Header() {
+type HeaderProps = {
+  isSidebarCollapsed: boolean;
+  onToggleSidebar: () => void;
+};
+
+export function Header({ isSidebarCollapsed, onToggleSidebar }: HeaderProps) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
@@ -120,6 +127,20 @@ export function Header() {
               </nav>
             </SheetContent>
           </Sheet>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden md:inline-flex"
+            onClick={onToggleSidebar}
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+            )}
+          </Button>
 
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2">

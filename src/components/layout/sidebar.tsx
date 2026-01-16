@@ -23,15 +23,28 @@ const navItems = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ];
 
-export function Sidebar() {
+type SidebarProps = {
+  isCollapsed: boolean;
+};
+
+export function Sidebar({ isCollapsed }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
-      className="fixed left-0 top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-64 border-r bg-background md:flex md:flex-col"
+      className={cn(
+        "fixed left-0 top-14 z-30 hidden h-[calc(100vh-3.5rem)] border-r bg-background md:flex md:flex-col transition-[width] duration-200",
+        isCollapsed ? "w-16" : "w-64"
+      )}
       aria-label="Main navigation"
     >
-      <nav className="flex-1 space-y-1 p-4" role="navigation">
+      <nav
+        className={cn(
+          "flex-1 space-y-1",
+          isCollapsed ? "p-2" : "p-4"
+        )}
+        role="navigation"
+      >
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -45,14 +58,22 @@ export function Sidebar() {
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isCollapsed ? "justify-center" : "gap-3"
               )}
             >
               <Icon className="h-5 w-5" aria-hidden="true" />
-              {item.label}
+              <span
+                className={cn(
+                  "overflow-hidden whitespace-nowrap transition-all duration-200",
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                )}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}
