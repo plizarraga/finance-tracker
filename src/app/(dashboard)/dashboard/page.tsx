@@ -117,9 +117,9 @@ export default async function DashboardPage() {
   );
   const netBalance = totalMonthlyIncome - totalMonthlyExpenses;
 
-  // Combine and sort recent transactions (last 5)
+  // Combine and sort recent transactions (last 15)
   const recentTransactions: Transaction[] = [
-    ...allIncomes.slice(0, 5).map(
+    ...allIncomes.slice(0, 15).map(
       (inc: IncomeWithRelations): Transaction => ({
         id: inc.id,
         type: 'income',
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
         categoryName: inc.category.name,
       })
     ),
-    ...allExpenses.slice(0, 5).map(
+    ...allExpenses.slice(0, 15).map(
       (exp: ExpenseWithRelations): Transaction => ({
         id: exp.id,
         type: 'expense',
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
         categoryName: exp.category.name,
       })
     ),
-    ...allTransfers.slice(0, 5).map(
+    ...allTransfers.slice(0, 15).map(
       (transfer: TransferWithRelations): Transaction => ({
         id: transfer.id,
         type: 'transfer',
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
     ),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5);
+    .slice(0, 15);
 
   // Get current month name for display
   const currentMonthName = new Date().toLocaleDateString('en-US', {
