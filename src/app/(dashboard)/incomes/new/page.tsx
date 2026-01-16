@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
@@ -11,13 +11,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Account, Category } from "@/types";
+import type { IncomeInput } from "@/features/incomes/schemas";
 
 export default function NewIncomePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Extract query params for pre-filling from template
+  const defaultValues: Partial<IncomeInput> = {
+    accountId: searchParams.get("accountId") ?? undefined,
+    categoryId: searchParams.get("categoryId") ?? undefined,
+    amount: searchParams.get("amount")
+      ? Number.parseFloat(searchParams.get("amount")!)
+      : undefined,
+    description: searchParams.get("description") ?? undefined,
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -93,6 +105,7 @@ export default function NewIncomePage() {
             accounts={accounts}
             categories={categories}
             onSubmit={handleSubmit}
+            defaultValues={defaultValues}
           />
         </CardContent>
       </Card>

@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { DollarSign, Plus } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getIncomes } from "@/features/incomes/queries";
+import {
+  getIncomeTemplates,
+  getDefaultIncomeTemplate,
+} from "@/features/income-templates/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Button } from "@/components/ui/button";
+import { IncomeTemplateButtonGroup } from "@/components/incomes/income-template-button-group";
 import {
   Table,
   TableBody,
@@ -26,7 +30,11 @@ export default async function IncomesPage() {
     throw error;
   }
 
-  const incomes = await getIncomes();
+  const [incomes, templates, defaultTemplate] = await Promise.all([
+    getIncomes(),
+    getIncomeTemplates(),
+    getDefaultIncomeTemplate(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -34,12 +42,10 @@ export default async function IncomesPage() {
         title="Incomes"
         description="Track your income transactions"
         action={
-          <Button asChild>
-            <Link href="/incomes/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Income
-            </Link>
-          </Button>
+          <IncomeTemplateButtonGroup
+            templates={templates}
+            defaultTemplate={defaultTemplate}
+          />
         }
       />
 
@@ -49,12 +55,10 @@ export default async function IncomesPage() {
           title="No incomes yet"
           description="Record your first income to start tracking your earnings."
           action={
-            <Button asChild>
-              <Link href="/incomes/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Income
-              </Link>
-            </Button>
+            <IncomeTemplateButtonGroup
+              templates={templates}
+              defaultTemplate={defaultTemplate}
+            />
           }
         />
       ) : (

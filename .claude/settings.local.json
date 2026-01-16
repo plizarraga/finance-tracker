@@ -31,7 +31,12 @@
       "WebFetch(domain:www.better-auth.com)",
       "Bash(npx prisma:*)",
       "Bash(node --version)",
-      "Bash(npx @better-auth/cli@latest generate)"
+      "Bash(npx @better-auth/cli@latest generate)",
+      "Bash(pnpm prisma:push:*)",
+      "Bash(pnpm prisma:generate:*)",
+      "Bash(pnpm db:sync:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)"
     ]
   }
 }

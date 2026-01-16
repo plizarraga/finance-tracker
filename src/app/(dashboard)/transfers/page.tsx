@@ -1,11 +1,16 @@
 import Link from "next/link";
-import { ArrowLeftRight, Plus, ArrowRight } from "lucide-react";
+import { ArrowLeftRight, ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getTransfers } from "@/features/transfers/queries";
+import {
+  getTransferTemplates,
+  getDefaultTransferTemplate,
+} from "@/features/transfer-templates/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { TransferTemplateButtonGroup } from "@/components/transfers/transfer-template-button-group";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -26,7 +31,11 @@ export default async function TransfersPage() {
     throw error;
   }
 
-  const transfers = await getTransfers();
+  const [transfers, templates, defaultTemplate] = await Promise.all([
+    getTransfers(),
+    getTransferTemplates(),
+    getDefaultTransferTemplate(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -34,12 +43,10 @@ export default async function TransfersPage() {
         title="Transfers"
         description="Transfer money between your accounts"
         action={
-          <Button asChild>
-            <Link href="/transfers/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Transfer
-            </Link>
-          </Button>
+          <TransferTemplateButtonGroup
+            templates={templates}
+            defaultTemplate={defaultTemplate}
+          />
         }
       />
 
@@ -49,12 +56,10 @@ export default async function TransfersPage() {
           title="No transfers yet"
           description="Create your first transfer to move money between accounts."
           action={
-            <Button asChild>
-              <Link href="/transfers/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Transfer
-              </Link>
-            </Button>
+            <TransferTemplateButtonGroup
+              templates={templates}
+              defaultTemplate={defaultTemplate}
+            />
           }
         />
       ) : (

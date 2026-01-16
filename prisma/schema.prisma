@@ -21,13 +21,16 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Application relations
-  accounts   Account[]
-  categories Category[]
-  incomes    Income[]
-  expenses   Expense[]
-  transfers  Transfer[]
-  sessions   Session[]
-  authAccounts AuthAccount[]
+  accounts          Account[]
+  categories        Category[]
+  incomes           Income[]
+  expenses          Expense[]
+  transfers         Transfer[]
+  expenseTemplates  ExpenseTemplate[]
+  incomeTemplates   IncomeTemplate[]
+  transferTemplates TransferTemplate[]
+  sessions          Session[]
+  authAccounts      AuthAccount[]
 
   @@map("user")
 }
@@ -91,11 +94,15 @@ model Account {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user          User       @relation(fields: [userId], references: [id])
-  incomes       Income[]   @relation("AccountIncomes")
-  expenses      Expense[]  @relation("AccountExpenses")
-  transfersFrom Transfer[] @relation("TransfersFrom")
-  transfersTo   Transfer[] @relation("TransfersTo")
+  user                     User               @relation(fields: [userId], references: [id])
+  incomes                  Income[]           @relation("AccountIncomes")
+  expenses                 Expense[]          @relation("AccountExpenses")
+  expenseTemplates         ExpenseTemplate[]  @relation("TemplateAccount")
+  incomeTemplates          IncomeTemplate[]   @relation("IncomeTemplateAccount")
+  transfersFrom            Transfer[]         @relation("TransfersFrom")
+  transfersTo              Transfer[]         @relation("TransfersTo")
+  transferTemplatesFrom    TransferTemplate[] @relation("TransferTemplateFromAccount")
+  transferTemplatesTo      TransferTemplate[] @relation("TransferTemplateToAccount")
 
   @@index([userId])
   @@map("accounts")
@@ -116,9 +123,11 @@ model Category {
   createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user     User      @relation(fields: [userId], references: [id])
-  incomes  Income[]
-  expenses Expense[]
+  user             User              @relation(fields: [userId], references: [id])
+  incomes          Income[]
+  expenses         Expense[]
+  expenseTemplates ExpenseTemplate[] @relation("TemplateCategory")
+  incomeTemplates  IncomeTemplate[]  @relation("IncomeTemplateCategory")
 
   @@index([userId])
   @@index([type])
@@ -169,6 +178,75 @@ model Expense {
   @@index([categoryId])
   @@index([date])
   @@map("expenses")
+}
+
+// Expense Templates for quick expense creation
+model ExpenseTemplate {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id")
+  name        String   @db.VarChar(100)
+  accountId   String?  @map("account_id") @db.Uuid
+  categoryId  String?  @map("category_id") @db.Uuid
+  amount      Decimal? @db.Decimal(12, 2)
+  description String?  @db.Text
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User      @relation(fields: [userId], references: [id])
+  account  Account?  @relation("TemplateAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  category Category? @relation("TemplateCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@map("expense_templates")
+}
+
+// Income Templates for quick income creation
+model IncomeTemplate {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id")
+  name        String   @db.VarChar(100)
+  accountId   String?  @map("account_id") @db.Uuid
+  categoryId  String?  @map("category_id") @db.Uuid
+  amount      Decimal? @db.Decimal(12, 2)
+  description String?  @db.Text
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User      @relation(fields: [userId], references: [id])
+  account  Account?  @relation("IncomeTemplateAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  category Category? @relation("IncomeTemplateCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@map("income_templates")
+}
+
+// Transfer Templates for quick transfer creation
+model TransferTemplate {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id")
+  name          String   @db.VarChar(100)
+  fromAccountId String?  @map("from_account_id") @db.Uuid
+  toAccountId   String?  @map("to_account_id") @db.Uuid
+  amount        Decimal? @db.Decimal(12, 2)
+  description   String?  @db.Text
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user        User     @relation(fields: [userId], references: [id])
+  fromAccount Account? @relation("TransferTemplateFromAccount", fields: [fromAccountId], references: [id], onDelete: SetNull)
+  toAccount   Account? @relation("TransferTemplateToAccount", fields: [toAccountId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@map("transfer_templates")
 }
 
 // Transfers between accounts

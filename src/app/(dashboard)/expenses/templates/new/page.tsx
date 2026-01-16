@@ -1,37 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
-import { ExpenseForm } from "@/components/forms/expense-form";
-import { createExpense } from "@/features/expenses/actions";
+import { ExpenseTemplateForm } from "@/components/forms/expense-template-form";
+import { createExpenseTemplate } from "@/features/expense-templates/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Account, Category } from "@/types";
 
-export default function NewExpensePage() {
+export default function NewExpenseTemplatePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Extract query params for pre-filling from template
-  const accountIdParam = searchParams.get("accountId");
-  const categoryIdParam = searchParams.get("categoryId");
-  const amountParam = searchParams.get("amount");
-  const descriptionParam = searchParams.get("description");
-
-  const defaultValues = {
-    accountId: accountIdParam ?? undefined,
-    categoryId: categoryIdParam ?? undefined,
-    amount: amountParam ? Number.parseFloat(amountParam) : undefined,
-    description: descriptionParam ?? undefined,
-  };
 
   useEffect(() => {
     async function fetchData() {
@@ -66,18 +52,18 @@ export default function NewExpensePage() {
   }, [toast]);
 
   const handleSubmit = async (formData: FormData) => {
-    const result = await createExpense(formData);
+    const result = await createExpenseTemplate(formData);
 
     if (result.success) {
       toast({
-        title: "Expense created",
-        description: "Your expense has been recorded successfully.",
+        title: "Template created",
+        description: "Your expense template has been created successfully.",
       });
       router.push("/expenses");
     } else {
       toast({
         title: "Error",
-        description: result.error || "Failed to create expense",
+        description: result.error || "Failed to create template",
         variant: "destructive",
       });
     }
@@ -94,8 +80,8 @@ export default function NewExpensePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="New Expense"
-        description="Record a new expense"
+        title="New Expense Template"
+        description="Create a template for quick expense entry"
         action={
           <Button variant="outline" asChild>
             <Link href="/expenses">
@@ -108,11 +94,10 @@ export default function NewExpensePage() {
 
       <Card>
         <CardContent className="pt-6">
-          <ExpenseForm
+          <ExpenseTemplateForm
             accounts={accounts}
             categories={categories}
             onSubmit={handleSubmit}
-            defaultValues={defaultValues}
           />
         </CardContent>
       </Card>

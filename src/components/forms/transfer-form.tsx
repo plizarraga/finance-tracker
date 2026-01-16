@@ -63,23 +63,25 @@ interface TransferFormProps {
   transfer?: Transfer;
   accounts: Account[];
   onSubmit: (formData: FormData) => Promise<void>;
+  defaultValues?: Partial<TransferInput>;
 }
 
 export function TransferForm({
   transfer,
   accounts,
   onSubmit,
+  defaultValues,
 }: TransferFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<TransferInput>({
     resolver: zodResolver(transferSchema),
     defaultValues: {
-      fromAccountId: transfer?.fromAccountId ?? "",
-      toAccountId: transfer?.toAccountId ?? "",
-      amount: normalizeAmount(transfer?.amount),
+      fromAccountId: defaultValues?.fromAccountId ?? transfer?.fromAccountId ?? "",
+      toAccountId: defaultValues?.toAccountId ?? transfer?.toAccountId ?? "",
+      amount: defaultValues?.amount ?? normalizeAmount(transfer?.amount),
       date: normalizeDate(transfer?.date),
-      description: transfer?.description ?? "",
+      description: defaultValues?.description ?? transfer?.description ?? "",
     },
   });
 

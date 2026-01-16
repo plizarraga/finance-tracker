@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
@@ -11,12 +11,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Account } from "@/types";
+import type { TransferInput } from "@/features/transfers/schemas";
 
 export default function NewTransferPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Extract query params for pre-filling from template
+  const defaultValues: Partial<TransferInput> = {
+    fromAccountId: searchParams.get("fromAccountId") ?? undefined,
+    toAccountId: searchParams.get("toAccountId") ?? undefined,
+    amount: searchParams.get("amount")
+      ? Number.parseFloat(searchParams.get("amount")!)
+      : undefined,
+    description: searchParams.get("description") ?? undefined,
+  };
 
   useEffect(() => {
     async function fetchAccounts() {
@@ -113,7 +125,11 @@ export default function NewTransferPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <TransferForm accounts={accounts} onSubmit={handleSubmit} />
+          <TransferForm
+            accounts={accounts}
+            onSubmit={handleSubmit}
+            defaultValues={defaultValues}
+          />
         </CardContent>
       </Card>
     </div>

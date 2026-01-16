@@ -27,6 +27,7 @@ import {
 } from "@/features/expenses/schemas";
 import type { Expense, Account, Category } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
+import { CategoryCombobox } from "@/components/expenses/category-combobox";
 
 function normalizeAmount(value: unknown): number {
   if (typeof value === "number") {
@@ -63,6 +64,7 @@ interface ExpenseFormProps {
   accounts: Account[];
   categories: Category[];
   onSubmit: (formData: FormData) => Promise<void>;
+  defaultValues?: Partial<ExpenseInput>;
 }
 
 export function ExpenseForm({
@@ -70,17 +72,18 @@ export function ExpenseForm({
   accounts,
   categories,
   onSubmit,
+  defaultValues,
 }: ExpenseFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ExpenseInput>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
-      accountId: expense?.accountId ?? "",
-      categoryId: expense?.categoryId ?? "",
-      amount: normalizeAmount(expense?.amount),
+      accountId: defaultValues?.accountId ?? expense?.accountId ?? "",
+      categoryId: defaultValues?.categoryId ?? expense?.categoryId ?? "",
+      amount: defaultValues?.amount ?? normalizeAmount(expense?.amount),
       date: normalizeDate(expense?.date),
-      description: expense?.description ?? "",
+      description: defaultValues?.description ?? expense?.description ?? "",
     },
   });
 
@@ -136,24 +139,14 @@ export function ExpenseForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={isPending}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <CategoryCombobox
+                  categories={categories}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

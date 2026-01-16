@@ -8,7 +8,7 @@ import { categorySchema } from "./schemas";
 
 export async function createCategory(
   formData: FormData
-): Promise<ActionResult> {
+): Promise<ActionResult<{ id: string; name: string }>> {
   try {
     const { userId } = await requireAuth();
 
@@ -28,7 +28,7 @@ export async function createCategory(
 
     const { name, type } = validationResult.data;
 
-    await prisma.category.create({
+    const category = await prisma.category.create({
       data: {
         userId,
         name,
@@ -38,7 +38,7 @@ export async function createCategory(
 
     revalidatePath("/categories");
 
-    return { success: true };
+    return { success: true, data: { id: category.id, name: category.name } };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
