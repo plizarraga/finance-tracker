@@ -14,17 +14,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { incomeSchema, type IncomeInput } from "@/features/incomes/schemas";
 import { formatDateInput } from "@/lib/format";
 import type { Income, Account, Category } from "@prisma/client";
 import { CategoryCombobox } from "@/components/expenses/category-combobox";
+import { AccountCombobox } from "@/components/shared/account-combobox";
 
 function normalizeAmount(value: unknown): number {
   if (typeof value === "number") {
@@ -107,24 +101,15 @@ export function IncomeForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={isPending}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an account" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <AccountCombobox
+                  accounts={accounts}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending}
+                  placeholder="Select an account"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

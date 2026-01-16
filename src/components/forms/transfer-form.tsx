@@ -16,18 +16,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   transferSchema,
   type TransferInput,
 } from "@/features/transfers/schemas";
 import type { Transfer, Account } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
+import { AccountCombobox } from "@/components/shared/account-combobox";
 
 function normalizeAmount(value: unknown): number {
   if (typeof value === "number") {
@@ -114,24 +108,15 @@ export function TransferForm({
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormLabel>From Account</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isPending}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select source account" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <AccountCombobox
+                    accounts={accounts}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending}
+                    placeholder="Select source account"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -147,24 +132,15 @@ export function TransferForm({
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormLabel>To Account</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isPending}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select destination account" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <AccountCombobox
+                    accounts={accounts}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending}
+                    placeholder="Select destination account"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

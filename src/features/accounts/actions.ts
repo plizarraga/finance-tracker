@@ -8,7 +8,7 @@ import { accountSchema } from "./schemas";
 
 export async function createAccount(
   formData: FormData
-): Promise<ActionResult> {
+): Promise<ActionResult<{ id: string; name: string }>> {
   try {
     const { userId } = await requireAuth();
 
@@ -28,7 +28,7 @@ export async function createAccount(
 
     const { name, description } = validationResult.data;
 
-    await prisma.account.create({
+    const account = await prisma.account.create({
       data: {
         userId,
         name,
@@ -38,7 +38,7 @@ export async function createAccount(
 
     revalidatePath("/accounts");
 
-    return { success: true };
+    return { success: true, data: { id: account.id, name: account.name } };
   } catch (error) {
     if (isUnauthorizedError(error)) {
       return { success: false, error: "Unauthorized" };
