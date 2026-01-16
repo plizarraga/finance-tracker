@@ -65,3 +65,8 @@ User, Account, Category, Income, Expense, Transfer, ExpenseTemplate, IncomeTempl
 ## Out of Scope
 
 Budgets, savings, goals, debts, bank integrations, AI categorization, multi-currency, financial forecasting.
+
+## Plan Mode
+
+- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
+- At the end of each plan, give me a list of unresolved questions to answer, if any.
