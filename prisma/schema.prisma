@@ -154,6 +154,9 @@ model Income {
   @@index([accountId])
   @@index([categoryId])
   @@index([date])
+  @@index([userId, date])
+  @@index([userId, accountId])
+  @@index([userId, categoryId])
   @@map("incomes")
 }
 
@@ -178,6 +181,9 @@ model Expense {
   @@index([accountId])
   @@index([categoryId])
   @@index([date])
+  @@index([userId, date])
+  @@index([userId, accountId])
+  @@index([userId, categoryId])
   @@map("expenses")
 }
 
@@ -274,5 +280,8 @@ model Transfer {
   @@index([fromAccountId])
   @@index([toAccountId])
   @@index([date])
+  @@index([userId, date])
+  @@index([userId, fromAccountId])
+  @@index([userId, toAccountId])
   @@map("transfers")
 }

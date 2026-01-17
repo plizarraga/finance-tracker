@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
+import { Prisma } from "@prisma/client";
 import type { DateRange, ReportSummary, CategoryBreakdown } from "@/types";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
 
@@ -48,8 +49,8 @@ export async function getIncomeByCategory(
 ): Promise<CategoryBreakdown[]> {
   try {
     const { userId } = await requireAuth();
-    // Fetch all incomes with their categories in the date range
-    const incomes = await prisma.income.findMany({
+    const grouped = await prisma.income.groupBy({
+      by: ["categoryId"],
       where: {
         userId,
         date: {
@@ -57,43 +58,36 @@ export async function getIncomeByCategory(
           lte: dateRange.to,
         },
       },
-      include: {
-        category: true,
-      },
+      _sum: { amount: true },
     });
 
-    // Group by category
-    const categoryTotals = new Map<
-      string,
-      { categoryId: string; categoryName: string; total: number }
-    >();
-
-    for (const income of incomes) {
-      const existing = categoryTotals.get(income.categoryId);
-      if (existing) {
-        existing.total += income.amount.toNumber();
-      } else {
-        categoryTotals.set(income.categoryId, {
-          categoryId: income.categoryId,
-          categoryName: income.category.name,
-          total: income.amount.toNumber(),
-        });
-      }
+    if (grouped.length === 0) {
+      return [];
     }
 
-    // Calculate percentages
-    const totalIncome = Array.from(categoryTotals.values()).reduce(
-      (sum, cat) => sum + cat.total,
-      0
+    const categories = await prisma.category.findMany({
+      where: {
+        userId,
+        id: { in: grouped.map((row) => row.categoryId) },
+      },
+      select: { id: true, name: true },
+    });
+    const categoryNames = new Map(
+      categories.map((category) => [category.id, category.name])
     );
 
-    const breakdown: CategoryBreakdown[] = Array.from(
-      categoryTotals.values()
-    ).map((cat) => ({
-      categoryId: cat.categoryId,
-      categoryName: cat.categoryName,
-      total: cat.total,
-      percentage: totalIncome > 0 ? (cat.total / totalIncome) * 100 : 0,
+    // Calculate percentages
+    const totals = grouped.map((row) => ({
+      categoryId: row.categoryId,
+      total: row._sum.amount?.toNumber() ?? 0,
+    }));
+    const totalIncome = totals.reduce((sum, row) => sum + row.total, 0);
+
+    const breakdown: CategoryBreakdown[] = totals.map((row) => ({
+      categoryId: row.categoryId,
+      categoryName: categoryNames.get(row.categoryId) ?? "Unknown",
+      total: row.total,
+      percentage: totalIncome > 0 ? (row.total / totalIncome) * 100 : 0,
     }));
 
     // Sort by total descending
@@ -115,8 +109,8 @@ export async function getExpenseByCategory(
 ): Promise<CategoryBreakdown[]> {
   try {
     const { userId } = await requireAuth();
-    // Fetch all expenses with their categories in the date range
-    const expenses = await prisma.expense.findMany({
+    const grouped = await prisma.expense.groupBy({
+      by: ["categoryId"],
       where: {
         userId,
         date: {
@@ -124,43 +118,36 @@ export async function getExpenseByCategory(
           lte: dateRange.to,
         },
       },
-      include: {
-        category: true,
-      },
+      _sum: { amount: true },
     });
 
-    // Group by category
-    const categoryTotals = new Map<
-      string,
-      { categoryId: string; categoryName: string; total: number }
-    >();
-
-    for (const expense of expenses) {
-      const existing = categoryTotals.get(expense.categoryId);
-      if (existing) {
-        existing.total += expense.amount.toNumber();
-      } else {
-        categoryTotals.set(expense.categoryId, {
-          categoryId: expense.categoryId,
-          categoryName: expense.category.name,
-          total: expense.amount.toNumber(),
-        });
-      }
+    if (grouped.length === 0) {
+      return [];
     }
 
-    // Calculate percentages
-    const totalExpenses = Array.from(categoryTotals.values()).reduce(
-      (sum, cat) => sum + cat.total,
-      0
+    const categories = await prisma.category.findMany({
+      where: {
+        userId,
+        id: { in: grouped.map((row) => row.categoryId) },
+      },
+      select: { id: true, name: true },
+    });
+    const categoryNames = new Map(
+      categories.map((category) => [category.id, category.name])
     );
 
-    const breakdown: CategoryBreakdown[] = Array.from(
-      categoryTotals.values()
-    ).map((cat) => ({
-      categoryId: cat.categoryId,
-      categoryName: cat.categoryName,
-      total: cat.total,
-      percentage: totalExpenses > 0 ? (cat.total / totalExpenses) * 100 : 0,
+    // Calculate percentages
+    const totals = grouped.map((row) => ({
+      categoryId: row.categoryId,
+      total: row._sum.amount?.toNumber() ?? 0,
+    }));
+    const totalExpenses = totals.reduce((sum, row) => sum + row.total, 0);
+
+    const breakdown: CategoryBreakdown[] = totals.map((row) => ({
+      categoryId: row.categoryId,
+      categoryName: categoryNames.get(row.categoryId) ?? "Unknown",
+      total: row.total,
+      percentage: totalExpenses > 0 ? (row.total / totalExpenses) * 100 : 0,
     }));
 
     // Sort by total descending
@@ -189,34 +176,24 @@ export async function getMonthlyTrends(
     startDate.setDate(1);
     startDate.setHours(0, 0, 0, 0);
 
-    // Fetch incomes and expenses in parallel
-    const [incomes, expenses] = await Promise.all([
-      prisma.income.findMany({
-        where: {
-          userId,
-          date: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        select: {
-          amount: true,
-          date: true,
-        },
-      }),
-      prisma.expense.findMany({
-        where: {
-          userId,
-          date: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        select: {
-          amount: true,
-          date: true,
-        },
-      }),
+    type MonthlyRow = { month: Date; total: Prisma.Decimal | null };
+    const [incomeRows, expenseRows] = await Promise.all([
+      prisma.$queryRaw<MonthlyRow[]>`
+        SELECT date_trunc('month', date) AS month, SUM(amount) AS total
+        FROM incomes
+        WHERE user_id = ${userId}
+          AND date >= ${startDate}
+          AND date <= ${endDate}
+        GROUP BY 1
+      `,
+      prisma.$queryRaw<MonthlyRow[]>`
+        SELECT date_trunc('month', date) AS month, SUM(amount) AS total
+        FROM expenses
+        WHERE user_id = ${userId}
+          AND date >= ${startDate}
+          AND date <= ${endDate}
+        GROUP BY 1
+      `,
     ]);
 
     // Initialize monthly data
@@ -230,23 +207,21 @@ export async function getMonthlyTrends(
       current.setMonth(current.getMonth() + 1);
     }
 
-    // Aggregate incomes by month
-    for (const income of incomes) {
-      const date = new Date(income.date);
-      const key = formatMonthKey(date);
+    // Apply income aggregates
+    for (const row of incomeRows) {
+      const key = formatMonthKey(new Date(row.month));
       const existing = monthlyData.get(key);
       if (existing) {
-        existing.income += income.amount.toNumber();
+        existing.income += row.total?.toNumber() ?? 0;
       }
     }
 
-    // Aggregate expenses by month
-    for (const expense of expenses) {
-      const date = new Date(expense.date);
-      const key = formatMonthKey(date);
+    // Apply expense aggregates
+    for (const row of expenseRows) {
+      const key = formatMonthKey(new Date(row.month));
       const existing = monthlyData.get(key);
       if (existing) {
-        existing.expenses += expense.amount.toNumber();
+        existing.expenses += row.total?.toNumber() ?? 0;
       }
     }
 

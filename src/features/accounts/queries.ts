@@ -89,19 +89,81 @@ export async function getAccountsWithBalances(
 ): Promise<AccountWithBalance[]> {
   try {
     const { userId } = await requireAuth();
-    const accounts = await prisma.account.findMany({
-      where: { userId },
-      orderBy: { name: "asc" },
-    });
+    const [
+      accounts,
+      incomeSums,
+      expenseSums,
+      transfersInSums,
+      transfersOutSums,
+    ] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId },
+        orderBy: { name: "asc" },
+      }),
+      prisma.income.groupBy({
+        by: ["accountId"],
+        where: { userId },
+        _sum: { amount: true },
+      }),
+      prisma.expense.groupBy({
+        by: ["accountId"],
+        where: { userId },
+        _sum: { amount: true },
+      }),
+      prisma.transfer.groupBy({
+        by: ["toAccountId"],
+        where: { userId },
+        _sum: { amount: true },
+      }),
+      prisma.transfer.groupBy({
+        by: ["fromAccountId"],
+        where: { userId },
+        _sum: { amount: true },
+      }),
+    ]);
 
-    const accountsWithBalances = await Promise.all(
-      accounts.map(async (account) => ({
-        ...account,
-        balance: await calculateAccountBalance(account.id),
-      }))
+    const incomeByAccount = new Map(
+      incomeSums.map((row) => [
+        row.accountId,
+        row._sum.amount?.toNumber() ?? 0,
+      ])
+    );
+    const expenseByAccount = new Map(
+      expenseSums.map((row) => [
+        row.accountId,
+        row._sum.amount?.toNumber() ?? 0,
+      ])
+    );
+    const transfersInByAccount = new Map(
+      transfersInSums.map((row) => [
+        row.toAccountId,
+        row._sum.amount?.toNumber() ?? 0,
+      ])
+    );
+    const transfersOutByAccount = new Map(
+      transfersOutSums.map((row) => [
+        row.fromAccountId,
+        row._sum.amount?.toNumber() ?? 0,
+      ])
     );
 
-    return accountsWithBalances;
+    return accounts.map((account) => {
+      const initialBalance = account.initialBalance?.toNumber?.() ?? 0;
+      const incomeTotal = incomeByAccount.get(account.id) ?? 0;
+      const expenseTotal = expenseByAccount.get(account.id) ?? 0;
+      const transfersInTotal = transfersInByAccount.get(account.id) ?? 0;
+      const transfersOutTotal = transfersOutByAccount.get(account.id) ?? 0;
+
+      return {
+        ...account,
+        balance:
+          initialBalance +
+          incomeTotal +
+          transfersInTotal -
+          expenseTotal -
+          transfersOutTotal,
+      };
+    });
   } catch (error) {
     if (isUnauthorizedError(error)) {
       throw error;
