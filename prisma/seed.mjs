@@ -22,7 +22,7 @@ function dateInMonth(reference, monthOffset, day) {
 }
 
 async function main() {
-  const email = "demo@financetracker.local";
+  const email = "demo@financetracker.dev";
   const password = "DemoPass123!";
   const userId = randomUUID();
   const user = await prisma.user.upsert({
@@ -84,7 +84,7 @@ async function main() {
         userId: user.id,
         name: "Cuenta Secundaria",
         description: "Cuenta secundaria",
-        initialBalance: new Prisma.Decimal("20000.00"),
+        initialBalance: new Prisma.Decimal("50000.00"),
       },
     }),
   ]);
@@ -132,6 +132,31 @@ async function main() {
     ],
   });
 
+  const targetCount = 60;
+  const extraIncomeCount = Math.max(0, targetCount - 4);
+  const extraIncomeData = Array.from({ length: extraIncomeCount }, (_, index) => {
+    const monthOffset = -Math.floor(index / 8);
+    const day = (index % 27) + 1;
+    const amountValue = 3200 + (index % 6) * 300;
+    const categoryName = index % 2 === 0 ? "Salary" : "Freelance";
+    const accountName =
+      index % 3 === 0 ? "Cuenta Secundaria" : "Cuenta Principal";
+    return {
+      userId: user.id,
+      accountId: accountByName.get(accountName).id,
+      categoryId: categoryByName.get(categoryName).id,
+      amount: new Prisma.Decimal(`${amountValue}.00`),
+      date: dateInMonth(today, monthOffset, day),
+      description: `Ingreso extra ${index + 1}`,
+    };
+  });
+
+  if (extraIncomeData.length > 0) {
+    await prisma.income.createMany({
+      data: extraIncomeData,
+    });
+  }
+
   const currentMonthExpenseDays = [2, 6, 10, 14, 18, 22, 26].filter(
     (day) => day <= today.getDate()
   );
@@ -175,6 +200,38 @@ async function main() {
     ],
   });
 
+  const existingExpenseCount =
+    currentMonthExpenseDays.length + lastMonthExpenseDays.length;
+  const extraExpenseCount = Math.max(0, targetCount - existingExpenseCount);
+  const expenseCategoryNames = [
+    "Groceries",
+    "Utilities",
+    "Entertainment",
+    "Rent",
+  ];
+  const extraExpenseData = Array.from({ length: extraExpenseCount }, (_, index) => {
+    const monthOffset = -Math.floor(index / 10);
+    const day = (index % 27) + 1;
+    const amountValue = 200 + (index % 7) * 85;
+    const categoryName = expenseCategoryNames[index % expenseCategoryNames.length];
+    const accountName =
+      index % 4 === 0 ? "Cuenta Secundaria" : "Cuenta Principal";
+    return {
+      userId: user.id,
+      accountId: accountByName.get(accountName).id,
+      categoryId: categoryByName.get(categoryName).id,
+      amount: new Prisma.Decimal(`${amountValue}.00`),
+      date: dateInMonth(today, monthOffset, day),
+      description: `Gasto extra ${index + 1}`,
+    };
+  });
+
+  if (extraExpenseData.length > 0) {
+    await prisma.expense.createMany({
+      data: extraExpenseData,
+    });
+  }
+
   await prisma.transfer.createMany({
     data: [
       {
@@ -187,6 +244,30 @@ async function main() {
       },
     ],
   });
+
+  const extraTransferCount = Math.max(0, targetCount - 1);
+  const extraTransferData = Array.from({ length: extraTransferCount }, (_, index) => {
+    const amountValue = 500 + (index % 6) * 250;
+    const isPrimaryToSecondary = index % 2 === 0;
+    return {
+      userId: user.id,
+      fromAccountId: accountByName.get(
+        isPrimaryToSecondary ? "Cuenta Principal" : "Cuenta Secundaria"
+      ).id,
+      toAccountId: accountByName.get(
+        isPrimaryToSecondary ? "Cuenta Secundaria" : "Cuenta Principal"
+      ).id,
+      amount: new Prisma.Decimal(`${amountValue}.00`),
+      date: daysAgo(index + 1),
+      description: `Transferencia extra ${index + 1}`,
+    };
+  });
+
+  if (extraTransferData.length > 0) {
+    await prisma.transfer.createMany({
+      data: extraTransferData,
+    });
+  }
 
   await prisma.incomeTemplate.create({
     data: {

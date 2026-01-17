@@ -45,6 +45,7 @@ export function Pagination({
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", page.toString());
       router.push(`${pathname}?${params.toString()}`);
+      router.refresh();
     },
     [router, pathname, searchParams]
   );

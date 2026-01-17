@@ -14,6 +14,7 @@ import { DataTable } from "@/components/shared/data-table";
 import { DataTableToolbar } from "@/components/shared/data-table-toolbar";
 import { transferColumns } from "@/components/transfers/transfer-columns";
 import { serializeForClient } from "@/lib/serialize";
+import { DEFAULT_PAGE_SIZE } from "@/components/shared/table-constants";
 
 interface TransfersPageProps {
   searchParams: Promise<{
@@ -43,7 +44,7 @@ export default async function TransfersPage({
 
   const params = await searchParams;
   const page = parseInt(params.page || "1", 10);
-  const pageSize = parseInt(params.pageSize || "25", 10);
+  const pageSize = parseInt(params.pageSize || DEFAULT_PAGE_SIZE.toString(), 10);
   const sortBy = (params.sortBy || "date") as
     | "date"
     | "description"

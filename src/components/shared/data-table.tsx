@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "./pagination";
 import { PageSizeSelector } from "./page-size-selector";
-import { PAGE_SIZES, DEFAULT_PAGE_SIZE, QUERY_KEYS, isValidPageSize } from "./table-constants";
+import { DEFAULT_PAGE_SIZE, QUERY_KEYS, isValidPageSize } from "./table-constants";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -154,8 +154,8 @@ export function DataTable<TData, TValue>({
     urlState.columnFilters
   );
 
-  // Track if state change is from URL sync (to prevent circular updates)
-  const isUrlSyncRef = React.useRef(false);
+  // Track if we should ignore URL updates
+  const ignoreNextUpdateRef = React.useRef(false);
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table hook is required here.
   const table = useReactTable({
@@ -176,55 +176,46 @@ export function DataTable<TData, TValue>({
     manualFiltering: true,
   });
 
-  // Sync state from URL when back/forward navigation occurs
+  // When the URL changes from outside (back/forward), sync the state
   React.useEffect(() => {
-    const newSorting = urlState.sorting;
-    const newPagination = urlState.pagination;
-    const newFilters = urlState.columnFilters;
+    const newUrlState = parseUrlState(searchParams, columns as ColumnDef<unknown, unknown>[], pageCount);
 
-    const sortingChanged =
-      sorting.length !== newSorting.length ||
-      sorting.some((s, i) => s.id !== newSorting[i]?.id || s.desc !== newSorting[i]?.desc);
+    const sortingDifferent =
+      sorting.length !== newUrlState.sorting.length ||
+      sorting.some((s, i) => s.id !== newUrlState.sorting[i]?.id || s.desc !== newUrlState.sorting[i]?.desc);
 
-    const paginationChanged =
-      pagination.pageIndex !== newPagination.pageIndex ||
-      pagination.pageSize !== newPagination.pageSize;
+    const paginationDifferent =
+      pagination.pageIndex !== newUrlState.pagination.pageIndex ||
+      pagination.pageSize !== newUrlState.pagination.pageSize;
 
-    const filtersChanged =
-      columnFilters.length !== newFilters.length ||
-      columnFilters.some((f, i) => f.id !== newFilters[i]?.id || f.value !== newFilters[i]?.value);
+    const filtersDifferent =
+      columnFilters.length !== newUrlState.columnFilters.length ||
+      columnFilters.some((f, i) => f.id !== newUrlState.columnFilters[i]?.id || f.value !== newUrlState.columnFilters[i]?.value);
 
-    if (sortingChanged || paginationChanged || filtersChanged) {
-      isUrlSyncRef.current = true;
-      if (sortingChanged) setSorting(newSorting);
-      if (paginationChanged) setPagination(newPagination);
-      if (filtersChanged) setColumnFilters(newFilters);
+    if (sortingDifferent || paginationDifferent || filtersDifferent) {
+      ignoreNextUpdateRef.current = true;
+      if (sortingDifferent) setSorting(newUrlState.sorting);
+      if (paginationDifferent) setPagination(newUrlState.pagination);
+      if (filtersDifferent) setColumnFilters(newUrlState.columnFilters);
     }
-  }, [urlState, sorting, pagination, columnFilters]);
+  }, [searchParams, columns, pageCount]);
 
-  // Update URL when table state changes
+  // When the table state changes, update the URL
   React.useEffect(() => {
-    // Skip URL update if this was triggered by URL sync
-    if (isUrlSyncRef.current) {
-      isUrlSyncRef.current = false;
+    if (ignoreNextUpdateRef.current) {
+      ignoreNextUpdateRef.current = false;
       return;
     }
 
-    const params = buildUrlParams(
-      sorting,
-      pagination,
-      columnFilters,
-      filterableColumns,
-      searchParams
-    );
-
-    const nextQuery = params.toString();
+    const params = buildUrlParams(sorting, pagination, columnFilters, filterableColumns, searchParams);
+    const newQuery = params.toString();
     const currentQuery = searchParams.toString();
 
-    if (nextQuery !== currentQuery) {
-      router.replace(`${pathname}?${nextQuery}`);
+    if (newQuery !== currentQuery) {
+      router.replace(`${pathname}?${newQuery}`, { scroll: false });
+      router.refresh();
     }
-  }, [sorting, pagination, columnFilters, filterableColumns, pathname, router, searchParams]);
+  }, [sorting, pagination, columnFilters]);
 
   // Memoize page size change handler
   const handlePageSizeChange = React.useCallback((pageSize: number) => {
@@ -237,7 +228,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {filterComponent}
+      {filterComponent && <div>{filterComponent}</div>}
       <div className="rounded-md border">
         <Table>
           <TableHeader>

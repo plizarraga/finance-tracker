@@ -58,6 +58,7 @@ function useDebouncedUrlUpdate(delay: number) {
         params.set("page", "1");
 
         router.push(`${pathname}?${params.toString()}`);
+        router.refresh();
       };
 
       if (timeoutRef.current) {
@@ -81,6 +82,7 @@ function useDebouncedUrlUpdate(delay: number) {
       }
       params.set("page", "1");
       router.push(`${pathname}?${params.toString()}`);
+      router.refresh();
     },
     [router, pathname, searchParams]
   );

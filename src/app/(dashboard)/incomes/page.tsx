@@ -15,6 +15,7 @@ import { DataTableToolbar } from "@/components/shared/data-table-toolbar";
 import { incomeColumns } from "@/components/incomes/income-columns";
 import { serializeForClient } from "@/lib/serialize";
 import { redirect } from "next/navigation";
+import { DEFAULT_PAGE_SIZE } from "@/components/shared/table-constants";
 
 interface IncomesPageProps {
   searchParams: Promise<{
@@ -42,7 +43,7 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
 
   const params = await searchParams;
   const page = parseInt(params.page || "1", 10);
-  const pageSize = parseInt(params.pageSize || "25", 10);
+  const pageSize = parseInt(params.pageSize || DEFAULT_PAGE_SIZE.toString(), 10);
   const sortBy = (params.sortBy || "date") as
     | "date"
     | "description"
