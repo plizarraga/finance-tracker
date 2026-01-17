@@ -15,10 +15,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { incomeSchema, type IncomeInput } from "@/features/incomes/schemas";
-import { formatDateInput } from "@/lib/format";
 import type { Income, Account, Category } from "@prisma/client";
 import { CategoryCombobox } from "@/components/expenses/category-combobox";
 import { AccountCombobox } from "@/components/shared/account-combobox";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 
 function normalizeAmount(value: unknown): number {
   if (typeof value === "number") {
@@ -164,11 +164,11 @@ export function IncomeForm({
             <FormItem>
               <FormLabel>Date</FormLabel>
               <FormControl>
-                <Input
-                  type="date"
+                <DatePickerField
+                  value={field.value}
+                  onChange={field.onChange}
                   disabled={isPending}
-                  value={formatDateInput(field.value)}
-                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                  placeholder="Select a date"
                 />
               </FormControl>
               <FormMessage />

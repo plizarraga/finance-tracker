@@ -22,6 +22,7 @@ import type { Expense, Account, Category } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
 import { CategoryCombobox } from "@/components/expenses/category-combobox";
 import { AccountCombobox } from "@/components/shared/account-combobox";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 
 function normalizeAmount(value: unknown): number {
   if (typeof value === "number") {
@@ -166,11 +167,11 @@ export function ExpenseForm({
             <FormItem>
               <FormLabel>Date</FormLabel>
               <FormControl>
-                <Input
-                  type="date"
+                <DatePickerField
+                  value={field.value}
+                  onChange={field.onChange}
                   disabled={isPending}
-                  value={formatDateInput(field.value)}
-                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                  placeholder="Select a date"
                 />
               </FormControl>
               <FormMessage />

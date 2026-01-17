@@ -20,8 +20,8 @@ import {
   type TransferInput,
 } from "@/features/transfers/schemas";
 import type { Transfer, Account } from "@prisma/client";
-import { formatDateInput } from "@/lib/format";
 import { AccountCombobox } from "@/components/shared/account-combobox";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 
 function normalizeAmount(value: unknown): number {
   if (typeof value === "number") {
@@ -177,20 +177,11 @@ export function TransferForm({
               <FormItem>
                 <FormLabel>Date</FormLabel>
                 <FormControl>
-                  <Input
-                    type="date"
+                  <DatePickerField
+                    value={field.value || new Date()}
+                    onChange={field.onChange}
                     disabled={isPending}
-                    value={
-                      field.value
-                        ? formatDateInput(field.value)
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const date = e.target.value
-                        ? new Date(e.target.value)
-                        : new Date();
-                      field.onChange(date);
-                    }}
+                    placeholder="Select a date"
                   />
                 </FormControl>
                 <FormMessage />
