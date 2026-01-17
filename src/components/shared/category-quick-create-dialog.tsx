@@ -53,7 +53,7 @@ export function CategoryQuickCreateDialog({
     },
   });
 
-  const handleSubmit = (values: QuickCategoryInput) => {
+  const onSubmit = (values: QuickCategoryInput) => {
     startTransition(async () => {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -78,6 +78,7 @@ export function CategoryQuickCreateDialog({
       }
     });
   };
+  const handleSubmit = form.handleSubmit(onSubmit);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,7 +90,13 @@ export function CategoryQuickCreateDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={(event) => {
+              event.stopPropagation();
+              handleSubmit(event);
+            }}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
