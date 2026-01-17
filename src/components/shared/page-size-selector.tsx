@@ -24,7 +24,7 @@ export function PageSizeSelector({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="hidden items-center gap-2 sm:flex">
       <span className="text-sm text-muted-foreground whitespace-nowrap">
         Rows per page
       </span>

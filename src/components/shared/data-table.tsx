@@ -302,7 +302,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-center gap-4 sm:justify-between">
         <PageSizeSelector pageSize={pagination.pageSize} onPageSizeChange={handlePageSizeChange} />
         <Pagination
           currentPage={pagination.pageIndex + 1}
