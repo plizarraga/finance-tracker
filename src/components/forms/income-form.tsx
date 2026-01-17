@@ -50,8 +50,10 @@ function normalizeDate(value: unknown): Date {
   return new Date();
 }
 
+type IncomeWithNotes = Income & { notes?: string | null };
+
 interface IncomeFormProps {
-  income?: Income;
+  income?: IncomeWithNotes;
   accounts: Account[];
   categories: Category[];
   onSubmit: (formData: FormData) => Promise<void>;
@@ -75,7 +77,7 @@ export function IncomeForm({
       amount: defaultValues?.amount ?? normalizeAmount(income?.amount),
       date: normalizeDate(income?.date),
       description: defaultValues?.description ?? income?.description ?? "",
-      notes: income?.notes ?? "",
+      notes: defaultValues?.notes ?? income?.notes ?? "",
     },
   });
 

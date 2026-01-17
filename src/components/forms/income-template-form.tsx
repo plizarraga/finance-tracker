@@ -35,8 +35,12 @@ function normalizeAmount(value: number | null | undefined): number | null {
   return value;
 }
 
+type IncomeTemplateWithNotes = IncomeTemplateWithRelations & {
+  notes?: string | null;
+};
+
 interface IncomeTemplateFormProps {
-  template?: IncomeTemplateWithRelations;
+  template?: IncomeTemplateWithNotes;
   accounts: Account[];
   categories: Category[];
   onSubmit: (formData: FormData) => Promise<void>;
