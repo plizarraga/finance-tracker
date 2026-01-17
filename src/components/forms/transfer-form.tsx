@@ -199,10 +199,9 @@ export function TransferForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
+                <Input
                   placeholder="Add a description for this transfer..."
                   disabled={isPending}
-                  rows={3}
                   {...field}
                   value={field.value ?? ""}
                 />

@@ -190,10 +190,9 @@ export function ExpenseForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
+                <Input
                   placeholder="Add a description for this expense..."
                   disabled={isPending}
-                  rows={3}
                   {...field}
                   value={field.value ?? ""}
                 />
