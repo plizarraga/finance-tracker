@@ -186,10 +186,9 @@ export function ExpenseTemplateForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
+                <Input
                   placeholder="Default description for this type of expense..."
                   disabled={isPending}
-                  rows={3}
                   {...field}
                   value={field.value ?? ""}
                 />

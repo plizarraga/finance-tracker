@@ -187,10 +187,9 @@ export function IncomeTemplateForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
+                <Input
                   placeholder="Default description for this type of income..."
                   disabled={isPending}
-                  rows={3}
                   {...field}
                   value={field.value ?? ""}
                 />
