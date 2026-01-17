@@ -24,35 +24,21 @@ export const transferColumns: ColumnDef<TransferWithRelations>[] = [
   {
     accessorKey: "fromAccount",
     id: "fromAccount",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="From" className="hidden md:flex" />
-    ),
-    cell: ({ row }) => (
-      <div className="hidden md:table-cell">{row.original.fromAccount.name}</div>
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="From" />,
+    cell: ({ row }) => <div>{row.original.fromAccount.name}</div>,
     enableSorting: true,
   },
   {
     accessorKey: "toAccount",
     id: "toAccount",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="To" className="hidden md:flex" />
-    ),
-    cell: ({ row }) => (
-      <div className="hidden md:table-cell">{row.original.toAccount.name}</div>
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="To" />,
+    cell: ({ row }) => <div>{row.original.toAccount.name}</div>,
     enableSorting: true,
   },
   {
     accessorKey: "date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date" className="hidden md:flex" />
-    ),
-    cell: ({ row }) => (
-      <div className="hidden md:table-cell">
-        {formatDate(row.original.date)}
-      </div>
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
+    cell: ({ row }) => <div>{formatDate(row.original.date)}</div>,
     enableSorting: true,
   },
   createAmountColumn<TransferWithRelations>("neutral"),

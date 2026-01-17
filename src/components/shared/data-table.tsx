@@ -266,7 +266,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {filterComponent && <div>{filterComponent}</div>}
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
