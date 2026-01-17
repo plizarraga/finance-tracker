@@ -203,7 +203,7 @@ export default async function DashboardPage() {
             <ExpenseTemplateButtonGroup
               templates={expenseTemplates}
               defaultTemplate={defaultExpenseTemplate}
-              variant="destructive"
+              variant="default"
               fullWidth
             />
           </div>
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
             <TransferTemplateButtonGroup
               templates={transferTemplates}
               defaultTemplate={defaultTransferTemplate}
-              variant="outline"
+              variant="default"
               fullWidth
             />
           </div>
@@ -244,7 +244,7 @@ export default async function DashboardPage() {
               <p className="text-muted-foreground mb-4">No accounts yet</p>
               <Button asChild>
                 <Link href="/accounts/new">
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Wallet className="mr-2 h-4 w-4" />
                   Create Account
                 </Link>
               </Button>

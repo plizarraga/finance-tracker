@@ -97,7 +97,7 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
           <ExpenseTemplateButtonGroup
             templates={templates}
             defaultTemplate={defaultTemplate}
-            variant="destructive"
+            variant="default"
           />
         }
       />
@@ -111,7 +111,7 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
             <ExpenseTemplateButtonGroup
               templates={templates}
               defaultTemplate={defaultTemplate}
-              variant="destructive"
+              variant="default"
             />
           }
         />

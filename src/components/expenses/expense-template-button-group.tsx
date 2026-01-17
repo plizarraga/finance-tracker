@@ -1,7 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Plus, ChevronDown, Star, Edit, Copy, Trash2 } from "lucide-react";
+import {
+  Plus,
+  ChevronDown,
+  Star,
+  Edit,
+  Copy,
+  Trash2,
+  TrendingDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -158,7 +166,7 @@ export function ExpenseTemplateButtonGroup({
           onClick={() => handleCreateFromTemplate(defaultTemplate)}
           className={mainButtonClassName}
         >
-          <Plus className="mr-2 h-4 w-4 shrink-0" />
+          <TrendingDown className="mr-2 h-4 w-4 shrink-0 text-red-600 dark:text-red-600" />
           <span className={fullWidth ? "truncate" : undefined}>
             {defaultTemplate ? defaultTemplate.name : "New Expense"}
           </span>

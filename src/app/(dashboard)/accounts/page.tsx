@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Wallet, Plus } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
 import { formatCurrency } from "@/lib/format";
@@ -35,7 +35,7 @@ export default async function AccountsPage() {
         action={
           <Button asChild>
             <Link href="/accounts/new">
-              <Plus className="mr-2 h-4 w-4" />
+              <Wallet className="mr-2 h-4 w-4" />
               New Account
             </Link>
           </Button>
@@ -50,7 +50,7 @@ export default async function AccountsPage() {
           action={
             <Button asChild>
               <Link href="/accounts/new">
-                <Plus className="mr-2 h-4 w-4" />
+                <Wallet className="mr-2 h-4 w-4" />
                 Create Account
               </Link>
             </Button>

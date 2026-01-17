@@ -1,7 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Plus, ChevronDown, Star, Edit, Copy, Trash2 } from "lucide-react";
+import {
+  Plus,
+  ChevronDown,
+  Star,
+  Edit,
+  Copy,
+  Trash2,
+  ArrowLeftRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -160,7 +168,7 @@ export function TransferTemplateButtonGroup({
           onClick={() => handleCreateFromTemplate(defaultTemplate)}
           className={mainButtonClassName}
         >
-          <Plus className="mr-2 h-4 w-4 shrink-0" />
+          <ArrowLeftRight className="mr-2 h-4 w-4 shrink-0" />
           <span className={fullWidth ? "truncate" : undefined}>
             {defaultTemplate ? defaultTemplate.name : "New Transfer"}
           </span>

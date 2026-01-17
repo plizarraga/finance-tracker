@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus, Tag } from "lucide-react";
+import { Tag } from "lucide-react";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getCategories } from "@/features/categories/queries";
 import { PageHeader } from "@/components/shared/page-header";
@@ -34,7 +34,7 @@ export default async function CategoriesPage() {
         action={
           <Button asChild>
             <Link href="/categories/new">
-              <Plus className="mr-2 h-4 w-4" />
+              <Tag className="mr-2 h-4 w-4" />
               New Category
             </Link>
           </Button>
@@ -49,7 +49,7 @@ export default async function CategoriesPage() {
           action={
             <Button asChild>
               <Link href="/categories/new">
-                <Plus className="mr-2 h-4 w-4" />
+                <Tag className="mr-2 h-4 w-4" />
                 New Category
               </Link>
             </Button>
@@ -80,7 +80,7 @@ export default async function CategoriesPage() {
                 action={
                   <Button asChild>
                     <Link href="/categories/new">
-                      <Plus className="mr-2 h-4 w-4" />
+                      <Tag className="mr-2 h-4 w-4" />
                       New Category
                     </Link>
                   </Button>
@@ -100,7 +100,7 @@ export default async function CategoriesPage() {
                 action={
                   <Button asChild>
                     <Link href="/categories/new">
-                      <Plus className="mr-2 h-4 w-4" />
+                      <Tag className="mr-2 h-4 w-4" />
                       New Category
                     </Link>
                   </Button>
