@@ -48,7 +48,8 @@ export async function PUT(
       toAccountId: formData.get("toAccountId"),
       amount: formData.get("amount"),
       date: formData.get("date"),
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = transferServerSchema.safeParse(rawData);
@@ -63,7 +64,7 @@ export async function PUT(
       );
     }
 
-    const { fromAccountId, toAccountId, amount, date, description } =
+    const { fromAccountId, toAccountId, amount, date, description, notes } =
       validationResult.data;
 
     const existingTransfer = await prisma.transfer.findFirst({
@@ -120,6 +121,7 @@ export async function PUT(
         amount,
         date,
         description,
+        notes,
       },
     });
 

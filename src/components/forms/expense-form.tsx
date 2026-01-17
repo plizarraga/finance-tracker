@@ -20,7 +20,7 @@ import {
 } from "@/features/expenses/schemas";
 import type { Expense, Account, Category } from "@prisma/client";
 import { formatDateInput } from "@/lib/format";
-import { CategoryCombobox } from "@/components/expenses/category-combobox";
+import { CategoryCombobox } from "@/components/shared/category-combobox";
 import { AccountCombobox } from "@/components/shared/account-combobox";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 
@@ -79,6 +79,7 @@ export function ExpenseForm({
       amount: defaultValues?.amount ?? normalizeAmount(expense?.amount),
       date: normalizeDate(expense?.date),
       description: defaultValues?.description ?? expense?.description ?? "",
+      notes: expense?.notes ?? "",
     },
   });
 
@@ -89,8 +90,9 @@ export function ExpenseForm({
       formData.append("categoryId", values.categoryId);
       formData.append("amount", values.amount.toString());
       formData.append("date", formatDateInput(values.date));
-      if (values.description) {
-        formData.append("description", values.description);
+      formData.append("description", values.description);
+      if (values.notes) {
+        formData.append("notes", values.notes);
       }
       await onSubmit(formData);
     });
@@ -184,10 +186,30 @@ export function ExpenseForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Add a description for this expense..."
+                  disabled={isPending}
+                  rows={3}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Additional notes..."
                   disabled={isPending}
                   rows={3}
                   {...field}

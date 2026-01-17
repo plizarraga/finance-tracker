@@ -30,6 +30,7 @@ export async function POST(
         toAccountId: template.toAccountId,
         amount: template.amount,
         description: template.description,
+        notes: null,
         isDefault: false,
       },
     });

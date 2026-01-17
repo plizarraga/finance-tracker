@@ -14,7 +14,8 @@ export async function POST(request: Request) {
       fromAccountId: formData.get("fromAccountId") || null,
       toAccountId: formData.get("toAccountId") || null,
       amount: formData.get("amount") || null,
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = transferTemplateServerSchema.safeParse(rawData);
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
         toAccountId: validatedData.toAccountId,
         amount: validatedData.amount,
         description: validatedData.description,
+        notes: validatedData.notes,
         isDefault: false,
       },
     });

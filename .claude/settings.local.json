@@ -42,7 +42,8 @@
       "Bash(pnpm prisma migrate dev:*)",
       "Bash(pnpm db:reset:*)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si puedes continuar\" pnpm db:reset:*)",
-      "Bash(pnpm exec tsc:*)"
+      "Bash(pnpm exec tsc:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"antes de eso tengo una modificacion mas para los descriptions de incomes, expenses y transfers deben ser varchar de 255 y agregar las validaciones correspondientes despues de realizar esto ya puedes continuar elimanando la base de datos para empezar de nuevo\" pnpm db:reset)"
     ]
   }
 }

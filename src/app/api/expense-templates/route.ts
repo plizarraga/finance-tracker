@@ -14,7 +14,8 @@ export async function POST(request: Request) {
       accountId: formData.get("accountId") || null,
       categoryId: formData.get("categoryId") || null,
       amount: formData.get("amount") || null,
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = expenseTemplateServerSchema.safeParse(rawData);
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, accountId, categoryId, amount, description } =
+    const { name, accountId, categoryId, amount, description, notes } =
       validationResult.data;
 
     if (accountId) {
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
         categoryId,
         amount,
         description,
+        notes,
         isDefault: false,
       },
     });

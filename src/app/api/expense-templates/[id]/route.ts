@@ -18,7 +18,8 @@ export async function PUT(
       accountId: formData.get("accountId") || null,
       categoryId: formData.get("categoryId") || null,
       amount: formData.get("amount") || null,
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = expenseTemplateServerSchema.safeParse(rawData);
@@ -33,7 +34,7 @@ export async function PUT(
       );
     }
 
-    const { name, accountId, categoryId, amount, description } =
+    const { name, accountId, categoryId, amount, description, notes } =
       validationResult.data;
 
     const existingTemplate = await prisma.expenseTemplate.findFirst({
@@ -82,6 +83,7 @@ export async function PUT(
         categoryId,
         amount,
         description,
+        notes,
       },
     });
 

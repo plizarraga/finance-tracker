@@ -47,7 +47,8 @@ export async function PUT(
       categoryId: formData.get("categoryId"),
       amount: formData.get("amount"),
       date: formData.get("date"),
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = expenseServerSchema.safeParse(rawData);
@@ -62,7 +63,7 @@ export async function PUT(
       );
     }
 
-    const { accountId, categoryId, amount, date, description } =
+    const { accountId, categoryId, amount, date, description, notes } =
       validationResult.data;
 
     const existingExpense = await prisma.expense.findFirst({
@@ -113,6 +114,7 @@ export async function PUT(
         amount,
         date,
         description,
+        notes,
       },
     });
 

@@ -54,7 +54,8 @@ export function TransferTemplateForm({
       fromAccountId: template?.fromAccountId ?? null,
       toAccountId: template?.toAccountId ?? null,
       amount: normalizeAmount(template?.amount),
-      description: template?.description ?? null,
+      description: template?.description ?? "",
+      notes: template?.notes ?? "",
     },
   });
 
@@ -69,7 +70,8 @@ export function TransferTemplateForm({
       if (values.amount !== null && values.amount !== undefined) {
         formData.append("amount", values.amount.toString());
       }
-      if (values.description) formData.append("description", values.description);
+      formData.append("description", values.description);
+      if (values.notes) formData.append("notes", values.notes);
       await onSubmit(formData);
     });
   };
@@ -194,10 +196,30 @@ export function TransferTemplateForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Default description for this type of transfer..."
+                  disabled={isPending}
+                  rows={3}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Additional notes..."
                   disabled={isPending}
                   rows={3}
                   {...field}

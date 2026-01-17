@@ -14,7 +14,8 @@ export async function POST(request: Request) {
       categoryId: formData.get("categoryId"),
       amount: formData.get("amount"),
       date: formData.get("date"),
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = incomeServerSchema.safeParse(rawData);
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { accountId, categoryId, amount, date, description } =
+    const { accountId, categoryId, amount, date, description, notes } =
       validationResult.data;
 
     const account = await prisma.account.findFirst({
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
         amount,
         date,
         description,
+        notes,
       },
     });
 

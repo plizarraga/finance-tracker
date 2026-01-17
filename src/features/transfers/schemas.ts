@@ -7,7 +7,8 @@ export const transferSchema = z
     toAccountId: z.string().uuid("Select destination account"),
     amount: z.number().positive("Amount must be positive"),
     date: z.date(),
-    description: z.string().max(500).optional().nullable(),
+    description: z.string().min(3, "Description must be at least 3 characters").max(255),
+    notes: z.string().max(1000).optional().nullable(),
   })
   .refine((data) => data.fromAccountId !== data.toAccountId, {
     message: "Source and destination must be different",
@@ -21,7 +22,8 @@ export const transferServerSchema = z
     toAccountId: z.string().uuid("Select destination account"),
     amount: z.coerce.number().positive("Amount must be positive"),
     date: z.coerce.date(),
-    description: z.string().max(500).optional().nullable(),
+    description: z.string().min(3, "Description must be at least 3 characters").max(255),
+    notes: z.string().max(1000).optional().nullable(),
   })
   .refine((data) => data.fromAccountId !== data.toAccountId, {
     message: "Source and destination must be different",

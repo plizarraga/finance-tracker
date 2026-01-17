@@ -76,6 +76,7 @@ export function TransferForm({
       amount: defaultValues?.amount ?? normalizeAmount(transfer?.amount),
       date: normalizeDate(transfer?.date),
       description: defaultValues?.description ?? transfer?.description ?? "",
+      notes: transfer?.notes ?? "",
     },
   });
 
@@ -91,8 +92,9 @@ export function TransferForm({
           ? values.date.toISOString()
           : new Date(values.date).toISOString()
       );
-      if (values.description) {
-        formData.append("description", values.description);
+      formData.append("description", values.description);
+      if (values.notes) {
+        formData.append("notes", values.notes);
       }
       await onSubmit(formData);
     });
@@ -195,10 +197,30 @@ export function TransferForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Add a description for this transfer..."
+                  disabled={isPending}
+                  rows={3}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Additional notes..."
                   disabled={isPending}
                   rows={3}
                   {...field}

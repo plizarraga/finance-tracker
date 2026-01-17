@@ -30,6 +30,7 @@ export async function POST(
         categoryId: original.categoryId,
         amount: original.amount,
         description: original.description,
+        notes: null,
         isDefault: false,
       },
     });

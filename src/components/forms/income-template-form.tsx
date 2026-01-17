@@ -28,7 +28,7 @@ import {
 } from "@/features/income-templates/schemas";
 import type { IncomeTemplateWithRelations } from "@/features/income-templates/queries";
 import type { Account, Category } from "@prisma/client";
-import { CategoryCombobox } from "@/components/expenses/category-combobox";
+import { CategoryCombobox } from "@/components/shared/category-combobox";
 
 function normalizeAmount(value: number | null | undefined): number | null {
   if (value === null || value === undefined) return null;
@@ -57,7 +57,8 @@ export function IncomeTemplateForm({
       accountId: template?.accountId ?? null,
       categoryId: template?.categoryId ?? null,
       amount: normalizeAmount(template?.amount),
-      description: template?.description ?? null,
+      description: template?.description ?? "",
+      notes: template?.notes ?? "",
     },
   });
 
@@ -70,7 +71,8 @@ export function IncomeTemplateForm({
       if (values.amount !== null && values.amount !== undefined) {
         formData.append("amount", values.amount.toString());
       }
-      if (values.description) formData.append("description", values.description);
+      formData.append("description", values.description);
+      if (values.notes) formData.append("notes", values.notes);
       await onSubmit(formData);
     });
   };
@@ -179,10 +181,30 @@ export function IncomeTemplateForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Default description for this type of income..."
+                  disabled={isPending}
+                  rows={3}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Additional notes..."
                   disabled={isPending}
                   rows={3}
                   {...field}

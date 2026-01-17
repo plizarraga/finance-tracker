@@ -15,7 +15,8 @@ export async function POST(request: Request) {
       toAccountId: formData.get("toAccountId"),
       amount: formData.get("amount"),
       date: formData.get("date"),
-      description: formData.get("description") || null,
+      description: formData.get("description"),
+      notes: formData.get("notes") || null,
     };
 
     const validationResult = transferServerSchema.safeParse(rawData);
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { fromAccountId, toAccountId, amount, date, description } =
+    const { fromAccountId, toAccountId, amount, date, description, notes } =
       validationResult.data;
 
     const accounts = await prisma.account.findMany({
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
         amount,
         date,
         description,
+        notes,
       },
     });
 
