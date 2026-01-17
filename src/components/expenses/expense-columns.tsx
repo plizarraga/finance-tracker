@@ -10,9 +10,9 @@ import {
 } from "@/components/shared/column-helpers";
 
 export const expenseColumns: ColumnDef<ExpenseWithRelations>[] = [
-  createDateColumn<ExpenseWithRelations>(),
   createDescriptionColumn<ExpenseWithRelations>("/expenses"),
   createRelationColumn<ExpenseWithRelations>("category", "Category", (row) => row.category.name),
   createRelationColumn<ExpenseWithRelations>("account", "Account", (row) => row.account.name),
+  createDateColumn<ExpenseWithRelations>(),
   createAmountColumn<ExpenseWithRelations>("negative", "-"),
 ];

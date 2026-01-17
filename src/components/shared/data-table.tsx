@@ -57,7 +57,8 @@ function parseUrlState(
     .map((col) => col.id || ("accessorKey" in col ? String(col.accessorKey) : null))
     .filter(Boolean) as string[];
   const requestedSortBy = searchParams.get(QUERY_KEYS.sortBy) || "";
-  const sortBy = columnIds.includes(requestedSortBy) ? requestedSortBy : columnIds[0] || "date";
+  const defaultSortBy = columnIds.includes("date") ? "date" : columnIds[0] || "date";
+  const sortBy = columnIds.includes(requestedSortBy) ? requestedSortBy : defaultSortBy;
   const rawSortOrder = searchParams.get(QUERY_KEYS.sortOrder);
   const sortOrder = rawSortOrder === "asc" || rawSortOrder === "desc" ? rawSortOrder : "desc";
 
@@ -148,6 +149,13 @@ export function DataTable<TData, TValue>({
     [searchParams, columns, pageCount]
   );
 
+  const shouldSyncSorting = React.useMemo(() => {
+    const sortBy = searchParams.get(QUERY_KEYS.sortBy);
+    const sortOrder = searchParams.get(QUERY_KEYS.sortOrder);
+    const hasSortOrder = sortOrder === "asc" || sortOrder === "desc";
+    return !sortBy || !hasSortOrder;
+  }, [searchParams]);
+
   const [sorting, setSorting] = React.useState<SortingState>(urlState.sorting);
   const [pagination, setPagination] = React.useState<PaginationState>(urlState.pagination);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -199,6 +207,35 @@ export function DataTable<TData, TValue>({
       if (filtersDifferent) setColumnFilters(newUrlState.columnFilters);
     }
   }, [searchParams, columns, pageCount]);
+
+  // Ensure default sort is reflected in the URL when missing.
+  React.useEffect(() => {
+    if (!shouldSyncSorting) return;
+
+    const params = buildUrlParams(
+      urlState.sorting,
+      urlState.pagination,
+      urlState.columnFilters,
+      filterableColumns,
+      searchParams
+    );
+    const newQuery = params.toString();
+    const currentQuery = searchParams.toString();
+
+    if (newQuery !== currentQuery) {
+      router.replace(`${pathname}?${newQuery}`, { scroll: false });
+      router.refresh();
+    }
+  }, [
+    shouldSyncSorting,
+    urlState.sorting,
+    urlState.pagination,
+    urlState.columnFilters,
+    filterableColumns,
+    searchParams,
+    pathname,
+    router,
+  ]);
 
   // When the table state changes, update the URL
   React.useEffect(() => {

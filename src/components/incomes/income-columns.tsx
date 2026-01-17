@@ -10,9 +10,9 @@ import {
 } from "@/components/shared/column-helpers";
 
 export const incomeColumns: ColumnDef<IncomeWithRelations>[] = [
-  createDateColumn<IncomeWithRelations>(),
   createDescriptionColumn<IncomeWithRelations>("/incomes"),
   createRelationColumn<IncomeWithRelations>("category", "Category", (row) => row.category.name),
   createRelationColumn<IncomeWithRelations>("account", "Account", (row) => row.account.name),
+  createDateColumn<IncomeWithRelations>(),
   createAmountColumn<IncomeWithRelations>("positive"),
 ];

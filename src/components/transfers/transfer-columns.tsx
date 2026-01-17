@@ -1,54 +1,59 @@
 "use client";
 
-import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
-import { ArrowRight } from "lucide-react";
 import { type TransferWithRelations } from "@/features/transfers/queries";
-import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/shared/data-table-column-header";
-import {
-  createDateColumn,
-  createAmountColumn,
-  createRelationColumn,
-} from "@/components/shared/column-helpers";
+import { createAmountColumn } from "@/components/shared/column-helpers";
+import Link from "next/link";
+import { formatDate } from "@/lib/format";
 
 export const transferColumns: ColumnDef<TransferWithRelations>[] = [
-  createDateColumn<TransferWithRelations>(),
-  createRelationColumn<TransferWithRelations>(
-    "fromAccount",
-    "From",
-    (row) => row.fromAccount.name
-  ),
-  {
-    id: "arrow",
-    header: "",
-    cell: () => <ArrowRight className="h-4 w-4 text-muted-foreground" />,
-    enableSorting: false,
-    size: 48,
-  },
-  createRelationColumn<TransferWithRelations>("toAccount", "To", (row) => row.toAccount.name),
-  createAmountColumn<TransferWithRelations>("neutral"),
   {
     accessorKey: "description",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" className="hidden md:flex" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Description" />,
     cell: ({ row }) => (
-      <div className="hidden max-w-[200px] truncate md:table-cell">
+      <Link
+        href={`/transfers/${row.original.id}/edit`}
+        className="max-w-[200px] truncate hover:underline"
+      >
         {row.original.description || "-"}
-      </div>
+      </Link>
     ),
     enableSorting: true,
   },
   {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => (
-      <Button variant="ghost" size="sm" asChild>
-        <Link href={`/transfers/${row.original.id}/edit`}>Edit</Link>
-      </Button>
+    accessorKey: "fromAccount",
+    id: "fromAccount",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="From" className="hidden md:flex" />
     ),
-    enableSorting: false,
-    size: 80,
+    cell: ({ row }) => (
+      <div className="hidden md:table-cell">{row.original.fromAccount.name}</div>
+    ),
+    enableSorting: true,
   },
+  {
+    accessorKey: "toAccount",
+    id: "toAccount",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="To" className="hidden md:flex" />
+    ),
+    cell: ({ row }) => (
+      <div className="hidden md:table-cell">{row.original.toAccount.name}</div>
+    ),
+    enableSorting: true,
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" className="hidden md:flex" />
+    ),
+    cell: ({ row }) => (
+      <div className="hidden md:table-cell">
+        {formatDate(row.original.date)}
+      </div>
+    ),
+    enableSorting: true,
+  },
+  createAmountColumn<TransferWithRelations>("neutral"),
 ];
