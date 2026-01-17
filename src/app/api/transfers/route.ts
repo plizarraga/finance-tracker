@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { transferServerSchema } from "@/features/transfers/schemas";
+import { calculateAccountBalance } from "@/features/accounts/queries";
 
 export async function POST(request: Request) {
   try {
@@ -42,6 +43,20 @@ export async function POST(request: Request) {
     if (accounts.length !== 2) {
       return NextResponse.json(
         { success: false, error: "Invalid account selection" },
+        { status: 400 }
+      );
+    }
+
+    // Balance validation - MUST have sufficient funds
+    const fromAccount = accounts.find((a) => a.id === fromAccountId)!;
+    const balance = await calculateAccountBalance(fromAccount.id);
+
+    if (balance < amount) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Insufficient funds. Available: $${balance.toFixed(2)}, Required: $${amount.toFixed(2)}`,
+        },
         { status: 400 }
       );
     }

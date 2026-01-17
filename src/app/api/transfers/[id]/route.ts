@@ -4,6 +4,7 @@ import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getTransferById } from "@/features/transfers/queries";
 import { transferServerSchema } from "@/features/transfers/schemas";
+import { calculateAccountBalance } from "@/features/accounts/queries";
 
 export async function GET(
   request: Request,
@@ -86,6 +87,27 @@ export async function PUT(
     if (accounts.length !== 2) {
       return NextResponse.json(
         { success: false, error: "Invalid account selection" },
+        { status: 400 }
+      );
+    }
+
+    // Balance validation for updates
+    // Add back old transfer if same source account (reverses the old transaction)
+    const oldAmount =
+      existingTransfer.fromAccountId === fromAccountId
+        ? existingTransfer.amount.toNumber()
+        : 0;
+
+    const fromAccount = accounts.find((a) => a.id === fromAccountId)!;
+    const currentBalance = await calculateAccountBalance(fromAccount.id);
+    const effectiveBalance = currentBalance + oldAmount;
+
+    if (effectiveBalance < amount) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Insufficient funds. Available: $${effectiveBalance.toFixed(2)}, Required: $${amount.toFixed(2)}`,
+        },
         { status: 400 }
       );
     }

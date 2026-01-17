@@ -40,7 +40,7 @@ export async function getAccountById(
  * Calculate balance for a single account using parallel aggregations
  * OPTIMIZED: 4 aggregations in parallel instead of 4 sequential queries per account
  */
-async function calculateAccountBalance(accountId: string): Promise<number> {
+export async function calculateAccountBalance(accountId: string): Promise<number> {
   try {
     const [incomeSum, expenseSum, transfersInSum, transfersOutSum] =
       await Promise.all([
