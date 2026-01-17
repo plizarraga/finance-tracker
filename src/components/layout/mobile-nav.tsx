@@ -4,8 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  Wallet,
-  Tags,
   TrendingUp,
   TrendingDown,
   ArrowLeftRight,
@@ -15,8 +13,6 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/accounts", label: "Accounts", icon: Wallet },
-  { href: "/categories", label: "Categories", icon: Tags },
   { href: "/incomes", label: "Incomes", icon: TrendingUp },
   { href: "/expenses", label: "Expenses", icon: TrendingDown },
   { href: "/transfers", label: "Transfers", icon: ArrowLeftRight },
