@@ -1,26 +1,36 @@
-import Link from "next/link";
 import { DollarSign } from "lucide-react";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import { getIncomes } from "@/features/incomes/queries";
+import { getIncomes, getIncomesCount } from "@/features/incomes/queries";
 import {
   getIncomeTemplates,
   getDefaultIncomeTemplate,
 } from "@/features/income-templates/queries";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { getCategoriesByType } from "@/features/categories/queries";
+import { getAccounts } from "@/features/accounts/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { IncomeTemplateButtonGroup } from "@/components/incomes/income-template-button-group";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared/data-table";
+import { DataTableToolbar } from "@/components/shared/data-table-toolbar";
+import { incomeColumns } from "@/components/incomes/income-columns";
+import { serializeForClient } from "@/lib/serialize";
 import { redirect } from "next/navigation";
 
-export default async function IncomesPage() {
+interface IncomesPageProps {
+  searchParams: Promise<{
+    page?: string;
+    pageSize?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    description?: string;
+    categoryId?: string;
+    accountId?: string;
+    amountMin?: string;
+    amountMax?: string;
+  }>;
+}
+
+export default async function IncomesPage({ searchParams }: IncomesPageProps) {
   try {
     await requireAuth();
   } catch (error) {
@@ -30,11 +40,52 @@ export default async function IncomesPage() {
     throw error;
   }
 
-  const [incomes, templates, defaultTemplate] = await Promise.all([
-    getIncomes(),
-    getIncomeTemplates(),
-    getDefaultIncomeTemplate(),
-  ]);
+  const params = await searchParams;
+  const page = parseInt(params.page || "1", 10);
+  const pageSize = parseInt(params.pageSize || "25", 10);
+  const sortBy = (params.sortBy || "date") as
+    | "date"
+    | "description"
+    | "amount"
+    | "category"
+    | "account";
+  const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
+
+  // Build filters
+  const filters = {
+    page,
+    pageSize,
+    sortBy,
+    sortOrder,
+    ...(params.description && { description: params.description }),
+    ...(params.categoryId && { categoryId: params.categoryId }),
+    ...(params.accountId && { accountId: params.accountId }),
+    ...(params.amountMin && { amountMin: parseFloat(params.amountMin) }),
+    ...(params.amountMax && { amountMax: parseFloat(params.amountMax) }),
+  };
+
+  const [incomes, totalCount, templates, defaultTemplate, categories, accounts] =
+    await Promise.all([
+      getIncomes(filters),
+      getIncomesCount(filters),
+      getIncomeTemplates(),
+      getDefaultIncomeTemplate(),
+      getCategoriesByType("income"),
+      getAccounts(),
+    ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Prepare filter options
+  const categoryOptions = categories.map((cat) => ({
+    label: cat.name,
+    value: cat.id,
+  }));
+
+  const accountOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc.id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -50,7 +101,7 @@ export default async function IncomesPage() {
         }
       />
 
-      {incomes.length === 0 ? (
+      {totalCount === 0 && !params.description && !params.categoryId && !params.accountId && !params.amountMin && !params.amountMax ? (
         <EmptyState
           icon={<DollarSign className="h-8 w-8" />}
           title="No incomes yet"
@@ -64,41 +115,19 @@ export default async function IncomesPage() {
           }
         />
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {incomes.map((income) => (
-                <TableRow key={income.id}>
-                  <TableCell className="font-medium">
-                    {formatDate(income.date)}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/incomes/${income.id}/edit`}
-                      className="hover:underline"
-                    >
-                      {income.description || "-"}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{income.category.name}</TableCell>
-                  <TableCell>{income.account.name}</TableCell>
-                  <TableCell className="text-right text-green-600 dark:text-green-400 font-medium">
-                    {formatCurrency(income.amount.toNumber())}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={incomeColumns}
+          data={serializeForClient(incomes)}
+          pageCount={totalPages}
+          totalCount={totalCount}
+          filterComponent={
+            <DataTableToolbar
+              searchPlaceholder="Filter by description..."
+              categoryOptions={categoryOptions}
+              accountOptions={accountOptions}
+            />
+          }
+        />
       )}
     </div>
   );

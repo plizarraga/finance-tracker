@@ -1,26 +1,36 @@
-import Link from "next/link";
 import { Receipt } from "lucide-react";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import { getExpenses } from "@/features/expenses/queries";
+import { getExpenses, getExpensesCount } from "@/features/expenses/queries";
 import {
   getExpenseTemplates,
   getDefaultExpenseTemplate,
 } from "@/features/expense-templates/queries";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { getCategoriesByType } from "@/features/categories/queries";
+import { getAccounts } from "@/features/accounts/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ExpenseTemplateButtonGroup } from "@/components/expenses/expense-template-button-group";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared/data-table";
+import { DataTableToolbar } from "@/components/shared/data-table-toolbar";
+import { expenseColumns } from "@/components/expenses/expense-columns";
+import { serializeForClient } from "@/lib/serialize";
 import { redirect } from "next/navigation";
 
-export default async function ExpensesPage() {
+interface ExpensesPageProps {
+  searchParams: Promise<{
+    page?: string;
+    pageSize?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    description?: string;
+    categoryId?: string;
+    accountId?: string;
+    amountMin?: string;
+    amountMax?: string;
+  }>;
+}
+
+export default async function ExpensesPage({ searchParams }: ExpensesPageProps) {
   try {
     await requireAuth();
   } catch (error) {
@@ -30,11 +40,52 @@ export default async function ExpensesPage() {
     throw error;
   }
 
-  const [expenses, templates, defaultTemplate] = await Promise.all([
-    getExpenses(),
-    getExpenseTemplates(),
-    getDefaultExpenseTemplate(),
-  ]);
+  const params = await searchParams;
+  const page = parseInt(params.page || "1", 10);
+  const pageSize = parseInt(params.pageSize || "25", 10);
+  const sortBy = (params.sortBy || "date") as
+    | "date"
+    | "description"
+    | "amount"
+    | "category"
+    | "account";
+  const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
+
+  // Build filters
+  const filters = {
+    page,
+    pageSize,
+    sortBy,
+    sortOrder,
+    ...(params.description && { description: params.description }),
+    ...(params.categoryId && { categoryId: params.categoryId }),
+    ...(params.accountId && { accountId: params.accountId }),
+    ...(params.amountMin && { amountMin: parseFloat(params.amountMin) }),
+    ...(params.amountMax && { amountMax: parseFloat(params.amountMax) }),
+  };
+
+  const [expenses, totalCount, templates, defaultTemplate, categories, accounts] =
+    await Promise.all([
+      getExpenses(filters),
+      getExpensesCount(filters),
+      getExpenseTemplates(),
+      getDefaultExpenseTemplate(),
+      getCategoriesByType("expense"),
+      getAccounts(),
+    ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Prepare filter options
+  const categoryOptions = categories.map((cat) => ({
+    label: cat.name,
+    value: cat.id,
+  }));
+
+  const accountOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc.id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -50,7 +101,7 @@ export default async function ExpensesPage() {
         }
       />
 
-      {expenses.length === 0 ? (
+      {totalCount === 0 && !params.description && !params.categoryId && !params.accountId && !params.amountMin && !params.amountMax ? (
         <EmptyState
           icon={<Receipt className="h-8 w-8" />}
           title="No expenses yet"
@@ -64,41 +115,19 @@ export default async function ExpensesPage() {
           }
         />
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell className="font-medium">
-                    {formatDate(expense.date)}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/expenses/${expense.id}/edit`}
-                      className="hover:underline"
-                    >
-                      {expense.description || "-"}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{expense.category.name}</TableCell>
-                  <TableCell>{expense.account.name}</TableCell>
-                  <TableCell className="text-right text-red-600 dark:text-red-400">
-                    -{formatCurrency(expense.amount.toNumber())}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={expenseColumns}
+          data={serializeForClient(expenses)}
+          pageCount={totalPages}
+          totalCount={totalCount}
+          filterComponent={
+            <DataTableToolbar
+              searchPlaceholder="Filter by description..."
+              categoryOptions={categoryOptions}
+              accountOptions={accountOptions}
+            />
+          }
+        />
       )}
     </div>
   );

@@ -1,27 +1,37 @@
-import Link from "next/link";
-import { ArrowLeftRight, ArrowRight } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
-import { getTransfers } from "@/features/transfers/queries";
+import { getTransfers, getTransfersCount } from "@/features/transfers/queries";
 import {
   getTransferTemplates,
   getDefaultTransferTemplate,
 } from "@/features/transfer-templates/queries";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { getAccounts } from "@/features/accounts/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TransferTemplateButtonGroup } from "@/components/transfers/transfer-template-button-group";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared/data-table";
+import { DataTableToolbar } from "@/components/shared/data-table-toolbar";
+import { transferColumns } from "@/components/transfers/transfer-columns";
+import { serializeForClient } from "@/lib/serialize";
 
-export default async function TransfersPage() {
+interface TransfersPageProps {
+  searchParams: Promise<{
+    page?: string;
+    pageSize?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    description?: string;
+    fromAccountId?: string;
+    toAccountId?: string;
+    amountMin?: string;
+    amountMax?: string;
+  }>;
+}
+
+export default async function TransfersPage({
+  searchParams,
+}: TransfersPageProps) {
   try {
     await requireAuth();
   } catch (error) {
@@ -31,11 +41,46 @@ export default async function TransfersPage() {
     throw error;
   }
 
-  const [transfers, templates, defaultTemplate] = await Promise.all([
-    getTransfers(),
-    getTransferTemplates(),
-    getDefaultTransferTemplate(),
-  ]);
+  const params = await searchParams;
+  const page = parseInt(params.page || "1", 10);
+  const pageSize = parseInt(params.pageSize || "25", 10);
+  const sortBy = (params.sortBy || "date") as
+    | "date"
+    | "description"
+    | "amount"
+    | "fromAccount"
+    | "toAccount";
+  const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
+
+  // Build filters
+  const filters = {
+    page,
+    pageSize,
+    sortBy,
+    sortOrder,
+    ...(params.description && { description: params.description }),
+    ...(params.fromAccountId && { fromAccountId: params.fromAccountId }),
+    ...(params.toAccountId && { toAccountId: params.toAccountId }),
+    ...(params.amountMin && { amountMin: parseFloat(params.amountMin) }),
+    ...(params.amountMax && { amountMax: parseFloat(params.amountMax) }),
+  };
+
+  const [transfers, totalCount, templates, defaultTemplate, accounts] =
+    await Promise.all([
+      getTransfers(filters),
+      getTransfersCount(filters),
+      getTransferTemplates(),
+      getDefaultTransferTemplate(),
+      getAccounts(),
+    ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Prepare filter options
+  const accountOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc.id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -51,7 +96,12 @@ export default async function TransfersPage() {
         }
       />
 
-      {transfers.length === 0 ? (
+      {totalCount === 0 &&
+      !params.description &&
+      !params.fromAccountId &&
+      !params.toAccountId &&
+      !params.amountMin &&
+      !params.amountMax ? (
         <EmptyState
           icon={<ArrowLeftRight className="h-8 w-8" />}
           title="No transfers yet"
@@ -65,48 +115,19 @@ export default async function TransfersPage() {
           }
         />
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>From</TableHead>
-                <TableHead className="w-12"></TableHead>
-                <TableHead>To</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Description
-                </TableHead>
-                <TableHead className="w-20"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transfers.map((transfer) => (
-                <TableRow key={transfer.id}>
-                  <TableCell className="font-medium">
-                    {formatDate(transfer.date)}
-                  </TableCell>
-                  <TableCell>{transfer.fromAccount.name}</TableCell>
-                  <TableCell>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </TableCell>
-                  <TableCell>{transfer.toAccount.name}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(transfer.amount.toNumber())}
-                  </TableCell>
-                  <TableCell className="hidden max-w-[200px] truncate md:table-cell">
-                    {transfer.description || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/transfers/${transfer.id}/edit`}>Edit</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={transferColumns}
+          data={serializeForClient(transfers)}
+          pageCount={totalPages}
+          totalCount={totalCount}
+          filterComponent={
+            <DataTableToolbar
+              searchPlaceholder="Filter by description..."
+              fromAccountOptions={accountOptions}
+              toAccountOptions={accountOptions}
+            />
+          }
+        />
       )}
     </div>
   );
