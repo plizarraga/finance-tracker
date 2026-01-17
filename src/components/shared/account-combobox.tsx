@@ -51,14 +51,15 @@ export function AccountCombobox({
 
   const handleAccountCreated = (accountId: string, accountName: string) => {
     // Add new account to local list
-    const newAccount: Account = {
+    const newAccount = {
       id: accountId,
       name: accountName,
       description: null,
+      initialBalance: 0 as never,
       userId: "",
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    } as Account;
     setLocalAccounts([...localAccounts, newAccount]);
     onValueChange(accountId);
     setOpen(false);

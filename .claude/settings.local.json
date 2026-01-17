@@ -38,7 +38,11 @@
       "Bash(lsof:*)",
       "Bash(kill:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pnpm prisma migrate dev:*)",
+      "Bash(pnpm db:reset:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si puedes continuar\" pnpm db:reset:*)",
+      "Bash(pnpm exec tsc:*)"
     ]
   }
 }

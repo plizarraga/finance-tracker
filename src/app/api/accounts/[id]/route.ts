@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccountsWithBalances } from "@/features/accounts/queries";
-import { accountSchema } from "@/features/accounts/schemas";
+import { accountServerSchema } from "@/features/accounts/schemas";
 
 export async function GET(
   request: Request,
@@ -47,9 +47,10 @@ export async function PUT(
     const rawData = {
       name: formData.get("name"),
       description: formData.get("description") || null,
+      initialBalance: formData.get("initialBalance") || "0",
     };
 
-    const validationResult = accountSchema.safeParse(rawData);
+    const validationResult = accountServerSchema.safeParse(rawData);
 
     if (!validationResult.success) {
       const errors = validationResult.error.issues
@@ -61,7 +62,7 @@ export async function PUT(
       );
     }
 
-    const { name, description } = validationResult.data;
+    const { name, description, initialBalance } = validationResult.data;
 
     const existingAccount = await prisma.account.findFirst({
       where: { id, userId },
@@ -79,6 +80,7 @@ export async function PUT(
       data: {
         name,
         description,
+        initialBalance,
       },
     });
 

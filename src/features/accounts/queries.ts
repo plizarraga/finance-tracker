@@ -42,8 +42,12 @@ export async function getAccountById(
  */
 export async function calculateAccountBalance(accountId: string): Promise<number> {
   try {
-    const [incomeSum, expenseSum, transfersInSum, transfersOutSum] =
+    const [account, incomeSum, expenseSum, transfersInSum, transfersOutSum] =
       await Promise.all([
+        prisma.account.findUnique({
+          where: { id: accountId },
+          select: { initialBalance: true },
+        }),
         prisma.income.aggregate({
           where: { accountId },
           _sum: { amount: true },
@@ -62,7 +66,10 @@ export async function calculateAccountBalance(accountId: string): Promise<number
         }),
       ]);
 
+    const initialBalance = account?.initialBalance?.toNumber() ?? 0;
+
     return (
+      initialBalance +
       (incomeSum._sum.amount?.toNumber() ?? 0) +
       (transfersInSum._sum.amount?.toNumber() ?? 0) -
       (expenseSum._sum.amount?.toNumber() ?? 0) -

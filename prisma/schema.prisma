@@ -87,12 +87,13 @@ model Verification {
 
 // Financial Accounts (bank accounts, cash, credit cards)
 model Account {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String   @map("user_id")
-  name        String   @db.VarChar(100)
-  description String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id")
+  name           String   @db.VarChar(100)
+  description    String?  @db.Text
+  initialBalance Decimal  @default(0) @map("initial_balance") @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user                     User               @relation(fields: [userId], references: [id])
   incomes                  Income[]           @relation("AccountIncomes")

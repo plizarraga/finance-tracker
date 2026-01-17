@@ -44,7 +44,6 @@ import { TransferTemplateButtonGroup } from '@/components/transfers/transfer-tem
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';

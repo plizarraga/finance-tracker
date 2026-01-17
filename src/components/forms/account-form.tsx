@@ -17,6 +17,23 @@ import {
 import { accountSchema, type AccountInput } from "@/features/accounts/schemas";
 import type { Account } from "@/types";
 
+function normalizeAmount(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "toNumber" in value &&
+    typeof (value as { toNumber: () => number }).toNumber === "function"
+  ) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  return 0;
+}
+
 interface AccountFormProps {
   account?: Account;
   onSubmit: (formData: FormData) => Promise<void>;
@@ -30,6 +47,7 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
     defaultValues: {
       name: account?.name ?? "",
       description: account?.description ?? "",
+      initialBalance: normalizeAmount(account?.initialBalance) ?? 0,
     },
   });
 
@@ -40,6 +58,7 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
       if (values.description) {
         formData.append("description", values.description);
       }
+      formData.append("initialBalance", values.initialBalance.toString());
       await onSubmit(formData);
     });
   };
@@ -78,6 +97,30 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
                   rows={3}
                   {...field}
                   value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="initialBalance"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Initial Balance</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  disabled={isPending}
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseFloat(e.target.value) || 0)
+                  }
                 />
               </FormControl>
               <FormMessage />

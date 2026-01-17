@@ -3,7 +3,9 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getAccounts } from "@/features/accounts/queries";
-import { accountSchema } from "@/features/accounts/schemas";
+import {
+  accountServerSchema,
+} from "@/features/accounts/schemas";
 
 export async function GET() {
   try {
@@ -31,9 +33,10 @@ export async function POST(request: Request) {
     const rawData = {
       name: formData.get("name"),
       description: formData.get("description") || null,
+      initialBalance: formData.get("initialBalance") || "0",
     };
 
-    const validationResult = accountSchema.safeParse(rawData);
+    const validationResult = accountServerSchema.safeParse(rawData);
 
     if (!validationResult.success) {
       const errors = validationResult.error.issues
@@ -45,13 +48,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, description } = validationResult.data;
+    const { name, description, initialBalance } = validationResult.data;
 
     const account = await prisma.account.create({
       data: {
         userId,
         name,
         description,
+        initialBalance,
       },
     });
 
