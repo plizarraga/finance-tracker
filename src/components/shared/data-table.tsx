@@ -251,7 +251,16 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <PageSizeSelector pageSize={pagination.pageSize} />
+        <PageSizeSelector
+          pageSize={pagination.pageSize}
+          onPageSizeChange={(pageSize) =>
+            setPagination((prev) => ({
+              ...prev,
+              pageIndex: 0,
+              pageSize,
+            }))
+          }
+        />
         <Pagination
           currentPage={pagination.pageIndex + 1}
           totalPages={pageCount}

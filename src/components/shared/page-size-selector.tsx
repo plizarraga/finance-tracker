@@ -1,6 +1,4 @@
 "use client";
-
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -12,19 +10,17 @@ import { PAGE_SIZES } from "./table-constants";
 
 interface PageSizeSelectorProps {
   pageSize: number;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
-export function PageSizeSelector({ pageSize }: PageSizeSelectorProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
+export function PageSizeSelector({
+  pageSize,
+  onPageSizeChange,
+}: PageSizeSelectorProps) {
   const handlePageSizeChange = (newSize: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("pageSize", newSize);
-    // Reset to page 1 when changing page size
-    params.set("page", "1");
-    router.replace(`${pathname}?${params.toString()}`);
+    const parsedSize = Number.parseInt(newSize, 10);
+    if (Number.isNaN(parsedSize)) return;
+    onPageSizeChange(parsedSize);
   };
 
   return (

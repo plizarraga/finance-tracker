@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
+import { serializeAccount, type AccountSerialized } from "@/features/templates/serialize";
 import type { Prisma } from "@prisma/client";
 
 // Type for IncomeTemplate with relations
@@ -10,9 +11,10 @@ type IncomeTemplateWithRelationsPrisma = Prisma.IncomeTemplateGetPayload<{
 // Serialized version for Client Components (Decimal -> number)
 export type IncomeTemplateWithRelations = Omit<
   IncomeTemplateWithRelationsPrisma,
-  "amount"
+  "amount" | "account"
 > & {
   amount: number | null;
+  account: AccountSerialized | null;
 };
 
 // Helper to serialize Decimal to number
@@ -22,6 +24,7 @@ function serializeTemplate(
   return {
     ...template,
     amount: template.amount ? template.amount.toNumber() : null,
+    account: serializeAccount(template.account),
   };
 }
 
