@@ -1,33 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowRight } from "lucide-react";
-import { TransferWithRelations } from "@/features/transfers/queries";
-import { formatCurrency, formatDate } from "@/lib/format";
-import { DataTableColumnHeader } from "@/components/shared/data-table-column-header";
+import { type TransferWithRelations } from "@/features/transfers/queries";
 import { Button } from "@/components/ui/button";
+import { DataTableColumnHeader } from "@/components/shared/data-table-column-header";
+import {
+  createDateColumn,
+  createAmountColumn,
+  createRelationColumn,
+} from "@/components/shared/column-helpers";
 
 export const transferColumns: ColumnDef<TransferWithRelations>[] = [
-  {
-    accessorKey: "date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date" />
-    ),
-    cell: ({ row }) => (
-      <div className="font-medium">{formatDate(row.original.date)}</div>
-    ),
-    enableSorting: true,
-  },
-  {
-    accessorKey: "fromAccount",
-    id: "fromAccount",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="From" />
-    ),
-    cell: ({ row }) => row.original.fromAccount.name,
-    enableSorting: true,
-  },
+  createDateColumn<TransferWithRelations>(),
+  createRelationColumn<TransferWithRelations>(
+    "fromAccount",
+    "From",
+    (row) => row.fromAccount.name
+  ),
   {
     id: "arrow",
     header: "",
@@ -35,39 +26,12 @@ export const transferColumns: ColumnDef<TransferWithRelations>[] = [
     enableSorting: false,
     size: 48,
   },
-  {
-    accessorKey: "toAccount",
-    id: "toAccount",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="To" />
-    ),
-    cell: ({ row }) => row.original.toAccount.name,
-    enableSorting: true,
-  },
-  {
-    accessorKey: "amount",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Amount"
-        className="justify-end"
-      />
-    ),
-    cell: ({ row }) => (
-      <div className="text-right font-medium">
-        {formatCurrency(row.original.amount as unknown as number)}
-      </div>
-    ),
-    enableSorting: true,
-  },
+  createRelationColumn<TransferWithRelations>("toAccount", "To", (row) => row.toAccount.name),
+  createAmountColumn<TransferWithRelations>("neutral"),
   {
     accessorKey: "description",
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Description"
-        className="hidden md:flex"
-      />
+      <DataTableColumnHeader column={column} title="Description" className="hidden md:flex" />
     ),
     cell: ({ row }) => (
       <div className="hidden max-w-[200px] truncate md:table-cell">

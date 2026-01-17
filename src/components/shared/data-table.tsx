@@ -21,40 +21,109 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "./pagination";
 import { PageSizeSelector } from "./page-size-selector";
-import { PAGE_SIZES } from "./table-constants";
-
-const QUERY_KEYS = {
-  page: "page",
-  pageSize: "pageSize",
-  sortBy: "sortBy",
-  sortOrder: "sortOrder",
-} as const;
+import { PAGE_SIZES, DEFAULT_PAGE_SIZE, QUERY_KEYS, isValidPageSize } from "./table-constants";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pageCount: number;
+  totalCount?: number;
   filterComponent?: React.ReactNode;
 }
 
-function isSameSorting(a: SortingState, b: SortingState) {
-  if (a.length !== b.length) return false;
-  return a.every((item, index) => item.id === b[index].id && item.desc === b[index].desc);
-}
+function parseUrlState(
+  searchParams: URLSearchParams,
+  columns: ColumnDef<unknown, unknown>[],
+  pageCount: number
+): {
+  sorting: SortingState;
+  pagination: PaginationState;
+  columnFilters: ColumnFiltersState;
+} {
+  // Parse pagination
+  const rawPage = parseInt(searchParams.get(QUERY_KEYS.page) || "1", 10);
+  const normalizedPage = Number.isFinite(rawPage) ? Math.max(1, rawPage) : 1;
+  const maxPage = Math.max(pageCount, 1);
+  const page = Math.min(normalizedPage, maxPage);
 
-function isSameFilters(a: ColumnFiltersState, b: ColumnFiltersState) {
-  if (a.length !== b.length) return false;
-  return a.every(
-    (item, index) => item.id === b[index].id && item.value === b[index].value
+  const rawPageSize = parseInt(
+    searchParams.get(QUERY_KEYS.pageSize) || String(DEFAULT_PAGE_SIZE),
+    10
   );
+  const pageSize = isValidPageSize(rawPageSize) ? rawPageSize : DEFAULT_PAGE_SIZE;
+
+  // Parse sorting
+  const columnIds = columns
+    .map((col) => col.id || ("accessorKey" in col ? String(col.accessorKey) : null))
+    .filter(Boolean) as string[];
+  const requestedSortBy = searchParams.get(QUERY_KEYS.sortBy) || "";
+  const sortBy = columnIds.includes(requestedSortBy) ? requestedSortBy : columnIds[0] || "date";
+  const rawSortOrder = searchParams.get(QUERY_KEYS.sortOrder);
+  const sortOrder = rawSortOrder === "asc" || rawSortOrder === "desc" ? rawSortOrder : "desc";
+
+  // Parse column filters
+  const filterableColumns = new Set(columns.map((col) => col.id).filter(Boolean));
+  const columnFilters: ColumnFiltersState = [];
+
+  for (const [key, value] of searchParams.entries()) {
+    const isReservedKey =
+      key === QUERY_KEYS.page ||
+      key === QUERY_KEYS.pageSize ||
+      key === QUERY_KEYS.sortBy ||
+      key === QUERY_KEYS.sortOrder;
+
+    if (!isReservedKey && filterableColumns.has(key)) {
+      columnFilters.push({ id: key, value });
+    }
+  }
+
+  return {
+    sorting: [{ id: sortBy, desc: sortOrder === "desc" }],
+    pagination: { pageIndex: page - 1, pageSize },
+    columnFilters,
+  };
 }
 
-function getColumnId<TData, TValue>(column: ColumnDef<TData, TValue>) {
-  if (column.id) return column.id;
-  if ("accessorKey" in column && typeof column.accessorKey === "string") {
-    return column.accessorKey;
+function buildUrlParams(
+  sorting: SortingState,
+  pagination: PaginationState,
+  columnFilters: ColumnFiltersState,
+  filterableColumns: Set<string>,
+  currentParams: URLSearchParams
+): URLSearchParams {
+  const params = new URLSearchParams(currentParams);
+
+  // Update sorting
+  if (sorting.length > 0) {
+    params.set(QUERY_KEYS.sortBy, sorting[0].id);
+    params.set(QUERY_KEYS.sortOrder, sorting[0].desc ? "desc" : "asc");
   }
-  return null;
+
+  // Update pagination
+  params.set(QUERY_KEYS.page, (pagination.pageIndex + 1).toString());
+  params.set(QUERY_KEYS.pageSize, pagination.pageSize.toString());
+
+  // Clear existing filter params
+  for (const key of [...params.keys()]) {
+    const isReservedKey =
+      key === QUERY_KEYS.page ||
+      key === QUERY_KEYS.pageSize ||
+      key === QUERY_KEYS.sortBy ||
+      key === QUERY_KEYS.sortOrder;
+
+    if (!isReservedKey && filterableColumns.has(key)) {
+      params.delete(key);
+    }
+  }
+
+  // Set new filter values
+  for (const filter of columnFilters) {
+    if (filter.value !== undefined && filter.value !== "") {
+      params.set(filter.id, String(filter.value));
+    }
+  }
+
+  return params;
 }
 
 export function DataTable<TData, TValue>({
@@ -62,63 +131,31 @@ export function DataTable<TData, TValue>({
   data,
   pageCount,
   filterComponent,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData, TValue>): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const initialState = React.useMemo(() => {
-    const rawPage = parseInt(searchParams.get(QUERY_KEYS.page) || "1", 10);
-    const normalizedPage = Number.isFinite(rawPage) ? Math.max(1, rawPage) : 1;
-    const maxPage = pageCount > 0 ? pageCount : normalizedPage;
-    const page = Math.min(normalizedPage, maxPage);
-    const rawPageSize = parseInt(
-      searchParams.get(QUERY_KEYS.pageSize) || "25",
-      10
-    );
-    const defaultPageSize = PAGE_SIZES.includes(25) ? 25 : PAGE_SIZES[0] || 25;
-    const pageSize = PAGE_SIZES.includes(rawPageSize)
-      ? rawPageSize
-      : defaultPageSize;
-    const columnIds = columns.map(getColumnId).filter(Boolean) as string[];
-    const requestedSortBy = searchParams.get(QUERY_KEYS.sortBy) || "";
-    const sortBy =
-      (requestedSortBy && columnIds.includes(requestedSortBy)
-        ? requestedSortBy
-        : columnIds[0]) || "date";
-    const rawSortOrder = searchParams.get(QUERY_KEYS.sortOrder);
-    const sortOrder = rawSortOrder === "asc" || rawSortOrder === "desc" ? rawSortOrder : "desc";
-    const filterableColumns = new Set(columns.map((col) => col.id).filter(Boolean));
-    const columnFilters: ColumnFiltersState = [];
-
-    for (const [key, value] of searchParams.entries()) {
-      if (
-        key !== QUERY_KEYS.page &&
-        key !== QUERY_KEYS.pageSize &&
-        key !== QUERY_KEYS.sortBy &&
-        key !== QUERY_KEYS.sortOrder &&
-        filterableColumns.has(key)
-      ) {
-        columnFilters.push({ id: key, value });
-      }
-    }
-
-    return {
-      sorting: [{ id: sortBy, desc: sortOrder === "desc" }] as SortingState,
-      pagination: { pageIndex: page - 1, pageSize } as PaginationState,
-      columnFilters,
-    };
-  }, [searchParams, columns, pageCount]);
-
-  const [sorting, setSorting] = React.useState<SortingState>(
-    initialState.sorting
+  // Memoize filterable columns set
+  const filterableColumns = React.useMemo(
+    () => new Set(columns.map((col) => col.id).filter((id): id is string => Boolean(id))),
+    [columns]
   );
-  const [pagination, setPagination] = React.useState<PaginationState>(
-    initialState.pagination
+
+  // Parse initial state from URL
+  const urlState = React.useMemo(
+    () => parseUrlState(searchParams, columns as ColumnDef<unknown, unknown>[], pageCount),
+    [searchParams, columns, pageCount]
   );
+
+  const [sorting, setSorting] = React.useState<SortingState>(urlState.sorting);
+  const [pagination, setPagination] = React.useState<PaginationState>(urlState.pagination);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    initialState.columnFilters
+    urlState.columnFilters
   );
+
+  // Track if state change is from URL sync (to prevent circular updates)
+  const isUrlSyncRef = React.useRef(false);
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table hook is required here.
   const table = useReactTable({
@@ -139,65 +176,64 @@ export function DataTable<TData, TValue>({
     manualFiltering: true,
   });
 
-  // Sync state from URL (back/forward or external navigation)
+  // Sync state from URL when back/forward navigation occurs
   React.useEffect(() => {
-    setSorting((prev) => {
-      const next = initialState.sorting;
-      return isSameSorting(prev, next) ? prev : next;
-    });
-    setPagination((prev) => {
-      const next = initialState.pagination;
-      return prev.pageIndex === next.pageIndex && prev.pageSize === next.pageSize
-        ? prev
-        : next;
-    });
-    setColumnFilters((prev) => {
-      const next = initialState.columnFilters;
-      return isSameFilters(prev, next) ? prev : next;
-    });
-  }, [initialState]);
+    const newSorting = urlState.sorting;
+    const newPagination = urlState.pagination;
+    const newFilters = urlState.columnFilters;
+
+    const sortingChanged =
+      sorting.length !== newSorting.length ||
+      sorting.some((s, i) => s.id !== newSorting[i]?.id || s.desc !== newSorting[i]?.desc);
+
+    const paginationChanged =
+      pagination.pageIndex !== newPagination.pageIndex ||
+      pagination.pageSize !== newPagination.pageSize;
+
+    const filtersChanged =
+      columnFilters.length !== newFilters.length ||
+      columnFilters.some((f, i) => f.id !== newFilters[i]?.id || f.value !== newFilters[i]?.value);
+
+    if (sortingChanged || paginationChanged || filtersChanged) {
+      isUrlSyncRef.current = true;
+      if (sortingChanged) setSorting(newSorting);
+      if (paginationChanged) setPagination(newPagination);
+      if (filtersChanged) setColumnFilters(newFilters);
+    }
+  }, [urlState, sorting, pagination, columnFilters]);
 
   // Update URL when table state changes
   React.useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-
-    // Update sorting
-    if (sorting.length > 0) {
-      params.set(QUERY_KEYS.sortBy, sorting[0].id);
-      params.set(QUERY_KEYS.sortOrder, sorting[0].desc ? "desc" : "asc");
+    // Skip URL update if this was triggered by URL sync
+    if (isUrlSyncRef.current) {
+      isUrlSyncRef.current = false;
+      return;
     }
 
-    // Update pagination
-    params.set(QUERY_KEYS.page, (pagination.pageIndex + 1).toString());
-    params.set(QUERY_KEYS.pageSize, pagination.pageSize.toString());
-
-    // Update filters
-    const filterableColumns = new Set(columns.map((col) => col.id).filter(Boolean));
-    for (const key of params.keys()) {
-      if (
-        key !== QUERY_KEYS.page &&
-        key !== QUERY_KEYS.pageSize &&
-        key !== QUERY_KEYS.sortBy &&
-        key !== QUERY_KEYS.sortOrder &&
-        filterableColumns.has(key)
-      ) {
-        params.delete(key);
-      }
-    }
-    columnFilters.forEach((filter) => {
-      if (filter.value !== undefined && filter.value !== "") {
-        params.set(filter.id, String(filter.value));
-      } else {
-        params.delete(filter.id);
-      }
-    });
+    const params = buildUrlParams(
+      sorting,
+      pagination,
+      columnFilters,
+      filterableColumns,
+      searchParams
+    );
 
     const nextQuery = params.toString();
     const currentQuery = searchParams.toString();
+
     if (nextQuery !== currentQuery) {
       router.replace(`${pathname}?${nextQuery}`);
     }
-  }, [sorting, pagination, columnFilters, pathname, router, searchParams, columns]);
+  }, [sorting, pagination, columnFilters, filterableColumns, pathname, router, searchParams]);
+
+  // Memoize page size change handler
+  const handlePageSizeChange = React.useCallback((pageSize: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 0,
+      pageSize,
+    }));
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -211,38 +247,26 @@ export function DataTable<TData, TValue>({
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -251,16 +275,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <PageSizeSelector
-          pageSize={pagination.pageSize}
-          onPageSizeChange={(pageSize) =>
-            setPagination((prev) => ({
-              ...prev,
-              pageIndex: 0,
-              pageSize,
-            }))
-          }
-        />
+        <PageSizeSelector pageSize={pagination.pageSize} onPageSizeChange={handlePageSizeChange} />
         <Pagination
           currentPage={pagination.pageIndex + 1}
           totalPages={pageCount}

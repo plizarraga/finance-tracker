@@ -1,4 +1,4 @@
-import { Column } from "@tanstack/react-table";
+import { type Column } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -8,11 +8,29 @@ interface DataTableColumnHeaderProps<TData, TValue>
   title: string;
 }
 
+function SortIcon<TData, TValue>({
+  column,
+}: {
+  column: Column<TData, TValue>;
+}): React.ReactElement {
+  const sortDirection = column.getIsSorted();
+
+  if (sortDirection === "asc") {
+    return <ArrowUp className="h-4 w-4" />;
+  }
+
+  if (sortDirection === "desc") {
+    return <ArrowDown className="h-4 w-4" />;
+  }
+
+  return <ArrowUpDown className="h-4 w-4 opacity-50" />;
+}
+
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
   className,
-}: DataTableColumnHeaderProps<TData, TValue>) {
+}: DataTableColumnHeaderProps<TData, TValue>): React.ReactElement {
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
@@ -26,13 +44,7 @@ export function DataTableColumnHeader<TData, TValue>({
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     >
       {title}
-      {column.getIsSorted() === "desc" ? (
-        <ArrowDown className="h-4 w-4" />
-      ) : column.getIsSorted() === "asc" ? (
-        <ArrowUp className="h-4 w-4" />
-      ) : (
-        <ArrowUpDown className="h-4 w-4 opacity-50" />
-      )}
+      <SortIcon column={column} />
     </div>
   );
 }

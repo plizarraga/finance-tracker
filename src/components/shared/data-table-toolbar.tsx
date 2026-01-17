@@ -26,123 +26,174 @@ interface DataTableToolbarProps {
   toAccountOptions?: FilterOption[];
 }
 
+const DEBOUNCE_MS = 300;
+const FILTER_KEYS = [
+  "description",
+  "amountMin",
+  "amountMax",
+  "categoryId",
+  "accountId",
+  "fromAccountId",
+  "toAccountId",
+] as const;
+
+type FilterKey = (typeof FILTER_KEYS)[number];
+
+function useDebouncedUrlUpdate(delay: number) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const updateUrl = React.useCallback(
+    (key: string, value: string, immediate = false) => {
+      const doUpdate = () => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+        params.set("page", "1");
+
+        router.push(`${pathname}?${params.toString()}`);
+      };
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      if (immediate) {
+        doUpdate();
+      } else {
+        timeoutRef.current = setTimeout(doUpdate, delay);
+      }
+    },
+    [router, pathname, searchParams, delay]
+  );
+
+  const clearFilters = React.useCallback(
+    (keys: readonly string[]) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const key of keys) {
+        params.delete(key);
+      }
+      params.set("page", "1");
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams]
+  );
+
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return { updateUrl, clearFilters };
+}
+
+function FilterSelect({
+  value,
+  onChange,
+  placeholder,
+  options,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  options: FilterOption[];
+}): React.ReactElement {
+  return (
+    <Select value={value || "all"} onValueChange={onChange}>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">{placeholder}</SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export function DataTableToolbar({
   searchPlaceholder = "Filter by description...",
   categoryOptions,
   accountOptions,
   fromAccountOptions,
   toAccountOptions,
-}: DataTableToolbarProps) {
-  const router = useRouter();
-  const pathname = usePathname();
+}: DataTableToolbarProps): React.ReactElement {
   const searchParams = useSearchParams();
-  const searchParamsString = searchParams.toString();
+  const { updateUrl, clearFilters } = useDebouncedUrlUpdate(DEBOUNCE_MS);
 
-  const [description, setDescription] = React.useState(
-    searchParams.get("description") || ""
-  );
-  const [amountMin, setAmountMin] = React.useState(
-    searchParams.get("amountMin") || ""
-  );
-  const [amountMax, setAmountMax] = React.useState(
-    searchParams.get("amountMax") || ""
-  );
+  // Local state for debounced inputs
+  const [description, setDescription] = React.useState(searchParams.get("description") || "");
+  const [amountMin, setAmountMin] = React.useState(searchParams.get("amountMin") || "");
+  const [amountMax, setAmountMax] = React.useState(searchParams.get("amountMax") || "");
 
+  // Direct URL values for selects
   const categoryId = searchParams.get("categoryId") || "";
   const accountId = searchParams.get("accountId") || "";
   const fromAccountId = searchParams.get("fromAccountId") || "";
   const toAccountId = searchParams.get("toAccountId") || "";
 
-  // Debounce search
-  const debouncedUpdate = React.useCallback(
-    (key: string, value: string) => {
-      const params = new URLSearchParams(searchParamsString);
-      const currentValue = params.get(key) || "";
-      if (currentValue === value) {
-        return;
-      }
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-      // Reset to page 1 when filtering
-      params.set("page", "1");
-      const nextQuery = params.toString();
-      if (nextQuery !== searchParamsString) {
-        router.push(`${pathname}?${nextQuery}`);
-      }
+  // Sync local state when URL changes (back/forward navigation)
+  React.useEffect(() => {
+    setDescription(searchParams.get("description") || "");
+    setAmountMin(searchParams.get("amountMin") || "");
+    setAmountMax(searchParams.get("amountMax") || "");
+  }, [searchParams]);
+
+  // Debounced updates for text inputs
+  React.useEffect(() => {
+    const urlValue = searchParams.get("description") || "";
+    if (description !== urlValue) {
+      updateUrl("description", description);
+    }
+  }, [description, searchParams, updateUrl]);
+
+  React.useEffect(() => {
+    const urlValue = searchParams.get("amountMin") || "";
+    if (amountMin !== urlValue) {
+      updateUrl("amountMin", amountMin);
+    }
+  }, [amountMin, searchParams, updateUrl]);
+
+  React.useEffect(() => {
+    const urlValue = searchParams.get("amountMax") || "";
+    if (amountMax !== urlValue) {
+      updateUrl("amountMax", amountMax);
+    }
+  }, [amountMax, searchParams, updateUrl]);
+
+  const handleSelectChange = React.useCallback(
+    (key: FilterKey, value: string) => {
+      updateUrl(key, value === "all" ? "" : value, true);
     },
-    [pathname, router, searchParamsString]
+    [updateUrl]
   );
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      debouncedUpdate("description", description);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [description, debouncedUpdate]);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      debouncedUpdate("amountMin", amountMin);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [amountMin, debouncedUpdate]);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      debouncedUpdate("amountMax", amountMax);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [amountMax, debouncedUpdate]);
-
-  const handleSelectChange = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParamsString);
-    if (value && value !== "all") {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    params.set("page", "1");
-    const nextQuery = params.toString();
-    if (nextQuery !== searchParamsString) {
-      router.push(`${pathname}?${nextQuery}`);
-    }
-  };
-
-  const handleReset = () => {
+  const handleReset = React.useCallback(() => {
     setDescription("");
     setAmountMin("");
     setAmountMax("");
-    const params = new URLSearchParams(searchParamsString);
-    params.delete("description");
-    params.delete("amountMin");
-    params.delete("amountMax");
-    params.delete("categoryId");
-    params.delete("accountId");
-    params.delete("fromAccountId");
-    params.delete("toAccountId");
-    params.set("page", "1");
-    const nextQuery = params.toString();
-    if (nextQuery !== searchParamsString) {
-      router.push(`${pathname}?${nextQuery}`);
-    }
-  };
+    clearFilters(FILTER_KEYS);
+  }, [clearFilters]);
 
   const hasFilters =
-    description ||
-    amountMin ||
-    amountMax ||
-    categoryId ||
-    accountId ||
-    fromAccountId ||
-    toAccountId;
+    description || amountMin || amountMax || categoryId || accountId || fromAccountId || toAccountId;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row gap-4">
-        {/* Description filter */}
         <Input
           placeholder={searchPlaceholder}
           value={description}
@@ -150,7 +201,6 @@ export function DataTableToolbar({
           className="sm:max-w-sm"
         />
 
-        {/* Amount range */}
         <div className="flex gap-2">
           <Input
             type="number"
@@ -169,11 +219,7 @@ export function DataTableToolbar({
         </div>
 
         {hasFilters && (
-          <Button
-            variant="ghost"
-            onClick={handleReset}
-            className="h-9 px-2 lg:px-3"
-          >
+          <Button variant="ghost" onClick={handleReset} className="h-9 px-2 lg:px-3">
             Reset
             <X className="ml-2 h-4 w-4" />
           </Button>
@@ -181,86 +227,40 @@ export function DataTableToolbar({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
-        {/* Category filter */}
         {categoryOptions && (
-          <Select
-            value={categoryId || "all"}
-            onValueChange={(value) => handleSelectChange("categoryId", value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
-              {categoryOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterSelect
+            value={categoryId}
+            onChange={(value) => handleSelectChange("categoryId", value)}
+            placeholder="All categories"
+            options={categoryOptions}
+          />
         )}
 
-        {/* Account filter */}
         {accountOptions && (
-          <Select
-            value={accountId || "all"}
-            onValueChange={(value) => handleSelectChange("accountId", value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All accounts" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All accounts</SelectItem>
-              {accountOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterSelect
+            value={accountId}
+            onChange={(value) => handleSelectChange("accountId", value)}
+            placeholder="All accounts"
+            options={accountOptions}
+          />
         )}
 
-        {/* From Account filter */}
         {fromAccountOptions && (
-          <Select
-            value={fromAccountId || "all"}
-            onValueChange={(value) =>
-              handleSelectChange("fromAccountId", value)
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="From account" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All accounts</SelectItem>
-              {fromAccountOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterSelect
+            value={fromAccountId}
+            onChange={(value) => handleSelectChange("fromAccountId", value)}
+            placeholder="From account"
+            options={fromAccountOptions}
+          />
         )}
 
-        {/* To Account filter */}
         {toAccountOptions && (
-          <Select
-            value={toAccountId || "all"}
-            onValueChange={(value) => handleSelectChange("toAccountId", value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="To account" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All accounts</SelectItem>
-              {toAccountOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterSelect
+            value={toAccountId}
+            onChange={(value) => handleSelectChange("toAccountId", value)}
+            placeholder="To account"
+            options={toAccountOptions}
+          />
         )}
       </div>
     </div>
