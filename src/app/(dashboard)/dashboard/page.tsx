@@ -118,7 +118,7 @@ export default async function DashboardPage() {
 
   // Combine and sort recent transactions (last 15)
   const recentTransactions: Transaction[] = [
-    ...allIncomes.slice(0, 15).map(
+    ...allIncomes.slice(0, 10).map(
       (inc: IncomeWithRelations): Transaction => ({
         id: inc.id,
         type: 'income',
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
         categoryName: inc.category.name,
       })
     ),
-    ...allExpenses.slice(0, 15).map(
+    ...allExpenses.slice(0, 10).map(
       (exp: ExpenseWithRelations): Transaction => ({
         id: exp.id,
         type: 'expense',
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
         categoryName: exp.category.name,
       })
     ),
-    ...allTransfers.slice(0, 15).map(
+    ...allTransfers.slice(0, 10).map(
       (transfer: TransferWithRelations): Transaction => ({
         id: transfer.id,
         type: 'transfer',
@@ -150,7 +150,7 @@ export default async function DashboardPage() {
     ),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 15);
+    .slice(0, 10);
 
   // Get current month name for display
   const currentMonthName = new Date().toLocaleDateString('en-US', {
