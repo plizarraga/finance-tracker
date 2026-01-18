@@ -196,7 +196,9 @@ export function TransferForm({
         <FormField
           control={form.control}
           name="amount"
-          render={({ field }) => (
+          render={({ field }) => {
+            const { value, ...rest } = field;
+            return (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
@@ -210,7 +212,8 @@ export function TransferForm({
                     min="0"
                     placeholder="0.00"
                     disabled={isPending}
-                    {...field}
+                    {...rest}
+                    value={value === 0 ? "" : value ?? ""}
                     onChange={(e) =>
                       field.onChange(parseFloat(e.target.value) || 0)
                     }
@@ -222,7 +225,8 @@ export function TransferForm({
               </FormControl>
               <FormMessage />
             </FormItem>
-          )}
+            );
+          }}
         />
 
         <FormField

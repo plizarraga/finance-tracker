@@ -121,36 +121,40 @@ export function AccountQuickCreateDialog({
             />
             <FormField
               control={form.control}
-              name="initialBalance"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Initial Balance (optional)</FormLabel>
-                  <FormControl>
-                    <InputGroup>
-                      <InputGroupAddon>
-                        <InputGroupText>$</InputGroupText>
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        disabled={isPending}
-                        {...field}
-                        onChange={(e) => {
-                          const parsed = Number.parseFloat(e.target.value);
-                          field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
-                        }}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupText>USD</InputGroupText>
-                      </InputGroupAddon>
-                    </InputGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          name="initialBalance"
+          render={({ field }) => {
+            const { value, ...rest } = field;
+            return (
+            <FormItem>
+              <FormLabel>Initial Balance (optional)</FormLabel>
+              <FormControl>
+                <InputGroup>
+                  <InputGroupAddon>
+                    <InputGroupText>$</InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    disabled={isPending}
+                    {...rest}
+                    value={value === 0 ? "" : value ?? ""}
+                    onChange={(e) => {
+                      const parsed = Number.parseFloat(e.target.value);
+                      field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                    }}
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>USD</InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+            );
+          }}
+        />
             <FormField
               control={form.control}
               name="description"

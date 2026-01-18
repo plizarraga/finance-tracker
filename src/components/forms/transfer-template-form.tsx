@@ -199,7 +199,9 @@ export function TransferTemplateForm({
         <FormField
           control={form.control}
           name="amount"
-          render={({ field }) => (
+          render={({ field }) => {
+            const { value, ...rest } = field;
+            return (
             <FormItem>
               <FormLabel>Amount (optional)</FormLabel>
               <FormControl>
@@ -213,7 +215,8 @@ export function TransferTemplateForm({
                     min="0"
                     placeholder="0.00"
                     disabled={isPending}
-                    value={field.value ?? ""}
+                    {...rest}
+                    value={value === 0 ? "" : value ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
                       field.onChange(
@@ -228,7 +231,8 @@ export function TransferTemplateForm({
               </FormControl>
               <FormMessage />
             </FormItem>
-          )}
+            );
+          }}
         />
 
         <FormField

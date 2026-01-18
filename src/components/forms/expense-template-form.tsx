@@ -182,7 +182,9 @@ export function ExpenseTemplateForm({
         <FormField
           control={form.control}
           name="amount"
-          render={({ field }) => (
+          render={({ field }) => {
+            const { value, ...rest } = field;
+            return (
             <FormItem>
               <FormLabel>Amount (optional)</FormLabel>
               <FormControl>
@@ -196,7 +198,8 @@ export function ExpenseTemplateForm({
                     min="0"
                     placeholder="0.00"
                     disabled={isPending}
-                    value={field.value ?? ""}
+                    {...rest}
+                    value={value === 0 ? "" : value ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
                       field.onChange(value === "" ? null : Number.parseFloat(value) || null);
@@ -209,7 +212,8 @@ export function ExpenseTemplateForm({
               </FormControl>
               <FormMessage />
             </FormItem>
-          )}
+            );
+          }}
         />
 
         <FormField

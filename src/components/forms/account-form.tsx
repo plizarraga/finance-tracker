@@ -93,7 +93,9 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
         <FormField
           control={form.control}
           name="initialBalance"
-          render={({ field }) => (
+          render={({ field }) => {
+            const { value, ...rest } = field;
+            return (
             <FormItem>
               <FormLabel>Initial Balance (optional)</FormLabel>
               <FormControl>
@@ -107,7 +109,8 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
                     min="0"
                     placeholder="0.00"
                     disabled={isPending}
-                    {...field}
+                    {...rest}
+                    value={value === 0 ? "" : value ?? ""}
                     onChange={(e) => {
                       const parsed = Number.parseFloat(e.target.value);
                       field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
@@ -120,7 +123,8 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
               </FormControl>
               <FormMessage />
             </FormItem>
-          )}
+            );
+          }}
         />
 
         <FormField
