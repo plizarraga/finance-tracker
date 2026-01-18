@@ -143,11 +143,11 @@ export function IncomeTemplateForm({
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="No pre-selection" />
+                    <SelectValue placeholder="Don't prefill" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="none">No pre-selection</SelectItem>
+                  <SelectItem value="none">No default account</SelectItem>
                   {accounts.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.name}

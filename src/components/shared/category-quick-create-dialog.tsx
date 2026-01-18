@@ -86,7 +86,7 @@ export function CategoryQuickCreateDialog({
         <DialogHeader>
           <DialogTitle>Create {type === "income" ? "Income" : "Expense"} Category</DialogTitle>
           <DialogDescription>
-            Create a new category for {type === "income" ? "incomes" : "expenses"}. You can create it quickly here.
+            Create a category for {type === "income" ? "incomes" : "expenses"}. You can create it quickly here.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
