@@ -33,6 +33,7 @@ export default function ReportsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const isNormalizingRef = useRef(false);
 
   const defaultRange = useMemo(() => {
     const today = new Date();
@@ -56,48 +57,42 @@ export default function ReportsPage() {
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [isLoadingTrends, setIsLoadingTrends] = useState(true);
 
-  const fetchSummary = useCallback(async (range: DateRange) => {
-    setIsLoadingSummary(true);
-    try {
-      const params = new URLSearchParams({
-        from: formatDateInput(range.from),
-        to: formatDateInput(range.to),
-      });
-
-      const response = await fetch(`/api/reports?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSummary(data);
-      }
-    } catch (error) {
-      console.error("Error fetching summary:", error);
-    } finally {
-      setIsLoadingSummary(false);
-    }
+  const buildReportsParams = useCallback((range: DateRange, months: number) => {
+    return new URLSearchParams({
+      from: formatDateInput(range.from),
+      to: formatDateInput(range.to),
+      months: String(months),
+    });
   }, []);
 
-  const fetchTrends = useCallback(async () => {
-    setIsLoadingTrends(true);
-    try {
-      const response = await fetch("/api/reports?months=12");
-      if (response.ok) {
-        const data = await response.json();
-        setTrends(data.trends || []);
+  const fetchReportData = useCallback(
+    async (range: DateRange) => {
+      setIsLoadingSummary(true);
+      setIsLoadingTrends(true);
+      try {
+        const params = buildReportsParams(range, 12);
+        const response = await fetch(`/api/reports?${params}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSummary(data.summary ?? null);
+          setTrends(data.trends ?? []);
+        }
+      } catch (error) {
+        console.error("Error fetching reports data:", error);
+      } finally {
+        setIsLoadingSummary(false);
+        setIsLoadingTrends(false);
       }
-    } catch (error) {
-      console.error("Error fetching trends:", error);
-    } finally {
-      setIsLoadingTrends(false);
+    },
+    [buildReportsParams]
+  );
+
+  useEffect(() => {
+    if (isNormalizingRef.current) {
+      return;
     }
-  }, []);
-
-  useEffect(() => {
-    fetchSummary(dateRange);
-  }, [dateRange, fetchSummary]);
-
-  useEffect(() => {
-    fetchTrends();
-  }, [fetchTrends]);
+    fetchReportData(dateRange);
+  }, [dateRange, fetchReportData]);
 
   const resolvePresetFromDates = useCallback((range: DateRange): PresetType => {
     const today = new Date();
@@ -162,6 +157,7 @@ export default function ReportsPage() {
       return;
     }
     if (!searchParams.get("from") && !searchParams.get("to")) {
+      isNormalizingRef.current = true;
       const params = new URLSearchParams(searchParams.toString());
       params.set("from", formatDateInput(defaultRange.from));
       params.set("to", formatDateInput(defaultRange.to));
@@ -170,6 +166,7 @@ export default function ReportsPage() {
       setPreset("this-month");
       return;
     }
+    isNormalizingRef.current = false;
     setPreset(resolvePresetFromDates(dateRange));
   }, [
     searchParams,
