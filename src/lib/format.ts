@@ -33,14 +33,27 @@ export function formatDate(
  */
 export function formatDateInput(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toISOString().split("T")[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 /**
  * Parse a date string to Date object
  */
 export function parseDate(dateString: string): Date {
-  return new Date(dateString);
+  if (!dateString) {
+    return new Date(NaN);
+  }
+  if (dateString.includes("T")) {
+    return new Date(dateString);
+  }
+  const [year, month, day] = dateString.split("-").map(Number);
+  if (!year || !month || !day) {
+    return new Date(dateString);
+  }
+  return new Date(year, month - 1, day);
 }
 
 /**

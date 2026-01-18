@@ -149,11 +149,18 @@ export function DataTable<TData, TValue>({
     [searchParams, columns, pageCount]
   );
 
-  const shouldSyncSorting = React.useMemo(() => {
+  const shouldSyncDefaults = React.useMemo(() => {
     const sortBy = searchParams.get(QUERY_KEYS.sortBy);
     const sortOrder = searchParams.get(QUERY_KEYS.sortOrder);
     const hasSortOrder = sortOrder === "asc" || sortOrder === "desc";
-    return !sortBy || !hasSortOrder;
+
+    const rawPage = parseInt(searchParams.get(QUERY_KEYS.page) || "", 10);
+    const hasPage = Number.isFinite(rawPage) && rawPage >= 1;
+
+    const rawPageSize = parseInt(searchParams.get(QUERY_KEYS.pageSize) || "", 10);
+    const hasPageSize = isValidPageSize(rawPageSize);
+
+    return !sortBy || !hasSortOrder || !hasPage || !hasPageSize;
   }, [searchParams]);
 
   const [sorting, setSorting] = React.useState<SortingState>(urlState.sorting);
@@ -210,7 +217,7 @@ export function DataTable<TData, TValue>({
 
   // Ensure default sort is reflected in the URL when missing.
   React.useEffect(() => {
-    if (!shouldSyncSorting) return;
+    if (!shouldSyncDefaults) return;
 
     const params = buildUrlParams(
       urlState.sorting,
@@ -224,10 +231,9 @@ export function DataTable<TData, TValue>({
 
     if (newQuery !== currentQuery) {
       router.replace(`${pathname}?${newQuery}`, { scroll: false });
-      router.refresh();
     }
   }, [
-    shouldSyncSorting,
+    shouldSyncDefaults,
     urlState.sorting,
     urlState.pagination,
     urlState.columnFilters,
@@ -250,7 +256,6 @@ export function DataTable<TData, TValue>({
 
     if (newQuery !== currentQuery) {
       router.replace(`${pathname}?${newQuery}`, { scroll: false });
-      router.refresh();
     }
   }, [sorting, pagination, columnFilters]);
 

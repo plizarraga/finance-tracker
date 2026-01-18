@@ -16,6 +16,8 @@ import { incomeColumns } from "@/components/incomes/income-columns";
 import { serializeForClient } from "@/lib/serialize";
 import { redirect } from "next/navigation";
 import { DEFAULT_PAGE_SIZE } from "@/components/shared/table-constants";
+import { endOfDay, startOfDay, startOfMonth } from "date-fns";
+import { parseDate } from "@/lib/format";
 
 interface IncomesPageProps {
   searchParams: Promise<{
@@ -28,6 +30,8 @@ interface IncomesPageProps {
     accountId?: string;
     amountMin?: string;
     amountMax?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }>;
 }
 
@@ -51,6 +55,13 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
     | "category"
     | "account";
   const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
+  const now = new Date();
+  const defaultDateFrom = startOfDay(startOfMonth(now));
+  const defaultDateTo = endOfDay(now);
+  const dateFrom = params.dateFrom
+    ? startOfDay(parseDate(params.dateFrom))
+    : defaultDateFrom;
+  const dateTo = params.dateTo ? endOfDay(parseDate(params.dateTo)) : defaultDateTo;
 
   // Build filters
   const filters = {
@@ -58,6 +69,10 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
     pageSize,
     sortBy,
     sortOrder,
+    dateRange: {
+      from: dateFrom,
+      to: dateTo,
+    },
     ...(params.description && { description: params.description }),
     ...(params.categoryId && { categoryId: params.categoryId }),
     ...(params.accountId && { accountId: params.accountId }),
@@ -65,27 +80,41 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
     ...(params.amountMax && { amountMax: parseFloat(params.amountMax) }),
   };
 
-  const [incomes, totalCount, templates, defaultTemplate, categories, accounts] =
-    await Promise.all([
-      getIncomes(filters),
-      getIncomesCount(filters),
-      getIncomeTemplates(),
-      getDefaultIncomeTemplate(),
-      getCategoriesByType("income"),
-      getAccounts(),
-    ]);
+  const [
+    incomes,
+    totalCount,
+    totalCountAll,
+    templates,
+    defaultTemplate,
+    categories,
+    accounts,
+  ] = await Promise.all([
+    getIncomes(filters),
+    getIncomesCount(filters),
+    getIncomesCount(),
+    getIncomeTemplates(),
+    getDefaultIncomeTemplate(),
+    getCategoriesByType("income"),
+    getAccounts(),
+  ]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
   // Prepare filter options
-  const categoryOptions = categories.map((cat) => ({
-    label: cat.name,
-    value: cat.id,
-  }));
+  const hasActiveFilters = Boolean(
+    params.description ||
+      params.categoryId ||
+      params.accountId ||
+      params.amountMin ||
+      params.amountMax ||
+      params.dateFrom ||
+      params.dateTo
+  );
+  const shouldShowEmptyState = totalCount === 0 && !hasActiveFilters && totalCountAll === 0;
 
-  const accountOptions = accounts.map((acc) => ({
-    label: acc.name,
-    value: acc.id,
+  const accountOptions = accounts.map((account) => ({
+    id: account.id,
+    name: account.name,
   }));
 
   return (
@@ -102,7 +131,7 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
         }
       />
 
-      {totalCount === 0 && !params.description && !params.categoryId && !params.accountId && !params.amountMin && !params.amountMax ? (
+      {shouldShowEmptyState ? (
         <EmptyState
           icon={<DollarSign className="h-8 w-8" />}
           title="No incomes yet"
@@ -124,8 +153,8 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
           filterComponent={
             <DataTableToolbar
               searchPlaceholder="Filter by description..."
-              categoryOptions={categoryOptions}
-              accountOptions={accountOptions}
+              categories={categories}
+              accounts={accountOptions}
             />
           }
         />

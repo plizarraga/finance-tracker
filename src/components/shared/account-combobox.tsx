@@ -18,15 +18,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { Account } from "@prisma/client";
 import { AccountQuickCreateDialog } from "./account-quick-create-dialog";
 
+export interface AccountOption {
+  id: string;
+  name: string;
+}
+
 interface AccountComboboxProps {
-  accounts: Account[];
+  accounts: AccountOption[];
   value: string;
   onValueChange: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  searchPlaceholder?: string;
+  allowCreate?: boolean;
+  includeAllOption?: boolean;
+  allLabel?: string;
 }
 
 export function AccountCombobox({
@@ -35,6 +43,10 @@ export function AccountCombobox({
   onValueChange,
   disabled,
   placeholder = "Select an account",
+  searchPlaceholder = "Search account...",
+  allowCreate = true,
+  includeAllOption = false,
+  allLabel = "All accounts",
 }: AccountComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -50,17 +62,7 @@ export function AccountCombobox({
     : undefined;
 
   const handleAccountCreated = (accountId: string, accountName: string) => {
-    // Add new account to local list
-    const newAccount = {
-      id: accountId,
-      name: accountName,
-      description: null,
-      initialBalance: 0 as never,
-      userId: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Account;
-    setLocalAccounts([...localAccounts, newAccount]);
+    setLocalAccounts([...localAccounts, { id: accountId, name: accountName }]);
     onValueChange(accountId);
     setOpen(false);
   };
@@ -76,16 +78,33 @@ export function AccountCombobox({
             className="w-full justify-between"
             disabled={disabled}
           >
-            {selectedAccount ? selectedAccount.name : placeholder}
+            {selectedAccount ? selectedAccount.name : includeAllOption ? allLabel : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search account..." />
+            <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
               <CommandEmpty>No account found.</CommandEmpty>
               <CommandGroup>
+                {includeAllOption && (
+                  <CommandItem
+                    value={allLabel}
+                    onSelect={() => {
+                      onValueChange("");
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === "" ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {allLabel}
+                  </CommandItem>
+                )}
                 {localAccounts.map((account) => (
                   <CommandItem
                     key={account.id}
@@ -105,28 +124,34 @@ export function AccountCombobox({
                   </CommandItem>
                 ))}
               </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup>
-                <CommandItem
-                  onSelect={() => {
-                    setOpen(false);
-                    setDialogOpen(true);
-                  }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Account
-                </CommandItem>
-              </CommandGroup>
+              {allowCreate && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        setOpen(false);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Account
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
 
-      <AccountQuickCreateDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onAccountCreated={handleAccountCreated}
-      />
+      {allowCreate && (
+        <AccountQuickCreateDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onAccountCreated={handleAccountCreated}
+        />
+      )}
     </>
   );
 }

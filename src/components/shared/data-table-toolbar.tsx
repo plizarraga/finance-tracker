@@ -1,43 +1,33 @@
 "use client";
 
 import * as React from "react";
-import { X } from "lucide-react";
+import { Filter, X } from "lucide-react";
+import { endOfDay, startOfMonth } from "date-fns";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-interface FilterOption {
-  label: string;
-  value: string;
-}
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { formatDateInput, parseDate } from "@/lib/format";
+import { AccountCombobox, type AccountOption } from "@/components/shared/account-combobox";
+import { CategoryCombobox } from "@/components/shared/category-combobox";
+import type { Category, DateRange } from "@/types";
+import { useDebounce } from "@/hooks/use-debounce";
+import { DateRangeFilter, type PresetType } from "@/components/reports/date-range-filter";
 
 interface DataTableToolbarProps {
   searchPlaceholder?: string;
-  categoryOptions?: FilterOption[];
-  accountOptions?: FilterOption[];
-  fromAccountOptions?: FilterOption[];
-  toAccountOptions?: FilterOption[];
+  categories?: Category[];
+  accounts?: AccountOption[];
 }
 
 const DEBOUNCE_MS = 300;
-const FILTER_KEYS = [
-  "description",
-  "amountMin",
-  "amountMax",
-  "categoryId",
-  "accountId",
-  "fromAccountId",
-  "toAccountId",
-] as const;
-
-type FilterKey = (typeof FILTER_KEYS)[number];
+const DATE_FROM_KEY = "dateFrom";
+const DATE_TO_KEY = "dateTo";
+const DATE_PRESET_KEY = "datePreset";
 
 function useDebouncedUrlUpdate(delay: number) {
   const router = useRouter();
@@ -45,20 +35,14 @@ function useDebouncedUrlUpdate(delay: number) {
   const searchParams = useSearchParams();
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const updateUrl = React.useCallback(
-    (key: string, value: string, immediate = false) => {
+  const scheduleUpdate = React.useCallback(
+    (updater: (params: URLSearchParams) => void, immediate = false) => {
       const doUpdate = () => {
         const params = new URLSearchParams(searchParams.toString());
-
-        if (value) {
-          params.set(key, value);
-        } else {
-          params.delete(key);
-        }
+        updater(params);
         params.set("page", "1");
 
         router.push(`${pathname}?${params.toString()}`);
-        router.refresh();
       };
 
       if (timeoutRef.current) {
@@ -74,17 +58,32 @@ function useDebouncedUrlUpdate(delay: number) {
     [router, pathname, searchParams, delay]
   );
 
-  const clearFilters = React.useCallback(
-    (keys: readonly string[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const key of keys) {
-        params.delete(key);
-      }
-      params.set("page", "1");
-      router.push(`${pathname}?${params.toString()}`);
-      router.refresh();
+  const updateUrl = React.useCallback(
+    (key: string, value: string, immediate = false) => {
+      scheduleUpdate((params) => {
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      }, immediate);
     },
-    [router, pathname, searchParams]
+    [scheduleUpdate]
+  );
+
+  const updateUrlParams = React.useCallback(
+    (updates: Record<string, string>, immediate = false) => {
+      scheduleUpdate((params) => {
+        for (const [key, value] of Object.entries(updates)) {
+          if (value) {
+            params.set(key, value);
+          } else {
+            params.delete(key);
+          }
+        }
+      }, immediate);
+    },
+    [scheduleUpdate]
   );
 
   React.useEffect(() => {
@@ -95,176 +94,207 @@ function useDebouncedUrlUpdate(delay: number) {
     };
   }, []);
 
-  return { updateUrl, clearFilters };
-}
-
-function FilterSelect({
-  value,
-  onChange,
-  placeholder,
-  options,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  options: FilterOption[];
-}): React.ReactElement {
-  return (
-    <Select value={value || "all"} onValueChange={onChange}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">{placeholder}</SelectItem>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
+  return { updateUrl, updateUrlParams };
 }
 
 export function DataTableToolbar({
   searchPlaceholder = "Filter by description...",
-  categoryOptions,
-  accountOptions,
-  fromAccountOptions,
-  toAccountOptions,
+  categories,
+  accounts,
 }: DataTableToolbarProps): React.ReactElement {
   const searchParams = useSearchParams();
-  const { updateUrl, clearFilters } = useDebouncedUrlUpdate(DEBOUNCE_MS);
+  const { updateUrl, updateUrlParams } = useDebouncedUrlUpdate(DEBOUNCE_MS);
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+
+  const defaultDateRange = React.useMemo(() => {
+    const today = new Date();
+    return {
+      from: startOfMonth(today),
+      to: endOfDay(today),
+    };
+  }, []);
 
   // Local state for debounced inputs
   const [description, setDescription] = React.useState(searchParams.get("description") || "");
-  const [amountMin, setAmountMin] = React.useState(searchParams.get("amountMin") || "");
-  const [amountMax, setAmountMax] = React.useState(searchParams.get("amountMax") || "");
+  const debouncedDescription = useDebounce(description, DEBOUNCE_MS);
+  const descriptionDirtyRef = React.useRef(false);
+  const skipDescriptionUpdateRef = React.useRef(false);
+  const pendingPresetRef = React.useRef<PresetType | null>(null);
+
+  const dateRange = React.useMemo<DateRange>(() => {
+    const from = parseDate(
+      searchParams.get(DATE_FROM_KEY) || formatDateInput(defaultDateRange.from)
+    );
+    const to = parseDate(
+      searchParams.get(DATE_TO_KEY) || formatDateInput(defaultDateRange.to)
+    );
+    return { from, to };
+  }, [searchParams, defaultDateRange]);
+
+  const isPresetValue = React.useCallback((value: string | null): value is PresetType => {
+    return (
+      value === "this-month" ||
+      value === "last-month" ||
+      value === "last-90-days" ||
+      value === "year-to-date" ||
+      value === "last-year" ||
+      value === "custom"
+    );
+  }, []);
+
+  const presetParam = searchParams.get(DATE_PRESET_KEY);
+  const activePreset = isPresetValue(presetParam) ? presetParam : undefined;
 
   // Direct URL values for selects
   const categoryId = searchParams.get("categoryId") || "";
   const accountId = searchParams.get("accountId") || "";
-  const fromAccountId = searchParams.get("fromAccountId") || "";
-  const toAccountId = searchParams.get("toAccountId") || "";
 
-  // Sync local state when URL changes (back/forward navigation)
+  const handleRangeChange = React.useCallback(
+    (range: DateRange) => {
+      const presetToApply = pendingPresetRef.current ?? activePreset ?? "custom";
+      pendingPresetRef.current = null;
+      updateUrlParams(
+        {
+          [DATE_FROM_KEY]: formatDateInput(range.from),
+          [DATE_TO_KEY]: formatDateInput(range.to),
+          [DATE_PRESET_KEY]: presetToApply,
+        },
+        true
+      );
+    },
+    [activePreset, updateUrlParams]
+  );
+
+  const handlePresetChange = React.useCallback((preset: PresetType) => {
+    pendingPresetRef.current = preset;
+  }, []);
+
+  const handleClearFilters = React.useCallback(() => {
+    const resetFrom = defaultDateRange.from;
+    const resetTo = defaultDateRange.to;
+    descriptionDirtyRef.current = false;
+    skipDescriptionUpdateRef.current = true;
+    setDescription("");
+    updateUrlParams(
+      {
+        description: "",
+        accountId: "",
+        categoryId: "",
+        [DATE_FROM_KEY]: formatDateInput(resetFrom),
+        [DATE_TO_KEY]: formatDateInput(resetTo),
+        [DATE_PRESET_KEY]: "this-month",
+      },
+      true
+    );
+  }, [defaultDateRange, updateUrlParams]);
+
   React.useEffect(() => {
-    setDescription(searchParams.get("description") || "");
-    setAmountMin(searchParams.get("amountMin") || "");
-    setAmountMax(searchParams.get("amountMax") || "");
-  }, [searchParams]);
+    const urlValue = searchParams.get("description") || "";
+    if (descriptionDirtyRef.current) {
+      return;
+    }
+    if (description !== urlValue) {
+      setDescription(urlValue);
+    }
+  }, [description, searchParams]);
 
   // Debounced updates for text inputs
   React.useEffect(() => {
     const urlValue = searchParams.get("description") || "";
-    if (description !== urlValue) {
-      updateUrl("description", description);
+    const normalized = debouncedDescription.trim();
+    if (skipDescriptionUpdateRef.current) {
+      skipDescriptionUpdateRef.current = false;
+      return;
     }
-  }, [description, searchParams, updateUrl]);
-
-  React.useEffect(() => {
-    const urlValue = searchParams.get("amountMin") || "";
-    if (amountMin !== urlValue) {
-      updateUrl("amountMin", amountMin);
+    if (normalized.length >= 3 && normalized !== urlValue) {
+      updateUrl("description", normalized, true);
+      descriptionDirtyRef.current = false;
+      return;
     }
-  }, [amountMin, searchParams, updateUrl]);
-
-  React.useEffect(() => {
-    const urlValue = searchParams.get("amountMax") || "";
-    if (amountMax !== urlValue) {
-      updateUrl("amountMax", amountMax);
+    if (normalized.length === 0 && urlValue !== "") {
+      updateUrl("description", "", true);
+      descriptionDirtyRef.current = false;
+      return;
     }
-  }, [amountMax, searchParams, updateUrl]);
-
-  const handleSelectChange = React.useCallback(
-    (key: FilterKey, value: string) => {
-      updateUrl(key, value === "all" ? "" : value, true);
-    },
-    [updateUrl]
-  );
-
-  const handleReset = React.useCallback(() => {
-    setDescription("");
-    setAmountMin("");
-    setAmountMax("");
-    clearFilters(FILTER_KEYS);
-  }, [clearFilters]);
-
-  const hasFilters =
-    description || amountMin || amountMax || categoryId || accountId || fromAccountId || toAccountId;
+    if (normalized.length === 0 && urlValue === "") {
+      descriptionDirtyRef.current = false;
+    }
+  }, [debouncedDescription, searchParams, updateUrl]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder={searchPlaceholder}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="sm:max-w-sm"
-        />
-
-        <div className="flex gap-2">
-          <Input
-            type="number"
-            placeholder="Min amount"
-            value={amountMin}
-            onChange={(e) => setAmountMin(e.target.value)}
-            className="w-32"
-          />
-          <Input
-            type="number"
-            placeholder="Max amount"
-            value={amountMax}
-            onChange={(e) => setAmountMax(e.target.value)}
-            className="w-32"
-          />
-        </div>
-
-        {hasFilters && (
-          <Button variant="ghost" onClick={handleReset} className="h-9 px-2 lg:px-3">
-            Reset
-            <X className="ml-2 h-4 w-4" />
+    <div className="flex items-center">
+      <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="h-9 px-3">
+            <Filter className="mr-2 h-4 w-4" />
+            Filters
           </Button>
-        )}
-      </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-[calc(100vw-2rem)] p-4 sm:w-[320px]" align="start">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Date range</p>
+              <DateRangeFilter
+                range={dateRange}
+                preset={activePreset}
+                onRangeChange={handleRangeChange}
+                onPresetChange={handlePresetChange}
+              />
+            </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        {categoryOptions && (
-          <FilterSelect
-            value={categoryId}
-            onChange={(value) => handleSelectChange("categoryId", value)}
-            placeholder="All categories"
-            options={categoryOptions}
-          />
-        )}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Description</p>
+              <Input
+                placeholder={searchPlaceholder}
+                value={description}
+                onChange={(e) => {
+                  descriptionDirtyRef.current = true;
+                  setDescription(e.target.value);
+                }}
+              />
+            </div>
 
-        {accountOptions && (
-          <FilterSelect
-            value={accountId}
-            onChange={(value) => handleSelectChange("accountId", value)}
-            placeholder="All accounts"
-            options={accountOptions}
-          />
-        )}
+            {categories && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Category</p>
+                <CategoryCombobox
+                  categories={categories}
+                  value={categoryId}
+                  onValueChange={(value) => updateUrl("categoryId", value, true)}
+                  allowCreate={false}
+                  includeAllOption
+                  allLabel="All categories"
+                  placeholder="All categories"
+                  searchPlaceholder="Search category..."
+                />
+              </div>
+            )}
 
-        {fromAccountOptions && (
-          <FilterSelect
-            value={fromAccountId}
-            onChange={(value) => handleSelectChange("fromAccountId", value)}
-            placeholder="From account"
-            options={fromAccountOptions}
-          />
-        )}
+            {accounts && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Account</p>
+                <AccountCombobox
+                  accounts={accounts}
+                  value={accountId}
+                  onValueChange={(value) => updateUrl("accountId", value, true)}
+                  allowCreate={false}
+                  includeAllOption
+                  allLabel="All accounts"
+                  placeholder="All accounts"
+                  searchPlaceholder="Search account..."
+                />
+              </div>
+            )}
 
-        {toAccountOptions && (
-          <FilterSelect
-            value={toAccountId}
-            onChange={(value) => handleSelectChange("toAccountId", value)}
-            placeholder="To account"
-            options={toAccountOptions}
-          />
-        )}
-      </div>
+            <div className="flex justify-end">
+              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                <X className="mr-2 h-4 w-4" />
+                Clear filters
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

@@ -15,6 +15,8 @@ import { DataTableToolbar } from "@/components/shared/data-table-toolbar";
 import { transferColumns } from "@/components/transfers/transfer-columns";
 import { serializeForClient } from "@/lib/serialize";
 import { DEFAULT_PAGE_SIZE } from "@/components/shared/table-constants";
+import { endOfDay, startOfDay, startOfMonth } from "date-fns";
+import { parseDate } from "@/lib/format";
 
 interface TransfersPageProps {
   searchParams: Promise<{
@@ -23,10 +25,13 @@ interface TransfersPageProps {
     sortBy?: string;
     sortOrder?: string;
     description?: string;
+    accountId?: string;
     fromAccountId?: string;
     toAccountId?: string;
     amountMin?: string;
     amountMax?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }>;
 }
 
@@ -52,6 +57,13 @@ export default async function TransfersPage({
     | "fromAccount"
     | "toAccount";
   const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
+  const now = new Date();
+  const defaultDateFrom = startOfDay(startOfMonth(now));
+  const defaultDateTo = endOfDay(now);
+  const dateFrom = params.dateFrom
+    ? startOfDay(parseDate(params.dateFrom))
+    : defaultDateFrom;
+  const dateTo = params.dateTo ? endOfDay(parseDate(params.dateTo)) : defaultDateTo;
 
   // Build filters
   const filters = {
@@ -59,28 +71,51 @@ export default async function TransfersPage({
     pageSize,
     sortBy,
     sortOrder,
+    dateRange: {
+      from: dateFrom,
+      to: dateTo,
+    },
     ...(params.description && { description: params.description }),
+    ...(params.accountId && { accountId: params.accountId }),
     ...(params.fromAccountId && { fromAccountId: params.fromAccountId }),
     ...(params.toAccountId && { toAccountId: params.toAccountId }),
     ...(params.amountMin && { amountMin: parseFloat(params.amountMin) }),
     ...(params.amountMax && { amountMax: parseFloat(params.amountMax) }),
   };
 
-  const [transfers, totalCount, templates, defaultTemplate, accounts] =
-    await Promise.all([
-      getTransfers(filters),
-      getTransfersCount(filters),
-      getTransferTemplates(),
-      getDefaultTransferTemplate(),
-      getAccounts(),
-    ]);
+  const [
+    transfers,
+    totalCount,
+    totalCountAll,
+    templates,
+    defaultTemplate,
+    accounts,
+  ] = await Promise.all([
+    getTransfers(filters),
+    getTransfersCount(filters),
+    getTransfersCount(),
+    getTransferTemplates(),
+    getDefaultTransferTemplate(),
+    getAccounts(),
+  ]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // Prepare filter options
-  const accountOptions = accounts.map((acc) => ({
-    label: acc.name,
-    value: acc.id,
+  const hasActiveFilters = Boolean(
+    params.description ||
+      params.accountId ||
+      params.fromAccountId ||
+      params.toAccountId ||
+      params.amountMin ||
+      params.amountMax ||
+      params.dateFrom ||
+      params.dateTo
+  );
+  const shouldShowEmptyState = totalCount === 0 && !hasActiveFilters && totalCountAll === 0;
+
+  const accountOptions = accounts.map((account) => ({
+    id: account.id,
+    name: account.name,
   }));
 
   return (
@@ -97,12 +132,7 @@ export default async function TransfersPage({
         }
       />
 
-      {totalCount === 0 &&
-      !params.description &&
-      !params.fromAccountId &&
-      !params.toAccountId &&
-      !params.amountMin &&
-      !params.amountMax ? (
+      {shouldShowEmptyState ? (
         <EmptyState
           icon={<ArrowLeftRight className="h-8 w-8" />}
           title="No transfers yet"
@@ -124,8 +154,7 @@ export default async function TransfersPage({
           filterComponent={
             <DataTableToolbar
               searchPlaceholder="Filter by description..."
-              fromAccountOptions={accountOptions}
-              toAccountOptions={accountOptions}
+              accounts={accountOptions}
             />
           }
         />

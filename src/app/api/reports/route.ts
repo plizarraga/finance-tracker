@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
+import { parseDate } from "@/lib/format";
 import {
   getReportSummary,
   getMonthlyTrends,
@@ -29,8 +30,8 @@ export async function GET(request: Request) {
     }
 
     const dateRange = {
-      from: new Date(from),
-      to: new Date(to),
+      from: parseDate(from),
+      to: parseDate(to),
     };
 
     const summary = await getReportSummary(dateRange);

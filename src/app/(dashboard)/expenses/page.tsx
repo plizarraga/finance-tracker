@@ -16,6 +16,8 @@ import { expenseColumns } from "@/components/expenses/expense-columns";
 import { serializeForClient } from "@/lib/serialize";
 import { redirect } from "next/navigation";
 import { DEFAULT_PAGE_SIZE } from "@/components/shared/table-constants";
+import { endOfDay, startOfDay, startOfMonth } from "date-fns";
+import { parseDate } from "@/lib/format";
 
 interface ExpensesPageProps {
   searchParams: Promise<{
@@ -28,6 +30,8 @@ interface ExpensesPageProps {
     accountId?: string;
     amountMin?: string;
     amountMax?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }>;
 }
 
@@ -51,6 +55,13 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
     | "category"
     | "account";
   const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
+  const now = new Date();
+  const defaultDateFrom = startOfDay(startOfMonth(now));
+  const defaultDateTo = endOfDay(now);
+  const dateFrom = params.dateFrom
+    ? startOfDay(parseDate(params.dateFrom))
+    : defaultDateFrom;
+  const dateTo = params.dateTo ? endOfDay(parseDate(params.dateTo)) : defaultDateTo;
 
   // Build filters
   const filters = {
@@ -58,6 +69,10 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
     pageSize,
     sortBy,
     sortOrder,
+    dateRange: {
+      from: dateFrom,
+      to: dateTo,
+    },
     ...(params.description && { description: params.description }),
     ...(params.categoryId && { categoryId: params.categoryId }),
     ...(params.accountId && { accountId: params.accountId }),
@@ -65,27 +80,41 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
     ...(params.amountMax && { amountMax: parseFloat(params.amountMax) }),
   };
 
-  const [expenses, totalCount, templates, defaultTemplate, categories, accounts] =
-    await Promise.all([
-      getExpenses(filters),
-      getExpensesCount(filters),
-      getExpenseTemplates(),
-      getDefaultExpenseTemplate(),
-      getCategoriesByType("expense"),
-      getAccounts(),
-    ]);
+  const [
+    expenses,
+    totalCount,
+    totalCountAll,
+    templates,
+    defaultTemplate,
+    categories,
+    accounts,
+  ] = await Promise.all([
+    getExpenses(filters),
+    getExpensesCount(filters),
+    getExpensesCount(),
+    getExpenseTemplates(),
+    getDefaultExpenseTemplate(),
+    getCategoriesByType("expense"),
+    getAccounts(),
+  ]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
   // Prepare filter options
-  const categoryOptions = categories.map((cat) => ({
-    label: cat.name,
-    value: cat.id,
-  }));
+  const hasActiveFilters = Boolean(
+    params.description ||
+      params.categoryId ||
+      params.accountId ||
+      params.amountMin ||
+      params.amountMax ||
+      params.dateFrom ||
+      params.dateTo
+  );
+  const shouldShowEmptyState = totalCount === 0 && !hasActiveFilters && totalCountAll === 0;
 
-  const accountOptions = accounts.map((acc) => ({
-    label: acc.name,
-    value: acc.id,
+  const accountOptions = accounts.map((account) => ({
+    id: account.id,
+    name: account.name,
   }));
 
   return (
@@ -102,7 +131,7 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
         }
       />
 
-      {totalCount === 0 && !params.description && !params.categoryId && !params.accountId && !params.amountMin && !params.amountMax ? (
+      {shouldShowEmptyState ? (
         <EmptyState
           icon={<Receipt className="h-8 w-8" />}
           title="No expenses yet"
@@ -124,8 +153,8 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
           filterComponent={
             <DataTableToolbar
               searchPlaceholder="Filter by description..."
-              categoryOptions={categoryOptions}
-              accountOptions={accountOptions}
+              categories={categories}
+              accounts={accountOptions}
             />
           }
         />

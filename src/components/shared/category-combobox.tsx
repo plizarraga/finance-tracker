@@ -27,6 +27,11 @@ interface CategoryComboboxProps {
   onValueChange: (value: string) => void;
   disabled?: boolean;
   type?: "income" | "expense";
+  allowCreate?: boolean;
+  includeAllOption?: boolean;
+  allLabel?: string;
+  placeholder?: string;
+  searchPlaceholder?: string;
 }
 
 export function CategoryCombobox({
@@ -35,6 +40,11 @@ export function CategoryCombobox({
   onValueChange,
   disabled,
   type = "expense",
+  allowCreate = true,
+  includeAllOption = false,
+  allLabel = "All categories",
+  placeholder = "Select a category",
+  searchPlaceholder = "Search category...",
 }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -68,16 +78,33 @@ export function CategoryCombobox({
             className="w-full justify-between"
             disabled={disabled}
           >
-            {selectedCategory ? selectedCategory.name : "Select a category"}
+            {selectedCategory ? selectedCategory.name : includeAllOption ? allLabel : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search category..." />
+            <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
               <CommandEmpty>No category found.</CommandEmpty>
               <CommandGroup>
+                {includeAllOption && (
+                  <CommandItem
+                    value={allLabel}
+                    onSelect={() => {
+                      onValueChange("");
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === "" ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {allLabel}
+                  </CommandItem>
+                )}
                 {localCategories.map((category) => (
                   <CommandItem
                     key={category.id}
@@ -97,29 +124,35 @@ export function CategoryCombobox({
                   </CommandItem>
                 ))}
               </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup>
-                <CommandItem
-                  onSelect={() => {
-                    setOpen(false);
-                    setDialogOpen(true);
-                  }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Category
-                </CommandItem>
-              </CommandGroup>
+              {allowCreate && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        setOpen(false);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Category
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
 
-      <CategoryQuickCreateDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onCategoryCreated={handleCategoryCreated}
-        type={type}
-      />
+      {allowCreate && (
+        <CategoryQuickCreateDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onCategoryCreated={handleCategoryCreated}
+          type={type}
+        />
+      )}
     </>
   );
 }
