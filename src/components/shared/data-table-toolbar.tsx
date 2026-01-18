@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Filter, X } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 import { endOfDay, startOfMonth } from "date-fns";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -245,14 +245,18 @@ export function DataTableToolbar({
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">Description</p>
-              <Input
-                placeholder={searchPlaceholder}
-                value={description}
-                onChange={(e) => {
-                  descriptionDirtyRef.current = true;
-                  setDescription(e.target.value);
-                }}
-              />
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={searchPlaceholder}
+                  className="pl-9"
+                  value={description}
+                  onChange={(e) => {
+                    descriptionDirtyRef.current = true;
+                    setDescription(e.target.value);
+                  }}
+                />
+              </div>
             </div>
 
             {categories && (

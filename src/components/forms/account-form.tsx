@@ -86,6 +86,30 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
 
         <FormField
           control={form.control}
+          name="initialBalance"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Initial Balance (optional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  disabled={isPending}
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -104,29 +128,7 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="initialBalance"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Initial Balance</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  disabled={isPending}
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(parseFloat(e.target.value) || 0)
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
 
         <div className="flex justify-end gap-4">
           <Button type="submit" disabled={isPending}>
