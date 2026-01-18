@@ -8,7 +8,7 @@ import { SummaryCards } from "@/components/reports/summary-cards";
 import { CategoryChart } from "@/components/reports/category-chart";
 import { TrendChart } from "@/components/reports/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDateInput, parseDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatDateInput, parseDate } from "@/lib/format";
 import type { DateRange, ReportSummary, AccountWithBalance } from "@/types";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -197,10 +197,40 @@ export default function ReportsPage() {
     setPreset(nextPreset);
   }, []);
 
+  const presetLabel = useMemo(() => {
+    switch (preset) {
+      case "this-month":
+        return "This month";
+      case "last-month":
+        return "Last month";
+      case "last-90-days":
+        return "Last 90 days";
+      case "year-to-date":
+        return "Year to date";
+      case "last-year":
+        return "Last year";
+      case "custom":
+      default:
+        return "Custom range";
+    }
+  }, [preset]);
+
+  const dateRangeLabel = useMemo(() => {
+    return `${formatDate(dateRange.from)} - ${formatDate(dateRange.to)}`;
+  }, [dateRange.from, dateRange.to]);
+
+  const reportTitle = useMemo(() => {
+    return `Reports · ${presetLabel} (${dateRangeLabel})`;
+  }, [presetLabel, dateRangeLabel]);
+
+  const chartTitleSuffix = useMemo(() => {
+    return `${presetLabel} (${dateRangeLabel})`;
+  }, [presetLabel, dateRangeLabel]);
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reports"
+        title={reportTitle}
         description="View your financial reports and analytics"
       />
 
@@ -225,13 +255,13 @@ export default function ReportsPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <CategoryChart
           data={summary?.incomeByCategory ?? []}
-          title="Income by Category (Selected range)"
+          title={`Income by Category · ${chartTitleSuffix}`}
           type="income"
           isLoading={isLoadingSummary}
         />
         <CategoryChart
           data={summary?.expenseByCategory ?? []}
-          title="Expenses by Category (Selected range)"
+          title={`Expenses by Category · ${chartTitleSuffix}`}
           type="expense"
           isLoading={isLoadingSummary}
         />
