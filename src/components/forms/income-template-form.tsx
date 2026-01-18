@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
+import {
   Form,
   FormControl,
   FormField,
@@ -162,18 +168,26 @@ export function IncomeTemplateForm({
             <FormItem>
               <FormLabel>Amount (optional)</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  disabled={isPending}
-                  value={field.value ?? ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    field.onChange(value === "" ? null : Number.parseFloat(value) || null);
-                  }}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <InputGroupText>$</InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    disabled={isPending}
+                    value={field.value ?? ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? null : Number.parseFloat(value) || null);
+                    }}
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>USD</InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
               </FormControl>
               <FormMessage />
             </FormItem>
