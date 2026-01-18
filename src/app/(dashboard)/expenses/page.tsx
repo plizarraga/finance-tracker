@@ -122,13 +122,6 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
       <PageHeader
         title="Expenses"
         description="Track and manage your expenses"
-        action={
-          <ExpenseTemplateButtonGroup
-            templates={templates}
-            defaultTemplate={defaultTemplate}
-            variant="default"
-          />
-        }
       />
 
       {shouldShowEmptyState ? (
@@ -145,19 +138,27 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
           }
         />
       ) : (
-        <DataTable
-          columns={expenseColumns}
-          data={serializeForClient(expenses)}
-          pageCount={totalPages}
-          totalCount={totalCount}
-          filterComponent={
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
             <DataTableToolbar
               searchPlaceholder="Filter by description..."
               categories={categories}
               accounts={accountOptions}
             />
-          }
-        />
+            <ExpenseTemplateButtonGroup
+              templates={templates}
+              defaultTemplate={defaultTemplate}
+              variant="default"
+              compact
+            />
+          </div>
+          <DataTable
+            columns={expenseColumns}
+            data={serializeForClient(expenses)}
+            pageCount={totalPages}
+            totalCount={totalCount}
+          />
+        </div>
       )}
     </div>
   );

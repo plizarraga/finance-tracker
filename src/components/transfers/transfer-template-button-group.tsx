@@ -37,6 +37,7 @@ interface TransferTemplateButtonGroupProps {
   defaultTemplate: TransferTemplateWithRelations | null;
   variant?: "default" | "destructive" | "outline";
   fullWidth?: boolean;
+  compact?: boolean;
 }
 
 export function TransferTemplateButtonGroup({
@@ -44,6 +45,7 @@ export function TransferTemplateButtonGroup({
   defaultTemplate,
   variant = "default",
   fullWidth = false,
+  compact = false,
 }: TransferTemplateButtonGroupProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -158,7 +160,7 @@ export function TransferTemplateButtonGroup({
   const containerClassName = fullWidth ? "flex w-full gap-0.5" : "flex gap-0.5";
   const mainButtonClassName = `rounded-r-none${
     fullWidth ? " flex-1 min-w-0 justify-center" : ""
-  }`;
+  }${compact ? " min-w-0" : ""}`;
 
   return (
     <>
@@ -169,7 +171,7 @@ export function TransferTemplateButtonGroup({
           className={mainButtonClassName}
         >
           <ArrowLeftRight className="mr-2 h-4 w-4 shrink-0" />
-          <span className={fullWidth ? "truncate" : undefined}>
+          <span className={fullWidth || compact ? "truncate" : undefined}>
             {defaultTemplate ? defaultTemplate.name : "New Transfer"}
           </span>
         </Button>

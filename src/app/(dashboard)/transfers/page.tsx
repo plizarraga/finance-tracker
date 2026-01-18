@@ -123,13 +123,6 @@ export default async function TransfersPage({
       <PageHeader
         title="Transfers"
         description="Transfer money between your accounts"
-        action={
-          <TransferTemplateButtonGroup
-            templates={templates}
-            defaultTemplate={defaultTemplate}
-            variant="default"
-          />
-        }
       />
 
       {shouldShowEmptyState ? (
@@ -146,18 +139,26 @@ export default async function TransfersPage({
           }
         />
       ) : (
-        <DataTable
-          columns={transferColumns}
-          data={serializeForClient(transfers)}
-          pageCount={totalPages}
-          totalCount={totalCount}
-          filterComponent={
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
             <DataTableToolbar
               searchPlaceholder="Filter by description..."
               accounts={accountOptions}
             />
-          }
-        />
+            <TransferTemplateButtonGroup
+              templates={templates}
+              defaultTemplate={defaultTemplate}
+              variant="default"
+              compact
+            />
+          </div>
+          <DataTable
+            columns={transferColumns}
+            data={serializeForClient(transfers)}
+            pageCount={totalPages}
+            totalCount={totalCount}
+          />
+        </div>
       )}
     </div>
   );

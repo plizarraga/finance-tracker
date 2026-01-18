@@ -122,13 +122,6 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
       <PageHeader
         title="Incomes"
         description="Track your income transactions"
-        action={
-          <IncomeTemplateButtonGroup
-            templates={templates}
-            defaultTemplate={defaultTemplate}
-            variant="default"
-          />
-        }
       />
 
       {shouldShowEmptyState ? (
@@ -145,19 +138,27 @@ export default async function IncomesPage({ searchParams }: IncomesPageProps) {
           }
         />
       ) : (
-        <DataTable
-          columns={incomeColumns}
-          data={serializeForClient(incomes)}
-          pageCount={totalPages}
-          totalCount={totalCount}
-          filterComponent={
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
             <DataTableToolbar
               searchPlaceholder="Filter by description..."
               categories={categories}
               accounts={accountOptions}
             />
-          }
-        />
+            <IncomeTemplateButtonGroup
+              templates={templates}
+              defaultTemplate={defaultTemplate}
+              variant="default"
+              compact
+            />
+          </div>
+          <DataTable
+            columns={incomeColumns}
+            data={serializeForClient(incomes)}
+            pageCount={totalPages}
+            totalCount={totalCount}
+          />
+        </div>
       )}
     </div>
   );
