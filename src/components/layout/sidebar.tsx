@@ -15,11 +15,11 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/accounts", label: "Accounts", icon: Wallet },
-  { href: "/categories", label: "Categories", icon: Tags },
-  { href: "/incomes", label: "Incomes", icon: TrendingUp },
   { href: "/expenses", label: "Expenses", icon: TrendingDown },
   { href: "/transfers", label: "Transfers", icon: ArrowLeftRight },
+  { href: "/incomes", label: "Incomes", icon: TrendingUp },
+  { href: "/accounts", label: "Accounts", icon: Wallet },
+  { href: "/categories", label: "Categories", icon: Tags },
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ];
 
