@@ -210,6 +210,7 @@ export default function ReportsPage() {
         range={dateRange}
         preset={preset}
         onPresetChange={handlePresetChange}
+        layout="responsive"
       />
 
       {/* Summary Cards */}

@@ -43,6 +43,7 @@ interface DateRangeFilterProps {
   range?: DateRange;
   preset?: PresetType;
   onPresetChange?: (preset: PresetType) => void;
+  layout?: "compact" | "responsive" | "table";
 }
 
 export function DateRangeFilter({
@@ -50,6 +51,7 @@ export function DateRangeFilter({
   range,
   preset,
   onPresetChange,
+  layout = "compact",
 }: DateRangeFilterProps) {
   const getPresetRange = React.useCallback((presetValue: PresetType): DateRange | null => {
     const today = new Date();
@@ -199,27 +201,57 @@ export function DateRangeFilter({
     }
   };
 
+  const isResponsive = layout === "responsive";
+  const isTable = layout === "table";
+
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <Select
-        value={activePreset}
-        onValueChange={(value) => handlePresetChange(value as PresetType)}
-      >
-        <SelectTrigger className="h-9 w-[220px]">
-          <SelectValue placeholder="Select range" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="this-month">This Month</SelectItem>
-          <SelectItem value="last-month">Last Month</SelectItem>
-          <SelectItem value="last-90-days">Last 90 Days</SelectItem>
-          <SelectItem value="year-to-date">Year to Date</SelectItem>
-          <SelectItem value="last-year">Last Year</SelectItem>
-          <SelectItem value="custom">Custom</SelectItem>
-        </SelectContent>
-      </Select>
+    <div
+      className={cn(
+        isResponsive
+          ? "grid w-full gap-3 md:grid-cols-3 md:items-end"
+          : isTable
+            ? "grid w-full gap-3"
+            : "flex flex-wrap items-center gap-3"
+      )}
+    >
+      <div className="space-y-1">
+        {isResponsive && (
+          <p className="text-xs font-medium text-muted-foreground">By date</p>
+        )}
+        <Select
+          value={activePreset}
+          onValueChange={(value) => handlePresetChange(value as PresetType)}
+        >
+          <SelectTrigger
+            className={cn(
+              "h-9",
+              isResponsive || isTable ? "w-full" : "w-[220px]"
+            )}
+          >
+            <SelectValue placeholder="Select range" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="this-month">This Month</SelectItem>
+            <SelectItem value="last-month">Last Month</SelectItem>
+            <SelectItem value="last-90-days">Last 90 Days</SelectItem>
+            <SelectItem value="year-to-date">Year to Date</SelectItem>
+            <SelectItem value="last-year">Last Year</SelectItem>
+            <SelectItem value="custom">Custom Date</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {activePreset === "custom" && (
-        <div className="flex flex-wrap items-end gap-3">
+        <div
+          className={cn(
+            "gap-3",
+            isResponsive
+              ? "grid grid-cols-2 md:col-span-2"
+              : isTable
+                ? "grid grid-cols-2"
+                : "flex flex-wrap items-end"
+          )}
+        >
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">From</p>
             <Popover open={isFromOpen} onOpenChange={setIsFromOpen}>
@@ -228,7 +260,8 @@ export function DateRangeFilter({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "w-[140px] justify-start text-left font-normal",
+                    isResponsive || isTable ? "w-full" : "w-[140px]",
+                    "justify-start text-left font-normal",
                     !customRange.from && "text-muted-foreground"
                   )}
                 >
@@ -256,7 +289,8 @@ export function DateRangeFilter({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "w-[140px] justify-start text-left font-normal",
+                    isResponsive || isTable ? "w-full" : "w-[140px]",
+                    "justify-start text-left font-normal",
                     !customRange.to && "text-muted-foreground"
                   )}
                 >

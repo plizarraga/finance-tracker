@@ -233,12 +233,13 @@ export function DataTableToolbar({
         <PopoverContent className="w-[calc(100vw-2rem)] p-4 sm:w-[320px]" align="start">
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Date range</p>
+              <p className="text-xs font-medium text-muted-foreground">By date</p>
               <DateRangeFilter
                 range={dateRange}
                 preset={activePreset}
                 onRangeChange={handleRangeChange}
                 onPresetChange={handlePresetChange}
+                layout="table"
               />
             </div>
 
