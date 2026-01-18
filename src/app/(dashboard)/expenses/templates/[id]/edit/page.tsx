@@ -45,7 +45,7 @@ export default async function EditExpenseTemplatePage({ params }: PageProps) {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <EditExpenseTemplateForm templateId={id} template={template} />
         </CardContent>

@@ -28,5 +28,9 @@ export default async function EditTransferTemplatePage({
     notFound();
   }
 
-  return <EditTransferTemplateForm templateId={id} template={template} />;
+  return (
+    <div className="w-full max-w-2xl">
+      <EditTransferTemplateForm templateId={id} template={template} />
+    </div>
+  );
 }

@@ -136,7 +136,7 @@ export default function EditTransferPage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <TransferForm
             transfer={transfer}

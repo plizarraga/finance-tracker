@@ -83,7 +83,7 @@ export default function NewTransferTemplatePage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <TransferTemplateForm accounts={accounts} onSubmit={handleSubmit} />
         </CardContent>

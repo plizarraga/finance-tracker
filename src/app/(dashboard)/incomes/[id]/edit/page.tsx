@@ -143,7 +143,7 @@ export default function EditIncomePage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <IncomeForm
             income={income}

@@ -47,7 +47,7 @@ export default function NewAccountPage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <AccountForm onSubmit={handleSubmit} />
         </CardContent>

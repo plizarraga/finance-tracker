@@ -90,7 +90,7 @@ export default function EditAccountPage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <AccountForm account={account} onSubmit={handleSubmit} />
         </CardContent>

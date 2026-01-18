@@ -99,7 +99,7 @@ export default function NewIncomePage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <IncomeForm
             accounts={accounts}

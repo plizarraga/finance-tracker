@@ -28,5 +28,9 @@ export default async function EditIncomeTemplatePage({
     notFound();
   }
 
-  return <EditIncomeTemplateForm templateId={id} template={template} />;
+  return (
+    <div className="w-full max-w-2xl">
+      <EditIncomeTemplateForm templateId={id} template={template} />
+    </div>
+  );
 }

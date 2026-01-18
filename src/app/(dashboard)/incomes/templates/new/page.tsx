@@ -92,7 +92,7 @@ export default function NewIncomeTemplatePage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <IncomeTemplateForm
             accounts={accounts}

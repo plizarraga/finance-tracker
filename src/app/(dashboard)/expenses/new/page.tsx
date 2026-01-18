@@ -106,7 +106,7 @@ export default function NewExpensePage() {
         }
       />
 
-      <Card>
+      <Card className="w-full max-w-2xl">
         <CardContent className="pt-6">
           <ExpenseForm
             accounts={accounts}
