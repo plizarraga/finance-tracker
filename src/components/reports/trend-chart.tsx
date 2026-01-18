@@ -11,7 +11,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 
 interface TrendData {
@@ -94,7 +100,8 @@ export const TrendChart = memo(function TrendChart({ data, isLoading = false }: 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Monthly Trends</CardTitle>
+        <CardTitle className="text-lg">Monthly Trends (Last 12 Months)</CardTitle>
+        <CardDescription>Ignores the date filter</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (

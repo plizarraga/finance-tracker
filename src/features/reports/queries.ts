@@ -176,10 +176,10 @@ export async function getMonthlyTrends(
     startDate.setDate(1);
     startDate.setHours(0, 0, 0, 0);
 
-    type MonthlyRow = { month: Date; total: Prisma.Decimal | null };
+    type MonthlyRow = { month: string; total: Prisma.Decimal | null };
     const [incomeRows, expenseRows] = await Promise.all([
       prisma.$queryRaw<MonthlyRow[]>`
-        SELECT date_trunc('month', date) AS month, SUM(amount) AS total
+        SELECT to_char(date_trunc('month', date), 'YYYY-MM') AS month, SUM(amount) AS total
         FROM incomes
         WHERE user_id = ${userId}
           AND date >= ${startDate}
@@ -187,7 +187,7 @@ export async function getMonthlyTrends(
         GROUP BY 1
       `,
       prisma.$queryRaw<MonthlyRow[]>`
-        SELECT date_trunc('month', date) AS month, SUM(amount) AS total
+        SELECT to_char(date_trunc('month', date), 'YYYY-MM') AS month, SUM(amount) AS total
         FROM expenses
         WHERE user_id = ${userId}
           AND date >= ${startDate}
@@ -209,7 +209,7 @@ export async function getMonthlyTrends(
 
     // Apply income aggregates
     for (const row of incomeRows) {
-      const key = formatMonthKey(new Date(row.month));
+      const key = row.month;
       const existing = monthlyData.get(key);
       if (existing) {
         existing.income += row.total?.toNumber() ?? 0;
@@ -218,7 +218,7 @@ export async function getMonthlyTrends(
 
     // Apply expense aggregates
     for (const row of expenseRows) {
-      const key = formatMonthKey(new Date(row.month));
+      const key = row.month;
       const existing = monthlyData.get(key);
       if (existing) {
         existing.expenses += row.total?.toNumber() ?? 0;

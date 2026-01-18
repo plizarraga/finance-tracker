@@ -225,13 +225,13 @@ export default function ReportsPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <CategoryChart
           data={summary?.incomeByCategory ?? []}
-          title="Income by Category"
+          title="Income by Category (Selected range)"
           type="income"
           isLoading={isLoadingSummary}
         />
         <CategoryChart
           data={summary?.expenseByCategory ?? []}
-          title="Expenses by Category"
+          title="Expenses by Category (Selected range)"
           type="expense"
           isLoading={isLoadingSummary}
         />
@@ -266,7 +266,7 @@ function AccountBalancesList({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Wallet className="h-5 w-5" />
-          Account Balances
+          Current Account Balances
         </CardTitle>
       </CardHeader>
       <CardContent>
