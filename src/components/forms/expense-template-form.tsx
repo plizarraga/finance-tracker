@@ -113,6 +113,25 @@ export function ExpenseTemplateForm({
 
         <FormField
           control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Default description for this type of expense..."
+                  disabled={isPending}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="accountId"
           render={({ field }) => (
             <FormItem>
@@ -187,25 +206,6 @@ export function ExpenseTemplateForm({
                     <InputGroupText>USD</InputGroupText>
                   </InputGroupAddon>
                 </InputGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Default description for this type of expense..."
-                  disabled={isPending}
-                  {...field}
-                  value={field.value ?? ""}
-                />
               </FormControl>
               <FormMessage />
             </FormItem>

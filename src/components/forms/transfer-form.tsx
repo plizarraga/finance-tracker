@@ -109,6 +109,44 @@ export function TransferForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Add a description for this transfer..."
+                  disabled={isPending}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <DatePickerField
+                  value={field.value || new Date()}
+                  onChange={field.onChange}
+                  disabled={isPending}
+                  placeholder="Select a date"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <FormField
             control={form.control}
@@ -130,7 +168,7 @@ export function TransferForm({
             )}
           />
 
-          <div className="flex h-10 items-center justify-center">
+          <div className="hidden h-10 items-center justify-center sm:flex">
             <ArrowRight className="h-5 w-5 text-muted-foreground" />
           </div>
 
@@ -155,72 +193,32 @@ export function TransferForm({
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Amount</FormLabel>
-                <FormControl>
-                  <InputGroup>
-                    <InputGroupAddon>
-                      <InputGroupText>$</InputGroupText>
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      disabled={isPending}
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
-                    />
-                    <InputGroupAddon align="inline-end">
-                      <InputGroupText>USD</InputGroupText>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date</FormLabel>
-                <FormControl>
-                  <DatePickerField
-                    value={field.value || new Date()}
-                    onChange={field.onChange}
-                    disabled={isPending}
-                    placeholder="Select a date"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
         <FormField
           control={form.control}
-          name="description"
+          name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Add a description for this transfer..."
-                  disabled={isPending}
-                  {...field}
-                  value={field.value ?? ""}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <InputGroupText>$</InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    disabled={isPending}
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value) || 0)
+                    }
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>USD</InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
               </FormControl>
               <FormMessage />
             </FormItem>

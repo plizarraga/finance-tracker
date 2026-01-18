@@ -107,6 +107,44 @@ export function IncomeForm({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Add a description for this income..."
+                  disabled={isPending}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <DatePickerField
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isPending}
+                  placeholder="Select a date"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="accountId"
           render={({ field }) => (
             <FormItem>
@@ -171,44 +209,6 @@ export function IncomeForm({
                     <InputGroupText>USD</InputGroupText>
                   </InputGroupAddon>
                 </InputGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date</FormLabel>
-              <FormControl>
-                <DatePickerField
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isPending}
-                  placeholder="Select a date"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Add a description for this income..."
-                  disabled={isPending}
-                  {...field}
-                  value={field.value ?? ""}
-                />
               </FormControl>
               <FormMessage />
             </FormItem>

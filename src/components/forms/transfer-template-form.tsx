@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -108,67 +109,92 @@ export function TransferTemplateForm({
 
         <FormField
           control={form.control}
-          name="fromAccountId"
+          name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>From Account (optional)</FormLabel>
-              <Select
-                onValueChange={(value) =>
-                  field.onChange(value === "none" ? null : value)
-                }
-                value={field.value ?? "none"}
-                disabled={isPending}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="No pre-selection" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">No pre-selection</SelectItem>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Default description for this type of transfer..."
+                  disabled={isPending}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="toAccountId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>To Account (optional)</FormLabel>
-              <Select
-                onValueChange={(value) =>
-                  field.onChange(value === "none" ? null : value)
-                }
-                value={field.value ?? "none"}
-                disabled={isPending}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="No pre-selection" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">No pre-selection</SelectItem>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+          <FormField
+            control={form.control}
+            name="fromAccountId"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>From Account (optional)</FormLabel>
+                <Select
+                  onValueChange={(value) =>
+                    field.onChange(value === "none" ? null : value)
+                  }
+                  value={field.value ?? "none"}
+                  disabled={isPending}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No pre-selection" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">No pre-selection</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="hidden h-10 items-center justify-center sm:flex">
+            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="toAccountId"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>To Account (optional)</FormLabel>
+                <Select
+                  onValueChange={(value) =>
+                    field.onChange(value === "none" ? null : value)
+                  }
+                  value={field.value ?? "none"}
+                  disabled={isPending}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No pre-selection" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">No pre-selection</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -199,25 +225,6 @@ export function TransferTemplateForm({
                     <InputGroupText>USD</InputGroupText>
                   </InputGroupAddon>
                 </InputGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Default description for this type of transfer..."
-                  disabled={isPending}
-                  {...field}
-                  value={field.value ?? ""}
-                />
               </FormControl>
               <FormMessage />
             </FormItem>

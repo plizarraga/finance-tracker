@@ -20,6 +20,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { createAccount } from "@/features/accounts/api";
@@ -44,6 +50,7 @@ export function AccountQuickCreateDialog({
     defaultValues: {
       name: "",
       description: null,
+      initialBalance: 0,
     },
   });
 
@@ -54,6 +61,7 @@ export function AccountQuickCreateDialog({
       if (values.description) {
         formData.append("description", values.description);
       }
+      formData.append("initialBalance", values.initialBalance.toString());
 
       const result = await createAccount(formData);
 
@@ -106,6 +114,38 @@ export function AccountQuickCreateDialog({
                       autoFocus
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="initialBalance"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Initial Balance (optional)</FormLabel>
+                  <FormControl>
+                    <InputGroup>
+                      <InputGroupAddon>
+                        <InputGroupText>$</InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        disabled={isPending}
+                        {...field}
+                        onChange={(e) => {
+                          const parsed = Number.parseFloat(e.target.value);
+                          field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                        }}
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <InputGroupText>USD</InputGroupText>
+                      </InputGroupAddon>
+                    </InputGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

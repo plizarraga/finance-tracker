@@ -108,9 +108,10 @@ export function AccountForm({ account, onSubmit }: AccountFormProps) {
                     placeholder="0.00"
                     disabled={isPending}
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(parseFloat(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      const parsed = Number.parseFloat(e.target.value);
+                      field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                    }}
                   />
                   <InputGroupAddon align="inline-end">
                     <InputGroupText>USD</InputGroupText>
