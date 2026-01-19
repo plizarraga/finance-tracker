@@ -169,6 +169,22 @@ export function DataTable<TData, TValue>({
     urlState.columnFilters
   );
 
+  const sortingRef = React.useRef(sorting);
+  const paginationRef = React.useRef(pagination);
+  const columnFiltersRef = React.useRef(columnFilters);
+
+  React.useEffect(() => {
+    sortingRef.current = sorting;
+  }, [sorting]);
+
+  React.useEffect(() => {
+    paginationRef.current = pagination;
+  }, [pagination]);
+
+  React.useEffect(() => {
+    columnFiltersRef.current = columnFilters;
+  }, [columnFilters]);
+
   // Track if we should ignore URL updates
   const ignoreNextUpdateRef = React.useRef(false);
 
@@ -195,17 +211,26 @@ export function DataTable<TData, TValue>({
   React.useEffect(() => {
     const newUrlState = parseUrlState(searchParams, columns as ColumnDef<unknown, unknown>[], pageCount);
 
+    const currentSorting = sortingRef.current;
+    const currentPagination = paginationRef.current;
+    const currentColumnFilters = columnFiltersRef.current;
+
     const sortingDifferent =
-      sorting.length !== newUrlState.sorting.length ||
-      sorting.some((s, i) => s.id !== newUrlState.sorting[i]?.id || s.desc !== newUrlState.sorting[i]?.desc);
+      currentSorting.length !== newUrlState.sorting.length ||
+      currentSorting.some(
+        (s, i) => s.id !== newUrlState.sorting[i]?.id || s.desc !== newUrlState.sorting[i]?.desc
+      );
 
     const paginationDifferent =
-      pagination.pageIndex !== newUrlState.pagination.pageIndex ||
-      pagination.pageSize !== newUrlState.pagination.pageSize;
+      currentPagination.pageIndex !== newUrlState.pagination.pageIndex ||
+      currentPagination.pageSize !== newUrlState.pagination.pageSize;
 
     const filtersDifferent =
-      columnFilters.length !== newUrlState.columnFilters.length ||
-      columnFilters.some((f, i) => f.id !== newUrlState.columnFilters[i]?.id || f.value !== newUrlState.columnFilters[i]?.value);
+      currentColumnFilters.length !== newUrlState.columnFilters.length ||
+      currentColumnFilters.some(
+        (f, i) =>
+          f.id !== newUrlState.columnFilters[i]?.id || f.value !== newUrlState.columnFilters[i]?.value
+      );
 
     if (sortingDifferent || paginationDifferent || filtersDifferent) {
       ignoreNextUpdateRef.current = true;
@@ -257,7 +282,15 @@ export function DataTable<TData, TValue>({
     if (newQuery !== currentQuery) {
       router.replace(`${pathname}?${newQuery}`, { scroll: false });
     }
-  }, [sorting, pagination, columnFilters]);
+  }, [
+    sorting,
+    pagination,
+    columnFilters,
+    filterableColumns,
+    searchParams,
+    pathname,
+    router,
+  ]);
 
   // Memoize page size change handler
   const handlePageSizeChange = React.useCallback((pageSize: number) => {
