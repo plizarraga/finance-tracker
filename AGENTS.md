@@ -13,8 +13,15 @@
 - `pnpm build`: generate Prisma client and build the app.
 - `pnpm start`: run the production server from the build output.
 - `pnpm lint`: run ESLint with Next.js rules.
+- `pnpm test`: run unit tests (Vitest).
+- `pnpm test:e2e`: run Playwright e2e tests with `.env.test`.
+- `pnpm db:up`: start local dev/test Postgres containers via Docker.
+- `pnpm db:down`: stop local dev/test Postgres containers.
 - `pnpm db:sync`: generate Prisma client and push schema to the DB.
+- `pnpm db:dev:push`: push schema to the dev database using `.env`.
+- `pnpm db:test:reset`: reset the test database using `.env.test`.
 - `pnpm db:seed`: seed the database (`prisma/seed.mjs`).
+- `pnpm db:test:seed`: seed the test database using `.env.test`.
 - `pnpm db:studio`: open Prisma Studio for data inspection.
 
 ## Coding Style & Naming Conventions
@@ -24,9 +31,9 @@
 - Component files use kebab-case (e.g., `expense-columns.tsx`).
 
 ## Testing Guidelines
-- No automated test framework is configured in this repo.
-- Use manual verification and targeted page checks; start with `pnpm dev` and validate key flows.
-- If adding tests, align with the feature folder layout in `src/features/`.
+- Unit tests use Vitest and live under `src/test`.
+- E2E tests use Playwright under `e2e/` and rely on `.env.test`.
+- Use factories under `src/test/data` and helpers under `src/test/helpers`.
 
 ## Commit & Pull Request Guidelines
 - Recent commits use imperative, short summaries (e.g., “Update ReportsPage…”, “Refactor financial pages…”).

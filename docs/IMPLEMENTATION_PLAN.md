@@ -1,4 +1,4 @@
-# Plan de Implementación - Finance Tracker SLC MVP
+# Plan de Implementación - Finance Tracker
 
 ## Estado Actual: 80% Completado
 

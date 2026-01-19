@@ -4,7 +4,7 @@ test("landing page renders", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Finance Tracker SLC" })
+    page.getByRole("heading", { name: "Finance Tracker" })
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Get Started" })).toBeVisible();
 });

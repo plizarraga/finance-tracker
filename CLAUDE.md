@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Finance Tracker SLC - A mobile-first personal finance web app following Simple · Lovable · Complete philosophy. Replaces Notion-based finance tracking with fast, privacy-first expense management, template-driven quick entry, and inline creation in forms.
+Finance Tracker - A mobile-first personal finance web app following Simple · Lovable · Complete philosophy. Replaces Notion-based finance tracking with fast, privacy-first expense management, template-driven quick entry, and inline creation in forms.
 
 ## Tech Stack
 
@@ -23,17 +23,24 @@ pnpm dev             # Start dev server
 pnpm build           # Generate Prisma client and build Next.js
 pnpm start           # Start production server
 pnpm lint            # Run ESLint
+pnpm test            # Run unit tests (Vitest)
+pnpm test:e2e        # Run Playwright tests with .env.test
 pnpm prisma:generate # Generate Prisma client
 pnpm prisma:studio   # Open Prisma Studio
 pnpm prisma:push     # Apply schema to the database
 pnpm db:sync         # Generate Prisma client and apply schema
 pnpm db:reset        # Reset database and apply schema (destructive)
+pnpm db:up           # Start local Postgres (dev/test)
+pnpm db:down         # Stop local Postgres (dev/test)
+pnpm db:dev:push     # Push schema to dev database
+pnpm db:test:reset   # Reset test database
+pnpm db:test:seed    # Seed test database
 pnpm db:studio       # Open Prisma Studio (alias)
 ```
 
 ## Database
 
-Prisma is the source of truth for schema and queries. The Prisma client is generated on build and can be refreshed locally with `pnpm prisma:generate`.
+Prisma is the source of truth for schema and queries. Local dev/test can run on Docker Postgres, while production uses Railway-managed Postgres.
 
 ## Architecture
 
@@ -44,6 +51,7 @@ app/           → Routes and screens
 features/      → Domain logic per feature (accounts, categories, incomes, expenses, transfers, reports)
 lib/           → Shared utilities
 prisma/        → Prisma schema and client
+src/test/      → Unit tests, factories, helpers
 ```
 
 Each feature owns its schemas, queries, and client helpers; route handlers live in `app/api`.

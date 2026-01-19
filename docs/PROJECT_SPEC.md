@@ -1,8 +1,8 @@
-# PRODUCT SPEC — Finance Tracker SLC
+# PRODUCT SPEC — Finance Tracker
 
 ## Overview
 
-**Product Name (working):** Finance Tracker SLC
+**Product Name (working):** Finance Tracker
 **Philosophy:** Simple · Lovable · Complete
 **Primary Goal:** Replace a Notion-based personal finance workflow with a fast, mobile-first web app that can later scale and monetize.
 
@@ -181,7 +181,8 @@ These features are intentionally excluded to preserve SLC:
 
 ### Database
 
-- **PostgreSQL (Supabase) + Prisma ORM**
+- **PostgreSQL + Prisma ORM**
+- Local dev/test can run on Docker; production uses Railway-managed Postgres
 - Relational schema
 - Prisma as source of truth for schema and queries
 
@@ -196,6 +197,7 @@ These features are intentionally excluded to preserve SLC:
 - **Railway** for deployment
 - **pnpm** used in local development and CI
 - Environment-based configuration
+ - Local Docker for dev/test databases
 
 ---
 
@@ -346,17 +348,27 @@ Each feature owns:
 ## 17. Tooling & Runtime
 
 - **pnpm** as package manager
+- **Vitest** for unit tests
+- **Playwright** for end-to-end tests
 - `pnpm install` installs dependencies
 - `pnpm dev` starts the development server
 - `pnpm build` generates the Prisma client and builds Next.js
 - `pnpm start` starts the production server
 - `pnpm lint` runs ESLint
+- `pnpm test` runs unit tests
+- `pnpm test:e2e` runs Playwright tests with `.env.test`
 - `pnpm prisma:generate` generates the Prisma client
 - `pnpm prisma:studio` opens Prisma Studio
 - `pnpm prisma:push` applies the schema to the database
 - `pnpm db:sync` generates the Prisma client and applies the schema
 - `pnpm db:reset` resets the database and applies the schema (destructive)
 - `pnpm db:studio` alias for Prisma Studio
+- `pnpm db:up` starts local Postgres containers
+- `pnpm db:down` stops local Postgres containers
+- `pnpm db:dev:push` pushes schema to the dev database
+- `pnpm db:test:reset` resets the test database
+- `pnpm db:seed` seeds the dev database
+- `pnpm db:test:seed` seeds the test database
 - Deterministic installs via lockfile
 
 ---

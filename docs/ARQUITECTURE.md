@@ -8,7 +8,7 @@ Este documento describe la arquitectura de alto nivel del sistema, el flujo de d
 
 ### Tipo de Aplicación
 
-Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único codebase sirve tanto la interfaz de usuario como la lógica de backend.
+Finance Tracker es un **monolito Next.js** que utiliza App Router. Un único codebase sirve tanto la interfaz de usuario como la lógica de backend.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -39,8 +39,8 @@ Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│             PostgreSQL (Supabase)                            │
-│                  (Base de datos)                            │
+│             PostgreSQL (local/Railway)                       │
+│                  (Base de datos)                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -50,7 +50,7 @@ Finance Tracker SLC es un **monolito Next.js** que utiliza App Router. Un único
 |------|------------|
 | Frontend | Next.js (React), shadcn/ui |
 | Backend | Next.js Route Handlers (App Router API routes) |
-| Base de Datos | PostgreSQL (Supabase) + Prisma |
+| Base de Datos | PostgreSQL + Prisma (local Docker for dev/test, Railway in prod) |
 | Autenticación | Better Auth (JS) |
 | Hosting | Railway |
 
@@ -70,6 +70,8 @@ features/         → Lógica de dominio por feature
   └── transfer-templates/ → Plantillas de transferencias
 lib/              → Utilidades compartidas
 prisma/           → Schema y cliente Prisma
+src/test/         → Unit tests, data factories, helpers
+e2e/              → Playwright end-to-end tests
 ```
 
 Cada feature es dueño de:
