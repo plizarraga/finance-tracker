@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
@@ -64,6 +65,8 @@
     "prisma": "^7.2.0",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.0.4",
+    "vitest": "^4.0.17"
   }
 }
