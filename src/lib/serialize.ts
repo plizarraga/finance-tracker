@@ -2,6 +2,17 @@
  * Serializes Prisma data by converting Decimal objects to numbers and Dates to ISO strings
  * This is needed to pass data to Client Components
  */
+type DecimalLike = { toNumber: () => number };
+
+function isDecimalLike(value: unknown): value is DecimalLike {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "toNumber" in value &&
+    typeof (value as DecimalLike).toNumber === "function"
+  );
+}
+
 export function serializeForClient<T>(data: T): T {
   if (data === null || data === undefined) {
     return data;
@@ -13,13 +24,8 @@ export function serializeForClient<T>(data: T): T {
   }
 
   // Check if it's a Decimal-like object (has toNumber method)
-  if (
-    typeof data === "object" &&
-    data !== null &&
-    "toNumber" in data &&
-    typeof data.toNumber === "function"
-  ) {
-    return (data as any).toNumber() as T;
+  if (isDecimalLike(data)) {
+    return data.toNumber() as T;
   }
 
   if (Array.isArray(data)) {
@@ -27,11 +33,13 @@ export function serializeForClient<T>(data: T): T {
   }
 
   if (typeof data === "object" && data !== null) {
-    const serialized: any = {};
-    for (const [key, value] of Object.entries(data)) {
+    const serialized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(
+      data as Record<string, unknown>
+    )) {
       serialized[key] = serializeForClient(value);
     }
-    return serialized;
+    return serialized as T;
   }
 
   return data;
