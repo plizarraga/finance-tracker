@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, test } from "vitest";
 
 import { buildDecimalLike } from "@/test/data/build-decimal-like";

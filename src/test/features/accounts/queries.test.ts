@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 

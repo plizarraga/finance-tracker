@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.gitignore
+Dockerfile
+docker-compose*.yml
+.env
+.env.*
+coverage
+playwright-report
+test-results
+.vscode
+*.log
+*.pem
+.DS_Store

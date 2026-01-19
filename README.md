@@ -15,6 +15,11 @@ Mobile-first personal finance tracker built with Next.js (App Router), Prisma, a
 5. `pnpm db:seed`
 6. `pnpm dev`
 
+## Docker (app + database)
+1. Create `.env` from `.env.example` and set `BETTER_AUTH_SECRET`.
+2. `docker compose -f docker-compose.app.yml up --build`
+3. Open `http://localhost:3000`
+
 ## Scripts
 - `pnpm dev`: start the Next.js dev server.
 - `pnpm build`: generate Prisma client and build the app.

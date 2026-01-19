@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const createAuthClientMock = vi.hoisted(() => vi.fn());
