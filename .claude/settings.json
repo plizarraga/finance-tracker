@@ -1,6 +1,0 @@
-{
-  "enabledPlugins": {
-    "feature-dev@claude-plugins-official": true,
-    "supabase@claude-plugins-official": true
-  }
-}
