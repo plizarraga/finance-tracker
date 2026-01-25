@@ -40,3 +40,6 @@
 - Prisma is the source of truth for schema and queries; update `prisma/schema.prisma` first.
 - Use `.env` and `.env.test` based on `.env.example`; never commit secrets.
 - Ensure the test database is isolated before running `pnpm test:e2e`.
+
+## Agent-Specific Instructions
+- When implementing new functionality that depends on a third-party library, consult the Context7 MCP server first to use the latest official documentation before coding.
