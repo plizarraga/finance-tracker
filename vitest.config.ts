@@ -1,13 +1,12 @@
-import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from 'vitest/config';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    environment: "jsdom",
-    include: ["src/__tests__/**/*.test.ts", "src/__tests__/**/*.spec.ts"],
+    environment: 'jsdom',
+    include: ['src/__tests__/**/*.test.ts', 'src/__tests__/**/*.spec.ts'],
     clearMocks: true,
-    reporters: [
-      ['tree', { summary: false }]
-    ] },
+    reporters: [['tree', { summary: false }]],
+  },
 });
