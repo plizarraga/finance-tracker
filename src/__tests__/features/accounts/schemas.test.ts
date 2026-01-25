@@ -5,8 +5,8 @@ import {
   accountSchema,
   accountServerSchema,
 } from "@/features/accounts/schemas";
-import { buildAccountInput } from "@/test/data/build-account-input";
-import { buildAccountServerInput } from "@/test/data/build-account-server-input";
+import { buildAccountInput } from "@/__tests__/data/build-account-input";
+import { buildAccountServerInput } from "@/__tests__/data/build-account-server-input";
 
 describe("accounts schemas", () => {
   test("When the account input is valid, then it passes validation", () => {

@@ -5,7 +5,9 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     environment: "jsdom",
-    include: ["src/test/**/*.test.ts", "src/test/**/*.spec.ts"],
+    include: ["src/__tests__/**/*.test.ts", "src/__tests__/**/*.spec.ts"],
     clearMocks: true,
-  },
+    reporters: [
+      ['tree', { summary: false }]
+    ] },
 });

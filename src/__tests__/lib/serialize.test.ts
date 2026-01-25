@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { describe, expect, test } from "vitest";
 
-import { buildDecimalLike } from "@/test/data/build-decimal-like";
-import { buildSerializableRecord } from "@/test/data/build-serializable-record";
+import { buildDecimalLike } from "@/__tests__/data/build-decimal-like";
+import { buildSerializableRecord } from "@/__tests__/data/build-serializable-record";
 
 import { serializeForClient } from "@/lib/serialize";
 

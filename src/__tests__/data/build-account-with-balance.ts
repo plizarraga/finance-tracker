@@ -1,6 +1,6 @@
 import type { AccountWithBalance } from "@/types";
 
-import { buildAccount } from "@/test/data/build-account";
+import { buildAccount } from "@/__tests__/data/build-account";
 
 export function buildAccountWithBalance(
   overrides: Partial<AccountWithBalance> = {}

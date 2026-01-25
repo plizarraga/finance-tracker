@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { buildActionResult } from "@/test/data/build-action-result";
-import { buildConfirmation } from "@/test/data/build-confirmation";
+import { buildActionResult } from "@/__tests__/data/build-action-result";
+import { buildConfirmation } from "@/__tests__/data/build-confirmation";
 
 import { submitForm, submitJson } from "@/lib/api-client";
 

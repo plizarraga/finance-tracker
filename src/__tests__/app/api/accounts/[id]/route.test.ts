@@ -1,10 +1,10 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { buildAccount } from "@/test/data/build-account";
-import { buildAccountWithBalance } from "@/test/data/build-account-with-balance";
-import { buildAccountFormData } from "@/test/helpers/build-account-form-data";
-import { stubAccountDeleteCounts } from "@/test/helpers/stub-account-delete-counts";
+import { buildAccount } from "@/__tests__/data/build-account";
+import { buildAccountWithBalance } from "@/__tests__/data/build-account-with-balance";
+import { buildAccountFormData } from "@/__tests__/helpers/build-account-form-data";
+import { stubAccountDeleteCounts } from "@/__tests__/helpers/stub-account-delete-counts";
 
 const requireAuthMock = vi.hoisted(() => vi.fn());
 const getAccountsWithBalancesMock = vi.hoisted(() => vi.fn());

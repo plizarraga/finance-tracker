@@ -2,8 +2,8 @@
 import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { buildAccount } from "@/test/data/build-account";
-import { buildAccountsWithBalancesScenario } from "@/test/helpers/build-accounts-with-balances-scenario";
+import { buildAccount } from "@/__tests__/data/build-account";
+import { buildAccountsWithBalancesScenario } from "@/__tests__/helpers/build-accounts-with-balances-scenario";
 
 const requireAuthMock = vi.hoisted(() => vi.fn());
 const isUnauthorizedErrorMock = vi.hoisted(() => vi.fn());

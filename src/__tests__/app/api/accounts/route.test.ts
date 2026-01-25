@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { buildAccount } from "@/test/data/build-account";
-import { buildAccountFormData } from "@/test/helpers/build-account-form-data";
+import { buildAccount } from "@/__tests__/data/build-account";
+import { buildAccountFormData } from "@/__tests__/helpers/build-account-form-data";
 
 const requireAuthMock = vi.hoisted(() => vi.fn());
 const getAccountsMock = vi.hoisted(() => vi.fn());

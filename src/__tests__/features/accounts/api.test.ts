@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { buildActionResult } from "@/test/data/build-action-result";
-import { buildAccountSummary } from "@/test/data/build-account-summary";
+import { buildActionResult } from "@/__tests__/data/build-action-result";
+import { buildAccountSummary } from "@/__tests__/data/build-account-summary";
 
 const submitFormMock = vi.hoisted(() => vi.fn());
 

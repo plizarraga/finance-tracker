@@ -1,11 +1,11 @@
 import { Prisma } from "@prisma/client";
 
-import { buildAccount } from "@/test/data/build-account";
-import { buildAccountSum } from "@/test/data/build-account-sum";
+import { buildAccount } from "@/__tests__/data/build-account";
+import { buildAccountSum } from "@/__tests__/data/build-account-sum";
 import {
   buildTransferInSum,
   buildTransferOutSum,
-} from "@/test/data/build-transfer-sum";
+} from "@/__tests__/data/build-transfer-sum";
 
 export function buildAccountsWithBalancesScenario() {
   const userId = "user-203";

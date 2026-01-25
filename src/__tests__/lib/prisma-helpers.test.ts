@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { buildSession } from "@/test/data/build-session";
+import { buildSession } from "@/__tests__/data/build-session";
 
 import {
   UnauthorizedError,
