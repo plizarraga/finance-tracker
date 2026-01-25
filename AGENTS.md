@@ -1,45 +1,42 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/app/` hosts the Next.js App Router pages, layouts, and API routes (`src/app/api/*/route.ts`).
-- `src/components/` contains reusable UI and feature components (forms, tables, charts).
-- `src/features/` groups domain logic by feature (schemas, queries, API wrappers).
-- `src/lib/` contains shared helpers (auth, formatting, API clients).
-- `prisma/` contains the database schema, migrations, and seed script.
-- `docs/` includes implementation plans and architecture notes.
+- `src/app/` holds Next.js App Router pages, layouts, and API route handlers.
+- `src/features/` contains domain logic per feature (accounts, categories, incomes, expenses, transfers, reports).
+- `src/components/` houses shared UI components; `src/hooks/`, `src/lib/`, `src/providers/`, and `src/types/` store reusable hooks, utilities, context providers, and shared types.
+- Tests live in `src/__tests__/` (unit/integration) and `e2e/` (Playwright).
+- `prisma/` contains the schema and seed script; `scripts/` contains local helper scripts.
+- Backend logic should live in route handlers and feature modules: use Next.js Route Handlers in `src/app/api/**/route.ts` and keep domain logic in `src/features/**`; avoid Server Actions.
 
 ## Build, Test, and Development Commands
-- `pnpm dev`: start the Next.js dev server (Turbopack).
+- `pnpm dev`: start the Next.js dev server with Turbopack.
 - `pnpm build`: generate Prisma client and build the app.
-- `pnpm start`: run the production server from the build output.
-- `pnpm lint`: run ESLint with Next.js rules.
-- `pnpm test`: run unit tests (Vitest).
-- `pnpm test:e2e`: run Playwright e2e tests with `.env.test`.
-- `pnpm db:up`: start local dev/test Postgres containers via Docker.
-- `pnpm db:down`: stop local dev/test Postgres containers.
-- `pnpm db:sync`: generate Prisma client and push schema to the DB.
-- `pnpm db:dev:push`: push schema to the dev database using `.env`.
-- `pnpm db:test:reset`: reset the test database using `.env.test`.
-- `pnpm db:seed`: seed the database (`prisma/seed.mjs`).
-- `pnpm db:test:seed`: seed the test database using `.env.test`.
-- `pnpm db:studio`: open Prisma Studio for data inspection.
+- `pnpm start`: run the production server.
+- `pnpm lint`: run ESLint on the repo.
+- `pnpm test`: run Vitest unit tests.
+- `pnpm test:e2e`: reset test DB and run Playwright tests with `.env.test`.
+- `pnpm test:e2e:ui`: launch the Playwright UI runner.
+- `pnpm db:up` / `pnpm db:down`: start/stop local Postgres via Docker.
+- `pnpm db:dev:push` and `pnpm db:seed`: apply schema and seed dev data.
+- `docker compose -f docker-compose.app.yml up --build`: run the app + database via Docker.
 
 ## Coding Style & Naming Conventions
-- TypeScript/React with 2-space indentation and double quotes, as in existing `src/**/*.tsx`.
-- Follow Next.js + ESLint Core Web Vitals rules (`eslint.config.mjs`).
-- Prefer file- and folder-based routing patterns under `src/app/`.
-- Component files use kebab-case (e.g., `expense-columns.tsx`).
+- TypeScript-first codebase; keep types explicit at module boundaries.
+- Follow ESLint rules (`pnpm lint`)—no Prettier is configured.
+- Use Tailwind CSS utilities for styling; keep classnames readable and grouped by layout, spacing, typography, then state.
+- Use `PascalCase` for React components and `camelCase` for functions/variables.
+- Keep route segments and file names in `src/app/` lowercase (Next.js conventions).
 
 ## Testing Guidelines
-- Unit tests use Vitest and live under `src/test`.
-- E2E tests use Playwright under `e2e/` and rely on `.env.test`.
-- Use factories under `src/test/data` and helpers under `src/test/helpers`.
+- Unit tests live in `src/__tests__/` and use `*.test.ts`/`*.test.tsx` naming (Vitest + Testing Library).
+- E2E specs live in `e2e/` with `*.spec.ts` naming (Playwright).
+- Prefer testing public APIs for features (e.g., `src/features/**/api.ts` and route handlers).
 
 ## Commit & Pull Request Guidelines
-- Recent commits use imperative, short summaries (e.g., “Update ReportsPage…”, “Refactor financial pages…”).
-- Keep commits focused and describe the impact on UI/data flows.
-- PRs should include a concise summary, testing notes (manual steps), and screenshots for UI changes.
+- Commit messages follow an imperative style (e.g., "Add", "Update", "Refactor", "Remove", "Enhance").
+- PRs should include a short summary, testing notes (`pnpm test`, `pnpm test:e2e` if relevant), and screenshots for UI changes.
 
 ## Security & Configuration Tips
-- Database access is handled through Prisma with a PostgreSQL datasource (`prisma/schema.prisma`).
-- Keep environment configuration out of source control; document required variables in PRs when added.
+- Prisma is the source of truth for schema and queries; update `prisma/schema.prisma` first.
+- Use `.env` and `.env.test` based on `.env.example`; never commit secrets.
+- Ensure the test database is isolated before running `pnpm test:e2e`.
