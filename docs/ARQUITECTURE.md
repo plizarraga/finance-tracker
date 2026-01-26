@@ -34,13 +34,13 @@ Finance Tracker es un **monolito Next.js** que utiliza App Router. Un único cod
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                     Prisma ORM                              │
-│              (Acceso a base de datos)                        │
+│              (Acceso a base de datos)                       │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│             PostgreSQL (local/Railway)                       │
-│                  (Base de datos)                             │
+│             PostgreSQL (local/Railway)                      │
+│                  (Base de datos)                            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -57,31 +57,37 @@ Finance Tracker es un **monolito Next.js** que utiliza App Router. Un único cod
 ### Estructura del Proyecto
 
 ```
-app/              → Rutas y pantallas (App Router)
-features/         → Lógica de dominio por feature
-  ├── accounts/   → Gestión de cuentas
-  ├── categories/ → Categorías de ingreso/gasto
-  ├── incomes/    → Registro de ingresos
-  ├── expenses/   → Registro de gastos
-  ├── transfers/  → Transferencias entre cuentas
-  ├── reports/    → Reportes y gráficos
+src/app/              → Rutas y pantallas (App Router)
+src/features/         → Lógica de dominio por feature
+  ├── accounts/       → Gestión de cuentas
+  ├── categories/     → Categorías de ingreso/gasto
+  ├── incomes/        → Registro de ingresos
+  ├── expenses/       → Registro de gastos
+  ├── transfers/      → Transferencias entre cuentas
+  ├── reports/        → Reportes y gráficos
   ├── expense-templates/  → Plantillas de gastos
   ├── income-templates/   → Plantillas de ingresos
   └── transfer-templates/ → Plantillas de transferencias
-lib/              → Utilidades compartidas
-prisma/           → Schema y cliente Prisma
-src/test/         → Unit tests, data factories, helpers
-e2e/              → Playwright end-to-end tests
+src/components/       → Componentes UI compartidos
+src/hooks/            → Hooks React reutilizables
+src/lib/              → Utilidades compartidas
+src/providers/        → Proveedores de contexto React
+src/types/            → Tipos TypeScript compartidos
+src/__tests__/        → Unit tests, data factories, helpers
+e2e/                  → Playwright end-to-end tests
+prisma/               → Schema y cliente Prisma
+scripts/              → Scripts de ayuda local
 ```
 
 Cada feature es dueño de:
 - Schemas/validación
 - Queries (lecturas)
+- Actions (mutaciones)
 - Helpers cliente para APIs
 
 Relación entre capas:
-- `features/*/api.ts` actúa como cliente de `app/api/**/route.ts`
-- `app/api` contiene validación, auth y mutaciones
+- `src/features/*/api.ts` actúa como cliente de `src/app/api/**/route.ts`
+- `src/app/api` contiene validación, auth y mutaciones
 - La UI consume solo el cliente, facilitando una migración futura de backend
 
 ### Modelos de Dominio
@@ -145,15 +151,15 @@ Beneficios:
 
 3. GESTIÓN DE PLANTILLAS
    ┌────────┐      ┌─────────────┐      ┌──────────┐
-   │ Usuario│─────►│ Server      │─────►│ PostgreSQL│
-   └────────┘      │ Action      │      │   (DB)   │
+   │ Usuario│─────►│ Route       │─────►│ PostgreSQL│
+   └────────┘      │ Handler     │      │   (DB)   │
                    │ (Templates) │      └──────────┘
                    └─────────────┘
 
 4. REGISTRO DE MOVIMIENTOS
    ┌────────┐      ┌─────────────┐      ┌──────────┐
-   │ Usuario│─────►│ Server      │─────►│ PostgreSQL│
-   └────────┘      │ Action      │      │   (DB)   │
+   │ Usuario│─────►│ Route       │─────►│ PostgreSQL│
+   └────────┘      │ Handler     │      │   (DB)   │
                    │ (Income/    │      └──────────┘
                    │  Expense/   │
                    │  Transfer)  │
@@ -172,8 +178,8 @@ Beneficios:
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│   Form   │────►│ Validate │────►│  Server  │────►│ PostgreSQL│
-│   (UI)   │     │  (Zod?)  │     │  Action  │     │  INSERT  │
+│   Form   │────►│ Validate │────►│  Route   │────►│ PostgreSQL│
+│   (UI)   │     │  (Zod)   │     │  Handler │     │  INSERT  │
 └──────────┘     └──────────┘     └──────────┘     └──────────┘
                                         │
                                         ▼
@@ -187,8 +193,8 @@ Beneficios:
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│ Template │────►│  Server  │────►│ PostgreSQL│────►│  Prefill │
-│  Button  │     │  Action  │     │  Query   │     │  Form    │
+│ Template │────►│  Route   │────►│ PostgreSQL│────►│  Prefill │
+│  Button  │     │  Handler │     │  Query   │     │  Form    │
 └──────────┘     └──────────┘     └──────────┘     └──────────┘
 ```
 

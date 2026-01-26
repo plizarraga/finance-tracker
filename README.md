@@ -3,11 +3,13 @@
 Mobile-first personal finance tracker built with Next.js (App Router), Prisma, and PostgreSQL.
 
 ## Prerequisites
+
 - Node.js (see `.tool-versions`)
 - pnpm
 - Docker (for local databases)
 
-## Local setup
+## Local Setup
+
 1. `pnpm install`
 2. Create `.env` and `.env.test` from `.env.example`
 3. `pnpm db:up`
@@ -16,27 +18,53 @@ Mobile-first personal finance tracker built with Next.js (App Router), Prisma, a
 6. `pnpm dev`
 
 ## Docker (app + database)
-1. Create `.env` from `.env.example` and set `BETTER_AUTH_SECRET`.
-2. `docker compose -f docker-compose.app.yml up --build`
-3. Open `http://localhost:3000`
+
+1. Create `.env` from `.env.docker.example`:
+   ```bash
+   cp .env.docker.example .env
+   ```
+2. Configure required variables in `.env`:
+   - `POSTGRES_PASSWORD` - Database password
+   - `BETTER_AUTH_SECRET` - Generate with `openssl rand -base64 32`
+3. Start the stack:
+   ```bash
+   docker compose -f docker-compose.app.yml up --build
+   ```
+4. Verify health: `curl http://localhost:3000/api/health`
+5. Open `http://localhost:3000`
 
 ## Scripts
-- `pnpm dev`: start the Next.js dev server.
-- `pnpm build`: generate Prisma client and build the app.
-- `pnpm start`: run the production server.
-- `pnpm lint`: run ESLint.
-- `pnpm test`: run unit tests (Vitest).
-- `pnpm test:e2e`: run Playwright e2e tests using `.env.test`.
-- `pnpm test:e2e:ui`: open Playwright UI using `.env.test`.
-- `pnpm db:up`: start local dev/test Postgres containers.
-- `pnpm db:down`: stop local dev/test Postgres containers.
-- `pnpm db:dev:push`: push Prisma schema to the dev database using `.env`.
-- `pnpm db:test:reset`: load `.env.test`, verify the test DB, reset schema.
-- `pnpm db:seed`: load `.env` and seed the dev database.
-- `pnpm db:test:seed`: load `.env.test`, verify the test DB, seed it.
 
-## Tech stack
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start Next.js dev server with Turbopack |
+| `pnpm build` | Generate Prisma client and build the app |
+| `pnpm start` | Run the production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm test` | Run Vitest unit tests |
+| `pnpm test:e2e` | Run Playwright E2E tests with `.env.test` |
+| `pnpm test:e2e:ui` | Open Playwright UI with `.env.test` |
+| `pnpm db:up` | Start local dev/test Postgres containers |
+| `pnpm db:down` | Stop local dev/test Postgres containers |
+| `pnpm db:dev:push` | Push Prisma schema to dev database using `.env` |
+| `pnpm db:test:reset` | Load `.env.test`, verify test DB, reset schema |
+| `pnpm db:seed` | Load `.env` and seed the dev database |
+| `pnpm db:test:seed` | Load `.env.test`, verify test DB, seed it |
+
+## Tech Stack
+
 - Next.js App Router
 - Prisma + PostgreSQL
 - Better Auth
+- shadcn/ui + Tailwind CSS
 - Vitest + Playwright
+
+## Documentation
+
+- `CLAUDE.md` - Guide for Claude Code
+- `AGENTS.md` - Repository guidelines for AI agents
+- `docs/ARQUITECTURE.md` - System architecture
+- `docs/PROJECT_SPEC.md` - Product and engineering spec
+- `docs/TESTING_ENVIRONMENT.md` - Testing setup
+- `docs/E2E_TESTING_RULES.md` - E2E testing best practices
+- `docs/DOCKER_IMPLEMENTATION_PLAN.md` - Docker configuration details

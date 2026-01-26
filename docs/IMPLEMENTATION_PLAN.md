@@ -1,8 +1,15 @@
 # Plan de Implementación - Finance Tracker
 
-## Estado Actual: 80% Completado
+## Estado Actual: 95% Completado
 
-Todas las fases principales han sido implementadas exitosamente. El proyecto está en etapa de testing y refinamiento.
+Todas las fases principales han sido implementadas exitosamente, incluyendo:
+- Templates system (Expenses, Incomes, Transfers)
+- Inline account/category creation
+- Migración completa a Prisma ORM
+- Unit tests con Vitest
+- E2E tests con Playwright
+
+El proyecto está en etapa de refinamiento y testing continuo.
 
 ---
 
@@ -28,7 +35,7 @@ Todas las fases principales han sido implementadas exitosamente. El proyecto est
 **Archivos Clave:**
 ```
 src/lib/
-  ├── auth.ts (Better Auth server)
+  ├── auth.ts (Better Auth server + Prisma client)
   ├── auth-client.ts (Better Auth client)
   ├── utils.ts (Utilidades compartidas)
   └── format.ts (Formateo de moneda y fechas)
@@ -38,6 +45,12 @@ src/types/
 
 src/providers/
   └── theme-provider.tsx (Proveedor de tema con next-themes)
+
+src/__tests__/
+  └── *.test.ts (Unit tests con Vitest)
+
+e2e/
+  └── *.spec.ts (E2E tests con Playwright)
 
 prisma/
   └── schema.prisma (Esquema de base de datos)

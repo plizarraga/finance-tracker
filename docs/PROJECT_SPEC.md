@@ -321,8 +321,8 @@ Design principles:
 
 **Feature-based structure:**
 
-- `app/` — routes and screens
-- `features/` — domain logic per feature (schemas, queries, client helpers)
+- `src/app/` — routes and screens
+- `src/features/` — domain logic per feature (schemas, queries, client helpers)
 
   - accounts
   - categories
@@ -334,12 +334,18 @@ Design principles:
   - income-templates
   - transfer-templates
 
-- `lib/` — shared utilities
+- `src/components/` — shared UI components
+- `src/hooks/` — reusable React hooks
+- `src/lib/` — shared utilities
+- `src/providers/` — React context providers
+- `src/types/` — shared TypeScript types
+- `src/__tests__/` — unit tests
+- `e2e/` — Playwright E2E tests
 - `prisma/` — Prisma schema and client
 
 Each feature owns:
 
-- Server actions
+- Route handlers (API)
 - Queries
 - Validation
 

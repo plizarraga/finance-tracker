@@ -1,51 +1,76 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:18-alpine
     container_name: finance_tracker_postgres
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: finance_dev
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Required}
+      POSTGRES_DB: ${POSTGRES_DB:-finance_tracker}
     volumes:
       - postgres_app_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d finance_dev"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - finance
 
   migrate:
     build:
       context: .
       target: migrate
     container_name: finance_tracker_migrate
+    restart: 'no'
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/finance_dev?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-finance_tracker}
+    networks:
+      - finance
 
   app:
     build:
       context: .
+      target: runner
     container_name: finance_tracker_app
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
-    env_file:
-      - .env
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/finance_dev?schema=public
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-finance_tracker}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Required}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     ports:
-      - "3000:3000"
+      - '3000:3000'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - finance
 
 volumes:
   postgres_app_data:
+
+networks:
+  finance:
+    driver: bridge

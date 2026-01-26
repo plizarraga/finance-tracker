@@ -376,7 +376,7 @@ model [Module]Template {
 
 ```
 src/features/[module]-templates/
-├── actions.ts      # Server actions (create, update, delete, duplicate, setDefault)
+├── actions.ts      # Route handler actions (create, update, delete, duplicate, setDefault)
 ├── queries.ts      # Data fetching with Decimal serialization
 └── schemas.ts      # Zod validation (client + server)
 ```
@@ -391,6 +391,10 @@ src/components/[module]/
 src/components/forms/
 ├── [module]-template-form.tsx          # Template form
 └── [module]-form.tsx                   # Enhanced with defaultValues prop
+
+src/components/shared/
+├── account-combobox.tsx                # Account selector with search
+└── account-quick-create-dialog.tsx     # Inline account creation
 ```
 
 ### Key Design Decisions

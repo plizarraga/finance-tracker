@@ -13,3 +13,8 @@ test-results
 *.log
 *.pem
 .DS_Store
+
+# Documentation (reduce image size)
+*.md
+!README.md
+docs/
