@@ -28,15 +28,44 @@ export function formatDate(
   return new Intl.DateTimeFormat(locale, options).format(d);
 }
 
+function getDateOnlyParts(date: Date | string): { year: number; month: number; day: number } {
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
+    const [year, month, day] = date.trim().split("-").map(Number);
+    return { year, month, day };
+  }
+  const d = typeof date === "string" ? new Date(date) : date;
+  return {
+    year: d.getUTCFullYear(),
+    month: d.getUTCMonth() + 1,
+    day: d.getUTCDate(),
+  };
+}
+
+/**
+ * Format a date-only value for display (avoids timezone shifts).
+ */
+export function formatDateOnly(
+  date: Date | string,
+  options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  },
+  locale: string = "en-US"
+): string {
+  const { year, month, day } = getDateOnlyParts(date);
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  return new Intl.DateTimeFormat(locale, { ...options, timeZone: "UTC" }).format(utcDate);
+}
+
 /**
  * Format a date for input fields (YYYY-MM-DD)
  */
 export function formatDateInput(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const { year, month, day } = getDateOnlyParts(date);
+  const paddedMonth = String(month).padStart(2, "0");
+  const paddedDay = String(day).padStart(2, "0");
+  return `${year}-${paddedMonth}-${paddedDay}`;
 }
 
 /**

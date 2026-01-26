@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDateOnly } from "@/lib/format";
 import { DataTableColumnHeader } from "./data-table-column-header";
 
 type AmountVariant = "positive" | "negative" | "neutral";
@@ -17,7 +17,7 @@ export function createDateColumn<TData extends { date: Date }>(): ColumnDef<TDat
   return {
     accessorKey: "date",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
-    cell: ({ row }) => <div className="font-medium">{formatDate(row.original.date)}</div>,
+    cell: ({ row }) => <div className="font-medium">{formatDateOnly(row.original.date)}</div>,
     enableSorting: true,
   };
 }

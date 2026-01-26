@@ -5,7 +5,7 @@ import { type TransferWithRelations } from "@/features/transfers/queries";
 import { DataTableColumnHeader } from "@/components/shared/data-table-column-header";
 import { createAmountColumn } from "@/components/shared/column-helpers";
 import Link from "next/link";
-import { formatDate } from "@/lib/format";
+import { formatDateOnly } from "@/lib/format";
 
 export const transferColumns: ColumnDef<TransferWithRelations>[] = [
   {
@@ -38,7 +38,7 @@ export const transferColumns: ColumnDef<TransferWithRelations>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
-    cell: ({ row }) => <div>{formatDate(row.original.date)}</div>,
+    cell: ({ row }) => <div>{formatDateOnly(row.original.date)}</div>,
     enableSorting: true,
   },
   createAmountColumn<TransferWithRelations>("neutral"),

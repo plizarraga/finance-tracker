@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
   formatCurrency,
   formatDate,
+  formatDateOnly,
   formatDateInput,
   getCurrentMonthRange,
   getCurrentYearRange,
@@ -53,6 +54,24 @@ describe("format helpers", () => {
       const result = formatDateInput(date);
 
       expect(result).toBe("2024-02-03");
+    });
+
+    test("When formatting a date-only ISO string, then it preserves the date", () => {
+      const date = "2024-02-03T00:00:00.000Z";
+
+      const result = formatDateInput(date);
+
+      expect(result).toBe("2024-02-03");
+    });
+  });
+
+  describe("formatDateOnly", () => {
+    test("When formatting a date-only ISO string, then it preserves the UTC date", () => {
+      const date = "2024-02-03T00:00:00.000Z";
+
+      const result = formatDateOnly(date, undefined, "en-US");
+
+      expect(result).toBe("Feb 3, 2024");
     });
   });
 

@@ -36,7 +36,7 @@ import {
   getTransfers,
   type TransferWithRelations,
 } from '@/features/transfers/queries';
-import { formatCurrency, formatDate, getCurrentMonthRange } from '@/lib/format';
+import { formatCurrency, formatDateOnly, getCurrentMonthRange } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { IncomeTemplateButtonGroup } from '@/components/incomes/income-template-button-group';
 import { ExpenseTemplateButtonGroup } from '@/components/expenses/expense-template-button-group';
@@ -351,7 +351,7 @@ export default async function DashboardPage() {
                           {transaction.description || transaction.categoryName}
                         </p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>{formatDate(transaction.date)}</span>
+                          <span>{formatDateOnly(transaction.date)}</span>
                           <Badge
                             variant="secondary"
                             className={`text-xs ${
