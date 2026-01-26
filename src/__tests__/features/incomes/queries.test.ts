@@ -11,6 +11,7 @@ const isUnauthorizedErrorMock = vi.hoisted(() => vi.fn());
 const incomeFindManyMock = vi.hoisted(() => vi.fn());
 const incomeFindFirstMock = vi.hoisted(() => vi.fn());
 const incomeCountMock = vi.hoisted(() => vi.fn());
+const incomeAggregateMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/prisma-helpers", () => ({
   requireAuth: requireAuthMock,
@@ -23,6 +24,7 @@ vi.mock("@/lib/auth", () => ({
       findMany: incomeFindManyMock,
       findFirst: incomeFindFirstMock,
       count: incomeCountMock,
+      aggregate: incomeAggregateMock,
     },
   },
 }));
@@ -31,6 +33,7 @@ import {
   getIncomeById,
   getIncomes,
   getIncomesCount,
+  getIncomesTotal,
 } from "@/features/incomes/queries";
 
 describe("incomes queries", () => {
@@ -141,5 +144,44 @@ describe("incomes queries", () => {
       },
     });
     expect(result).toBe(expectedCount);
+  });
+
+  test("When getting incomes total with a date range, then it aggregates amounts", async () => {
+    const userId = "user-203";
+    const dateRange = {
+      from: new Date("2024-02-01T00:00:00.000Z"),
+      to: new Date("2024-02-10T00:00:00.000Z"),
+    };
+    requireAuthMock.mockResolvedValue({ userId });
+    incomeAggregateMock.mockResolvedValue({
+      _sum: { amount: { toNumber: () => 12983.72 } },
+    });
+
+    const result = await getIncomesTotal(dateRange);
+
+    expect(incomeAggregateMock).toHaveBeenCalledWith({
+      where: {
+        userId,
+        date: { gte: dateRange.from, lte: dateRange.to },
+      },
+      _sum: { amount: true },
+    });
+    expect(result).toBe(12983.72);
+  });
+
+  test("When getting incomes total without a date range, then it aggregates for the user", async () => {
+    const userId = "user-203";
+    requireAuthMock.mockResolvedValue({ userId });
+    incomeAggregateMock.mockResolvedValue({
+      _sum: { amount: { toNumber: () => 0 } },
+    });
+
+    const result = await getIncomesTotal();
+
+    expect(incomeAggregateMock).toHaveBeenCalledWith({
+      where: { userId },
+      _sum: { amount: true },
+    });
+    expect(result).toBe(0);
   });
 });

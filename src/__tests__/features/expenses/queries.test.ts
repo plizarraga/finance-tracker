@@ -11,6 +11,7 @@ const isUnauthorizedErrorMock = vi.hoisted(() => vi.fn());
 const expenseFindManyMock = vi.hoisted(() => vi.fn());
 const expenseFindFirstMock = vi.hoisted(() => vi.fn());
 const expenseCountMock = vi.hoisted(() => vi.fn());
+const expenseAggregateMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/prisma-helpers", () => ({
   requireAuth: requireAuthMock,
@@ -23,6 +24,7 @@ vi.mock("@/lib/auth", () => ({
       findMany: expenseFindManyMock,
       findFirst: expenseFindFirstMock,
       count: expenseCountMock,
+      aggregate: expenseAggregateMock,
     },
   },
 }));
@@ -31,6 +33,7 @@ import {
   getExpenseById,
   getExpenses,
   getExpensesCount,
+  getExpensesTotal,
 } from "@/features/expenses/queries";
 
 describe("expenses queries", () => {
@@ -141,5 +144,44 @@ describe("expenses queries", () => {
       },
     });
     expect(result).toBe(expectedCount);
+  });
+
+  test("When getting expenses total with a date range, then it aggregates amounts", async () => {
+    const userId = "user-203";
+    const dateRange = {
+      from: new Date("2024-02-01T00:00:00.000Z"),
+      to: new Date("2024-02-10T00:00:00.000Z"),
+    };
+    requireAuthMock.mockResolvedValue({ userId });
+    expenseAggregateMock.mockResolvedValue({
+      _sum: { amount: { toNumber: () => 47670.12 } },
+    });
+
+    const result = await getExpensesTotal(dateRange);
+
+    expect(expenseAggregateMock).toHaveBeenCalledWith({
+      where: {
+        userId,
+        date: { gte: dateRange.from, lte: dateRange.to },
+      },
+      _sum: { amount: true },
+    });
+    expect(result).toBe(47670.12);
+  });
+
+  test("When getting expenses total without a date range, then it aggregates for the user", async () => {
+    const userId = "user-203";
+    requireAuthMock.mockResolvedValue({ userId });
+    expenseAggregateMock.mockResolvedValue({
+      _sum: { amount: { toNumber: () => 0 } },
+    });
+
+    const result = await getExpensesTotal();
+
+    expect(expenseAggregateMock).toHaveBeenCalledWith({
+      where: { userId },
+      _sum: { amount: true },
+    });
+    expect(result).toBe(0);
   });
 });

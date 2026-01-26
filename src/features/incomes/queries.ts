@@ -22,6 +22,34 @@ interface IncomeFilters {
   sortOrder?: "asc" | "desc";
 }
 
+export async function getIncomesTotal(
+  dateRange?: DateRange
+): Promise<number> {
+  try {
+    const { userId } = await requireAuth();
+    const result = await prisma.income.aggregate({
+      where: {
+        userId,
+        ...(dateRange && {
+          date: {
+            gte: dateRange.from,
+            lte: dateRange.to,
+          },
+        }),
+      },
+      _sum: { amount: true },
+    });
+
+    return result._sum.amount?.toNumber() ?? 0;
+  } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
+    console.error("Error fetching incomes total:", error);
+    return 0;
+  }
+}
+
 export async function getIncomes(
   filters?: IncomeFilters
 ): Promise<IncomeWithRelations[]> {

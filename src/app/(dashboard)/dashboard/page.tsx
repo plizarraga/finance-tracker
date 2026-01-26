@@ -14,10 +14,12 @@ import { requireAuth, isUnauthorizedError } from '@/lib/prisma-helpers';
 import { getAccountsWithBalances } from '@/features/accounts/queries';
 import {
   getIncomes,
+  getIncomesTotal,
   type IncomeWithRelations,
 } from '@/features/incomes/queries';
 import {
   getExpenses,
+  getExpensesTotal,
   type ExpenseWithRelations,
 } from '@/features/expenses/queries';
 import {
@@ -81,8 +83,8 @@ export default async function DashboardPage() {
     allIncomes,
     allExpenses,
     allTransfers,
-    monthlyIncomes,
-    monthlyExpenses,
+    totalMonthlyIncome,
+    totalMonthlyExpenses,
     expenseTemplates,
     defaultExpenseTemplate,
     incomeTemplates,
@@ -94,8 +96,8 @@ export default async function DashboardPage() {
     getIncomes(),
     getExpenses(),
     getTransfers(),
-    getIncomes({ dateRange }),
-    getExpenses({ dateRange }),
+    getIncomesTotal(dateRange),
+    getExpensesTotal(dateRange),
     getExpenseTemplates(),
     getDefaultExpenseTemplate(),
     getIncomeTemplates(),
@@ -106,14 +108,6 @@ export default async function DashboardPage() {
 
   // Calculate totals
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
-  const totalMonthlyIncome = monthlyIncomes.reduce(
-    (sum, inc) => sum + inc.amount.toNumber(),
-    0
-  );
-  const totalMonthlyExpenses = monthlyExpenses.reduce(
-    (sum, exp) => sum + exp.amount.toNumber(),
-    0
-  );
   const netBalance = totalMonthlyIncome - totalMonthlyExpenses;
 
   // Combine and sort recent transactions (last 15)

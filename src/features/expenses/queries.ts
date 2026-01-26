@@ -22,6 +22,34 @@ interface ExpenseFilters {
   sortOrder?: "asc" | "desc";
 }
 
+export async function getExpensesTotal(
+  dateRange?: DateRange
+): Promise<number> {
+  try {
+    const { userId } = await requireAuth();
+    const result = await prisma.expense.aggregate({
+      where: {
+        userId,
+        ...(dateRange && {
+          date: {
+            gte: dateRange.from,
+            lte: dateRange.to,
+          },
+        }),
+      },
+      _sum: { amount: true },
+    });
+
+    return result._sum.amount?.toNumber() ?? 0;
+  } catch (error) {
+    if (isUnauthorizedError(error)) {
+      throw error;
+    }
+    console.error("Error fetching expenses total:", error);
+    return 0;
+  }
+}
+
 export async function getExpenses(
   filters?: ExpenseFilters
 ): Promise<ExpenseWithRelations[]> {
