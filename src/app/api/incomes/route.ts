@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { incomeServerSchema } from "@/features/incomes/schemas";
+import { normalizeDescription } from "@/lib/normalize";
 
 export async function POST(request: Request) {
   try {
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
         amount,
         date,
         description,
+        descriptionNormalized: normalizeDescription(description),
         notes,
       },
     });

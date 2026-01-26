@@ -142,6 +142,7 @@ model Income {
   amount      Decimal  @db.Decimal(12, 2)
   date        DateTime @db.Date
   description String   @db.VarChar(255)
+  descriptionNormalized String @map("description_normalized") @db.VarChar(255)
   notes       String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -169,6 +170,7 @@ model Expense {
   amount      Decimal  @db.Decimal(12, 2)
   date        DateTime @db.Date
   description String   @db.VarChar(255)
+  descriptionNormalized String @map("description_normalized") @db.VarChar(255)
   notes       String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -268,6 +270,7 @@ model Transfer {
   amount        Decimal  @db.Decimal(12, 2)
   date          DateTime @db.Date
   description   String   @db.VarChar(255)
+  descriptionNormalized String @map("description_normalized") @db.VarChar(255)
   notes         String?  @db.Text
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)

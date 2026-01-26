@@ -10,6 +10,15 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+function normalizeDescription(value) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function dateInMonth(reference, monthOffset, day) {
   return new Date(reference.getFullYear(), reference.getMonth() + monthOffset, day);
 }
@@ -139,6 +148,7 @@ async function main() {
         amount: new Prisma.Decimal(salaryAmount.toFixed(2)),
         date: dateInMonth(today, monthOffset, 1),
         description: `Ingreso mensual ${monthIndex + 1}`,
+        descriptionNormalized: normalizeDescription(`Ingreso mensual ${monthIndex + 1}`),
       },
       {
         userId: user.id,
@@ -147,6 +157,7 @@ async function main() {
         amount: new Prisma.Decimal(freelanceAmount.toFixed(2)),
         date: dateInMonth(today, monthOffset, secondIncomeDay),
         description: `Ingreso adicional ${monthIndex + 1}`,
+        descriptionNormalized: normalizeDescription(`Ingreso adicional ${monthIndex + 1}`),
       }
     );
 
@@ -158,6 +169,9 @@ async function main() {
         amount: new Prisma.Decimal(item.amount.toFixed(2)),
         date: dateInMonth(today, monthOffset, item.day),
         description: `Gasto mensual ${monthIndex + 1}.${index + 1}`,
+        descriptionNormalized: normalizeDescription(
+          `Gasto mensual ${monthIndex + 1}.${index + 1}`
+        ),
       });
     });
 
@@ -176,6 +190,9 @@ async function main() {
         amount: new Prisma.Decimal(transferAmount.toFixed(2)),
         date: dateInMonth(today, monthOffset, day),
         description: `Transferencia mensual ${monthIndex + 1}.${index + 1}`,
+        descriptionNormalized: normalizeDescription(
+          `Transferencia mensual ${monthIndex + 1}.${index + 1}`
+        ),
       });
     });
   });

@@ -1,4 +1,5 @@
 import { Prisma, type Transfer } from "@prisma/client";
+import { normalizeDescription } from "@/lib/normalize";
 
 export function buildTransfer(
   overrides: Partial<Transfer> = {}
@@ -11,6 +12,7 @@ export function buildTransfer(
     amount: new Prisma.Decimal(200),
     date: new Date("2024-02-07T00:00:00.000Z"),
     description: "Move to savings",
+    descriptionNormalized: normalizeDescription("Move to savings"),
     notes: "Monthly transfer",
     createdAt: new Date("2024-02-07T10:00:00.000Z"),
     updatedAt: new Date("2024-02-07T10:00:00.000Z"),

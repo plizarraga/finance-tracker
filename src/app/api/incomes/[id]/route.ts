@@ -4,6 +4,7 @@ import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getIncomeById } from "@/features/incomes/queries";
 import { incomeServerSchema } from "@/features/incomes/schemas";
+import { normalizeDescription } from "@/lib/normalize";
 
 export async function GET(
   request: Request,
@@ -114,6 +115,7 @@ export async function PUT(
         amount,
         date,
         description,
+        descriptionNormalized: normalizeDescription(description),
         notes,
       },
     });

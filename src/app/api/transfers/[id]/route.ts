@@ -5,6 +5,7 @@ import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { getTransferById } from "@/features/transfers/queries";
 import { transferServerSchema } from "@/features/transfers/schemas";
 import { calculateAccountBalance } from "@/features/accounts/queries";
+import { normalizeDescription } from "@/lib/normalize";
 
 export async function GET(
   request: Request,
@@ -121,6 +122,7 @@ export async function PUT(
         amount,
         date,
         description,
+        descriptionNormalized: normalizeDescription(description),
         notes,
       },
     });

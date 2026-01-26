@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { buildAccount } from "@/__tests__/data/build-account";
 import { buildCategory } from "@/__tests__/data/build-category";
 import { buildExpense } from "@/__tests__/data/build-expense";
+import { normalizeDescription } from "@/lib/normalize";
 
 const requireAuthMock = vi.hoisted(() => vi.fn());
 const isUnauthorizedErrorMock = vi.hoisted(() => vi.fn());
@@ -63,6 +64,7 @@ describe("expenses queries", () => {
     ];
     requireAuthMock.mockResolvedValue({ userId });
     expenseFindManyMock.mockResolvedValue(expenses);
+    const normalizedDescription = normalizeDescription(filters.description);
 
     const result = await getExpenses(filters);
 
@@ -71,7 +73,10 @@ describe("expenses queries", () => {
         userId,
         accountId: filters.accountId,
         categoryId: filters.categoryId,
-        description: { contains: filters.description, mode: "insensitive" },
+        descriptionNormalized: {
+          contains: normalizedDescription,
+          mode: "insensitive",
+        },
         date: { gte: filters.dateRange.from, lte: filters.dateRange.to },
         amount: { gte: filters.amountMin, lte: filters.amountMax },
       },
@@ -118,6 +123,7 @@ describe("expenses queries", () => {
     const expectedCount = 12;
     requireAuthMock.mockResolvedValue({ userId });
     expenseCountMock.mockResolvedValue(expectedCount);
+    const normalizedDescription = normalizeDescription(filters.description);
 
     const result = await getExpensesCount(filters);
 
@@ -126,7 +132,10 @@ describe("expenses queries", () => {
         userId,
         accountId: filters.accountId,
         categoryId: filters.categoryId,
-        description: { contains: filters.description, mode: "insensitive" },
+        descriptionNormalized: {
+          contains: normalizedDescription,
+          mode: "insensitive",
+        },
         date: { gte: dateRange.from, lte: dateRange.to },
         amount: { gte: filters.amountMin, lte: filters.amountMax },
       },

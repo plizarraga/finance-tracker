@@ -4,6 +4,7 @@ import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import { transferServerSchema } from "@/features/transfers/schemas";
 import { calculateAccountBalance } from "@/features/accounts/queries";
+import { normalizeDescription } from "@/lib/normalize";
 
 export async function POST(request: Request) {
   try {
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
         amount,
         date,
         description,
+        descriptionNormalized: normalizeDescription(description),
         notes,
       },
     });

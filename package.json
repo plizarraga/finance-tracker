@@ -21,7 +21,9 @@
     "db:down": "docker compose down",
     "db:dev:push": "prisma db push",
     "db:test:reset": "dotenv -e .env.test -- node scripts/assert-test-db.mjs && dotenv -e .env.test -- prisma db push --force-reset",
-    "db:test:seed": "dotenv -e .env.test -- node scripts/assert-test-db.mjs && dotenv -e .env.test -- node prisma/seed.mjs"
+    "db:test:seed": "dotenv -e .env.test -- node scripts/assert-test-db.mjs && dotenv -e .env.test -- node prisma/seed.mjs",
+    "import:legacy": "dotenv -e .env -- node scripts/import-legacy.mjs",
+    "import:legacy:dry": "dotenv -e .env -- node scripts/import-legacy.mjs --dry-run"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"

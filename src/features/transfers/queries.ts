@@ -2,6 +2,7 @@ import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Prisma } from "@prisma/client";
 import type { DateRange } from "@/types";
+import { normalizeDescription } from "@/lib/normalize";
 
 // Type for Transfer with both accounts loaded
 export type TransferWithRelations = Prisma.TransferGetPayload<{
@@ -27,6 +28,9 @@ export async function getTransfers(
 ): Promise<TransferWithRelations[]> {
   try {
     const { userId } = await requireAuth();
+    const normalizedDescription = filters?.description
+      ? normalizeDescription(filters.description)
+      : "";
 
     // Pagination
     const page = filters?.page || 1;
@@ -57,8 +61,11 @@ export async function getTransfers(
         }),
         ...(filters?.fromAccountId && { fromAccountId: filters.fromAccountId }),
         ...(filters?.toAccountId && { toAccountId: filters.toAccountId }),
-        ...(filters?.description && {
-          description: { contains: filters.description, mode: "insensitive" },
+        ...(normalizedDescription && {
+          descriptionNormalized: {
+            contains: normalizedDescription,
+            mode: "insensitive",
+          },
         }),
         ...(filters?.dateRange && {
           date: {
@@ -126,6 +133,9 @@ export async function getTransfersCount(
 ): Promise<number> {
   try {
     const { userId } = await requireAuth();
+    const normalizedDescription = filters?.description
+      ? normalizeDescription(filters.description)
+      : "";
     return await prisma.transfer.count({
       where: {
         userId,
@@ -137,8 +147,11 @@ export async function getTransfersCount(
         }),
         ...(filters?.fromAccountId && { fromAccountId: filters.fromAccountId }),
         ...(filters?.toAccountId && { toAccountId: filters.toAccountId }),
-        ...(filters?.description && {
-          description: { contains: filters.description, mode: "insensitive" },
+        ...(normalizedDescription && {
+          descriptionNormalized: {
+            contains: normalizedDescription,
+            mode: "insensitive",
+          },
         }),
         ...(filters?.dateRange && {
           date: {

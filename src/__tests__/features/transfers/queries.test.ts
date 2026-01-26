@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { buildAccount } from "@/__tests__/data/build-account";
 import { buildTransfer } from "@/__tests__/data/build-transfer";
+import { normalizeDescription } from "@/lib/normalize";
 
 const requireAuthMock = vi.hoisted(() => vi.fn());
 const isUnauthorizedErrorMock = vi.hoisted(() => vi.fn());
@@ -61,6 +62,7 @@ describe("transfers queries", () => {
     ];
     requireAuthMock.mockResolvedValue({ userId });
     transferFindManyMock.mockResolvedValue(transfers);
+    const normalizedDescription = normalizeDescription(filters.description);
 
     const result = await getTransfers(filters);
 
@@ -71,7 +73,10 @@ describe("transfers queries", () => {
           { fromAccountId: filters.accountId },
           { toAccountId: filters.accountId },
         ],
-        description: { contains: filters.description, mode: "insensitive" },
+        descriptionNormalized: {
+          contains: normalizedDescription,
+          mode: "insensitive",
+        },
         date: { gte: filters.dateRange.from, lte: filters.dateRange.to },
         amount: { gte: filters.amountMin, lte: filters.amountMax },
       },
@@ -117,6 +122,7 @@ describe("transfers queries", () => {
     const expectedCount = 5;
     requireAuthMock.mockResolvedValue({ userId });
     transferCountMock.mockResolvedValue(expectedCount);
+    const normalizedDescription = normalizeDescription(filters.description);
 
     const result = await getTransfersCount(filters);
 
@@ -127,7 +133,10 @@ describe("transfers queries", () => {
           { fromAccountId: filters.accountId },
           { toAccountId: filters.accountId },
         ],
-        description: { contains: filters.description, mode: "insensitive" },
+        descriptionNormalized: {
+          contains: normalizedDescription,
+          mode: "insensitive",
+        },
         date: { gte: dateRange.from, lte: dateRange.to },
         amount: { gte: filters.amountMin, lte: filters.amountMax },
       },

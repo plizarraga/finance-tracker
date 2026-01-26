@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { buildAccount } from "@/__tests__/data/build-account";
 import { buildCategory } from "@/__tests__/data/build-category";
 import { buildIncome } from "@/__tests__/data/build-income";
+import { normalizeDescription } from "@/lib/normalize";
 
 const requireAuthMock = vi.hoisted(() => vi.fn());
 const isUnauthorizedErrorMock = vi.hoisted(() => vi.fn());
@@ -63,6 +64,7 @@ describe("incomes queries", () => {
     ];
     requireAuthMock.mockResolvedValue({ userId });
     incomeFindManyMock.mockResolvedValue(incomes);
+    const normalizedDescription = normalizeDescription(filters.description);
 
     const result = await getIncomes(filters);
 
@@ -71,7 +73,10 @@ describe("incomes queries", () => {
         userId,
         accountId: filters.accountId,
         categoryId: filters.categoryId,
-        description: { contains: filters.description, mode: "insensitive" },
+        descriptionNormalized: {
+          contains: normalizedDescription,
+          mode: "insensitive",
+        },
         date: { gte: filters.dateRange.from, lte: filters.dateRange.to },
         amount: { gte: filters.amountMin, lte: filters.amountMax },
       },
@@ -118,6 +123,7 @@ describe("incomes queries", () => {
     const expectedCount = 7;
     requireAuthMock.mockResolvedValue({ userId });
     incomeCountMock.mockResolvedValue(expectedCount);
+    const normalizedDescription = normalizeDescription(filters.description);
 
     const result = await getIncomesCount(filters);
 
@@ -126,7 +132,10 @@ describe("incomes queries", () => {
         userId,
         accountId: filters.accountId,
         categoryId: filters.categoryId,
-        description: { contains: filters.description, mode: "insensitive" },
+        descriptionNormalized: {
+          contains: normalizedDescription,
+          mode: "insensitive",
+        },
         date: { gte: dateRange.from, lte: dateRange.to },
         amount: { gte: filters.amountMin, lte: filters.amountMax },
       },

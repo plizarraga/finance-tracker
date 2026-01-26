@@ -2,6 +2,7 @@ import { prisma } from "@/lib/auth";
 import { requireAuth, isUnauthorizedError } from "@/lib/prisma-helpers";
 import type { Prisma } from "@prisma/client";
 import type { DateRange } from "@/types";
+import { normalizeDescription } from "@/lib/normalize";
 
 // Type for Expense with relations loaded
 export type ExpenseWithRelations = Prisma.ExpenseGetPayload<{
@@ -26,6 +27,9 @@ export async function getExpenses(
 ): Promise<ExpenseWithRelations[]> {
   try {
     const { userId } = await requireAuth();
+    const normalizedDescription = filters?.description
+      ? normalizeDescription(filters.description)
+      : "";
 
     // Pagination
     const page = filters?.page || 1;
@@ -50,8 +54,11 @@ export async function getExpenses(
         userId,
         ...(filters?.accountId && { accountId: filters.accountId }),
         ...(filters?.categoryId && { categoryId: filters.categoryId }),
-        ...(filters?.description && {
-          description: { contains: filters.description, mode: "insensitive" },
+        ...(normalizedDescription && {
+          descriptionNormalized: {
+            contains: normalizedDescription,
+            mode: "insensitive",
+          },
         }),
         ...(filters?.dateRange && {
           date: {
@@ -119,13 +126,19 @@ export async function getExpensesCount(
 ): Promise<number> {
   try {
     const { userId } = await requireAuth();
+    const normalizedDescription = filters?.description
+      ? normalizeDescription(filters.description)
+      : "";
     return await prisma.expense.count({
       where: {
         userId,
         ...(filters?.accountId && { accountId: filters.accountId }),
         ...(filters?.categoryId && { categoryId: filters.categoryId }),
-        ...(filters?.description && {
-          description: { contains: filters.description, mode: "insensitive" },
+        ...(normalizedDescription && {
+          descriptionNormalized: {
+            contains: normalizedDescription,
+            mode: "insensitive",
+          },
         }),
         ...(filters?.dateRange && {
           date: {
